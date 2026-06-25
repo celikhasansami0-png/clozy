@@ -1,19 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { Crown, Check, Loader2, ExternalLink, Zap } from "lucide-react"
+import { Check, Loader2, ExternalLink, GraduationCap } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { useSubscription } from "@/hooks/use-subscription"
 import { PRICING_PLANS } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function BillingPage() {
-  const { tier, isPro, profile, stripeCustomerId } = useSubscription()
+  const { tier, profile, stripeCustomerId } = useSubscription()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+
+  const isPro = tier === "student_pro" || tier === "team_pro" || tier === "university"
+
+  const tierLabel = () => {
+    switch (tier) {
+      case "student_pro": return "Student Pro"
+      case "team_pro": return "Team Pro"
+      case "university": return "University"
+      default: return "Free"
+    }
+  }
 
   const handleUpgrade = async (planId: string, stripePriceId: string) => {
     if (!stripePriceId) {
@@ -52,9 +62,7 @@ export default function BillingPage() {
       const res = await fetch("/api/stripe/portal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          returnUrl: `${window.location.origin}/billing`,
-        }),
+        body: JSON.stringify({ returnUrl: `${window.location.origin}/billing` }),
       })
       const data = await res.json()
       if (data.url) {
@@ -76,44 +84,32 @@ export default function BillingPage() {
 
       <div className="p-6 space-y-8 max-w-4xl">
         {/* Current Plan */}
-        <Card>
+        <Card className="border-slate-200">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Current Plan</CardTitle>
+                <CardTitle className="text-slate-900">Current Plan</CardTitle>
                 <CardDescription>Your active subscription</CardDescription>
               </div>
-              <Badge variant={isPro ? "purple" : "secondary"} className="text-sm px-3 py-1">
-                {isPro ? (
-                  <><Crown className="mr-1.5 h-3.5 w-3.5" /> Pro</>
-                ) : (
-                  "Free"
-                )}
+              <Badge variant="secondary" className="text-sm px-3 py-1 bg-slate-100 text-slate-700">
+                {tierLabel()}
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
             {isPro ? (
               <div className="space-y-4">
-                <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-4">
-                  <p className="text-sm font-medium text-indigo-900">
-                    You&apos;re on the Pro plan — unlimited growth systems, leads, templates, and advanced AI.
+                <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                  <p className="text-sm text-slate-700">
+                    You&apos;re on {tierLabel()} — unlimited academic usage across all OS modules.
                   </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {PRO_FEATURES.map((f) => (
-                    <div key={f} className="flex items-center gap-1.5 text-xs text-slate-600">
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      {f}
-                    </div>
-                  ))}
                 </div>
                 {stripeCustomerId && (
                   <Button
                     variant="outline"
                     onClick={handleManageBilling}
                     disabled={loadingPlan === "portal"}
-                    className="gap-2"
+                    className="gap-2 border-slate-200"
                   >
                     {loadingPlan === "portal" ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -128,22 +124,9 @@ export default function BillingPage() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                   <p className="text-sm text-slate-600">
-                    You&apos;re on the Free plan. Upgrade to Pro for unlimited access.
+                    You&apos;re on the Free plan. Every premium feature has one lifetime trial credit.
+                    Upgrade to Student Pro for unlimited access.
                   </p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs text-slate-500">
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-emerald-500" /> 2 growth systems/month
-                  </div>
-                  <div className="flex items-center gap-1.5 opacity-50">
-                    ✗ Unlimited systems
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-emerald-500" /> 25 leads max
-                  </div>
-                  <div className="flex items-center gap-1.5 opacity-50">
-                    ✗ Unlimited leads
-                  </div>
                 </div>
               </div>
             )}
@@ -151,81 +134,80 @@ export default function BillingPage() {
         </Card>
 
         {/* Plans */}
-        {!isPro && (
-          <>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">Upgrade to Pro</h2>
-              <p className="text-sm text-slate-500 mb-6">
-                Unlock unlimited everything and accelerate your LinkedIn growth.
-              </p>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">
+            {isPro ? "Available Plans" : "Upgrade your plan"}
+          </h2>
+          <p className="text-sm text-slate-500 mb-6">
+            Choose the plan that matches your academic needs.
+          </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {PRICING_PLANS.filter((p) => p.tier === "pro").map((plan) => (
-                  <div
-                    key={plan.id}
-                    className={`rounded-xl border-2 p-6 relative ${
-                      plan.highlighted
-                        ? "border-indigo-600 bg-white"
-                        : "border-slate-200 bg-white"
-                    }`}
-                  >
-                    {plan.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
-                          <Crown className="h-3 w-3" /> Most Popular
-                        </span>
-                      </div>
-                    )}
-
-                    <h3 className="font-semibold text-slate-900">{plan.name}</h3>
-                    <div className="mt-2 mb-4">
-                      <span className="text-3xl font-bold text-slate-900">${plan.price}</span>
-                      <span className="text-slate-500">/{plan.interval === "month" ? "mo" : "yr"}</span>
-                      {plan.interval === "year" && (
-                        <Badge variant="success" className="ml-2 text-[10px]">Save 20%</Badge>
-                      )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {PRICING_PLANS.map((plan) => {
+              const isCurrentPlan = tier === plan.tier
+              return (
+                <div
+                  key={plan.id}
+                  className={`rounded-xl border-2 p-6 relative ${
+                    plan.highlighted
+                      ? "border-slate-900 bg-white"
+                      : "border-slate-200 bg-white"
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                        <GraduationCap className="h-3 w-3" /> Most Popular
+                      </span>
                     </div>
+                  )}
 
-                    <ul className="space-y-2 mb-6">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
-                          <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
+                  <h3 className="font-semibold text-slate-900">{plan.name}</h3>
+                  <p className="text-xs text-slate-500 mb-3 mt-0.5">{plan.description}</p>
+                  <div className="mb-5">
+                    <span className="text-3xl font-bold text-slate-900">
+                      {plan.price === 0 ? "Free" : `$${plan.price}`}
+                    </span>
+                    {plan.price > 0 && (
+                      <span className="text-slate-400 text-sm ml-1">/{plan.interval}</span>
+                    )}
+                  </div>
 
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-slate-600">
+                        <Check className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isCurrentPlan ? (
+                    <Button variant="outline" className="w-full border-slate-200" disabled>
+                      Current plan
+                    </Button>
+                  ) : (
                     <Button
                       onClick={() => handleUpgrade(plan.id, plan.stripe_price_id)}
                       disabled={!!loadingPlan}
-                      className={`w-full ${
+                      className={`w-full gap-2 ${
                         plan.highlighted
-                          ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                          ? "bg-slate-900 hover:bg-slate-800 text-white"
                           : ""
-                      } gap-2`}
+                      }`}
                       variant={plan.highlighted ? "default" : "outline"}
                     >
-                      {loadingPlan === plan.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Zap className="h-4 w-4" />
-                      )}
+                      {loadingPlan === plan.id && <Loader2 className="h-4 w-4 animate-spin" />}
                       {plan.cta}
                     </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs text-slate-500 text-center">
-                30-day money-back guarantee · Cancel anytime · Secure payment via Stripe
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* Feature Comparison */}
+        {/* Feature comparison table */}
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Plan Comparison</h2>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
@@ -233,45 +215,46 @@ export default function BillingPage() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="py-3 px-4 text-left font-medium text-slate-700">Feature</th>
-                  <th className="py-3 px-4 text-center font-medium text-slate-700">Free</th>
-                  <th className="py-3 px-4 text-center font-semibold text-indigo-700">Pro</th>
+                  <th className="py-3 px-4 text-center font-medium text-slate-500">Free</th>
+                  <th className="py-3 px-4 text-center font-semibold text-slate-900">Student Pro</th>
+                  <th className="py-3 px-4 text-center font-medium text-slate-500">Team Pro</th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON_ROWS.map((row, i) => (
                   <tr key={row.feature} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
                     <td className="py-2.5 px-4 text-slate-700">{row.feature}</td>
-                    <td className="py-2.5 px-4 text-center text-slate-500">{row.free}</td>
-                    <td className="py-2.5 px-4 text-center font-medium text-indigo-600">{row.pro}</td>
+                    <td className="py-2.5 px-4 text-center text-slate-400">{row.free}</td>
+                    <td className="py-2.5 px-4 text-center font-medium text-slate-900">{row.student_pro}</td>
+                    <td className="py-2.5 px-4 text-center text-slate-500">{row.team_pro}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs text-slate-500 text-center">
+            30-day money-back guarantee · Cancel anytime · Secure payment via Stripe ·
+            University Plan available for institutions — <a href="mailto:hello@autopilot.os" className="underline">contact us</a>
+          </p>
+        </div>
       </div>
     </div>
   )
 }
 
-const PRO_FEATURES = [
-  "Unlimited growth systems",
-  "Unlimited leads",
-  "Full template library",
-  "Advanced AI scripts",
-  "Analytics dashboard",
-  "CSV export",
-  "Priority support",
-]
-
 const COMPARISON_ROWS = [
-  { feature: "Growth systems/month", free: "2", pro: "Unlimited" },
-  { feature: "Leads in CRM", free: "25", pro: "Unlimited" },
-  { feature: "Template library access", free: "✗", pro: "✓" },
-  { feature: "Advanced AI scripts", free: "✗", pro: "✓" },
-  { feature: "14-day execution plans", free: "✗", pro: "✓" },
-  { feature: "Analytics dashboard", free: "Basic", pro: "Full" },
-  { feature: "CSV export", free: "✗", pro: "✓" },
-  { feature: "Priority support", free: "✗", pro: "✓" },
-  { feature: "Team members", free: "1", pro: "5" },
+  { feature: "AI lesson generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
+  { feature: "Exam generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
+  { feature: "Assignment generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
+  { feature: "Project generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
+  { feature: "Research analysis", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
+  { feature: "Knowledge OS", free: "✗", student_pro: "✓", team_pro: "✓" },
+  { feature: "Career OS", free: "✗", student_pro: "✓", team_pro: "✓" },
+  { feature: "Analytics OS", free: "Basic", student_pro: "Full", team_pro: "Full" },
+  { feature: "Team workspaces", free: "✗", student_pro: "✗", team_pro: "✓" },
+  { feature: "Team members", free: "1", student_pro: "1", team_pro: "10" },
+  { feature: "Priority support", free: "✗", student_pro: "✓", team_pro: "✓" },
 ]

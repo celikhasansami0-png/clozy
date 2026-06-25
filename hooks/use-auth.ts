@@ -65,7 +65,7 @@ export function useAuth() {
     signOut,
     refreshProfile,
     isAuthenticated: !!state.user,
-    isPro: state.profile?.subscription_tier === "pro" || state.profile?.subscription_tier === "enterprise",
+    isPro: state.profile?.subscription_tier === "student_pro" || state.profile?.subscription_tier === "team_pro" || state.profile?.subscription_tier === "university",
     tier: state.profile?.subscription_tier ?? "free",
   }
 }

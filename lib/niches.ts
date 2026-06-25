@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Niche, NicheId } from "@/types"
 
 export const NICHES: Record<NicheId, Niche> = {

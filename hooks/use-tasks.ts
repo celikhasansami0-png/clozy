@@ -2,45 +2,45 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
-import type { Task, TaskStatus } from "@/types"
+import type { AcademicTask, TaskStatus } from "@/types"
 
-export function useTasks(toolkitId?: string) {
-  const [tasks, setTasks] = useState<Task[]>([])
+export function useTasks(courseId?: string) {
+  const [tasks, setTasks] = useState<AcademicTask[]>([])
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
 
   const fetchTasks = useCallback(async () => {
     setLoading(true)
-    let query = supabase.from("tasks").select("*").order("due_date", { ascending: true })
-    if (toolkitId) query = query.eq("toolkit_id", toolkitId)
+    let query = supabase.from("academic_tasks").select("*").order("due_date", { ascending: true })
+    if (courseId) query = query.eq("course_id", courseId)
 
     const { data } = await query
-    setTasks((data as Task[]) ?? [])
+    setTasks((data as AcademicTask[]) ?? [])
     setLoading(false)
-  }, [supabase, toolkitId])
+  }, [supabase, courseId])
 
   useEffect(() => {
     fetchTasks()
   }, [fetchTasks])
 
-  const createTask = async (task: Omit<Task, "id" | "user_id" | "created_at" | "updated_at">) => {
-    const { data, error } = await supabase.from("tasks").insert([task]).select().single()
+  const createTask = async (task: Omit<AcademicTask, "id" | "user_id" | "created_at" | "updated_at">) => {
+    const { data, error } = await supabase.from("academic_tasks").insert([task]).select().single()
     if (error) throw error
-    setTasks((prev) => [...prev, data as Task])
-    return data as Task
+    setTasks((prev) => [...prev, data as AcademicTask])
+    return data as AcademicTask
   }
 
-  const updateTask = async (id: string, updates: Partial<Task>) => {
+  const updateTask = async (id: string, updates: Partial<AcademicTask>) => {
     const { data, error } = await supabase
-      .from("tasks")
+      .from("academic_tasks")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single()
     if (error) throw error
-    setTasks((prev) => prev.map((t) => (t.id === id ? (data as Task) : t)))
-    return data as Task
+    setTasks((prev) => prev.map((t) => (t.id === id ? (data as AcademicTask) : t)))
+    return data as AcademicTask
   }
 
   const completeTask = async (id: string) => {
@@ -51,7 +51,7 @@ export function useTasks(toolkitId?: string) {
   }
 
   const deleteTask = async (id: string) => {
-    const { error } = await supabase.from("tasks").delete().eq("id", id)
+    const { error } = await supabase.from("academic_tasks").delete().eq("id", id)
     if (error) throw error
     setTasks((prev) => prev.filter((t) => t.id !== id))
   }

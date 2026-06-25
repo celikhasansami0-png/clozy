@@ -2,11 +2,13 @@
 
 import { useAuth } from "./use-auth"
 import { PLAN_LIMITS } from "@/types"
+import type { SubscriptionTier } from "@/types"
 
 export function useSubscription() {
   const { profile, isPro, tier } = useAuth()
 
-  const limits = PLAN_LIMITS[tier ?? "free"]
+  const safeTier = (tier as SubscriptionTier) ?? "free"
+  const limits = PLAN_LIMITS[safeTier] ?? PLAN_LIMITS["free"]
 
   const canUseFeature = (feature: keyof typeof limits): boolean => {
     const value = limits[feature]
@@ -15,7 +17,7 @@ export function useSubscription() {
   }
 
   const hasReachedLimit = (
-    feature: "toolkits_per_month" | "leads_max",
+    feature: "lessons_per_month" | "exams_per_month" | "assignments_per_month" | "projects_max",
     currentCount: number
   ): boolean => {
     const limit = limits[feature]
@@ -23,12 +25,14 @@ export function useSubscription() {
     return currentCount >= limit
   }
 
-  const getLimit = (feature: "toolkits_per_month" | "leads_max"): number => {
+  const getLimit = (
+    feature: "lessons_per_month" | "exams_per_month" | "assignments_per_month" | "projects_max"
+  ): number => {
     return limits[feature]
   }
 
   return {
-    tier,
+    tier: safeTier,
     isPro,
     profile,
     limits,
