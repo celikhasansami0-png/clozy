@@ -8,244 +8,310 @@ export type Json =
 
 // ─── User & Auth ───────────────────────────────────────────────────────────
 
+export type UserRole = "student" | "teaching_assistant" | "professor" | "academic_advisor" | "administrator" | "super_admin"
+export type SubscriptionTier = "free" | "student_pro" | "team_pro" | "university"
+export type SubscriptionStatus = "active" | "canceled" | "past_due" | "trialing" | "inactive"
+
 export interface UserProfile {
   id: string
   email: string
   full_name: string | null
   avatar_url: string | null
-  company: string | null
-  linkedin_url: string | null
+  university: string | null
+  department: string | null
+  role: UserRole
   created_at: string
   updated_at: string
   subscription_tier: SubscriptionTier
   subscription_status: SubscriptionStatus
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
+  language: SupportedLanguage
 }
 
-export type SubscriptionTier = "free" | "pro" | "enterprise"
-export type SubscriptionStatus = "active" | "canceled" | "past_due" | "trialing" | "inactive"
+// ─── Internationalization ──────────────────────────────────────────────────
 
-// ─── Niches ────────────────────────────────────────────────────────────────
+export type SupportedLanguage =
+  | "en"
+  | "tr"
+  | "de"
+  | "fr"
+  | "es"
+  | "ar"
+  | "pt"
+  | "it"
+  | "ru"
+  | "ja"
+  | "zh"
+  | "ko"
 
-export type NicheId =
-  | "med_spa"
-  | "agencies"
-  | "saas_founders"
-  | "coaches"
-  | "real_estate"
-  | "consultants"
-  | "ecommerce"
-  | "financial_advisors"
-  | "law_firms"
-  | "recruiters"
+// ─── Courses ───────────────────────────────────────────────────────────────
 
-export interface Niche {
-  id: NicheId
-  label: string
-  description: string
-  tone: "professional" | "casual" | "authoritative" | "empathetic" | "bold"
-  icon: string
-  color: string
-  outreachStyle: string
-  contentFocus: string[]
-  painPoints: string[]
-  ctaApproach: string
-}
-
-// ─── Growth Generator ──────────────────────────────────────────────────────
-
-export interface GrowthInput {
-  business_type: string
-  niche: NicheId
-  service: string
-  target_client: string
-  offer_price: number
-  revenue_goal: number
-  current_clients?: number
-  main_challenges?: string[]
-}
-
-export interface PositioningMap {
-  unique_value_proposition: string
-  target_audience: string
-  differentiation: string[]
-  authority_signals: string[]
-  transformation_statement: string
-}
-
-export interface OutreachSystem {
-  connection_request: string
-  initial_message: string
-  follow_up_1: string
-  follow_up_2: string
-  value_message: string
-  call_to_action: string
-  objection_handlers: Record<string, string>
-}
-
-export interface ContentStrategy {
-  content_pillars: string[]
-  post_formats: string[]
-  posting_frequency: string
-  sample_hooks: string[]
-  hashtag_strategy: string[]
-}
-
-export interface ClosingFramework {
-  discovery_questions: string[]
-  presentation_flow: string[]
-  objection_responses: Record<string, string>
-  closing_statement: string
-  follow_up_sequence: string[]
-}
-
-export interface ExecutionDay {
-  day: number
-  focus: string
-  tasks: string[]
-  time_estimate: string
-  kpi: string
-}
-
-export interface GrowthOutput {
-  id: string
-  user_id: string
-  input: GrowthInput
-  positioning: PositioningMap
-  outreach_system: OutreachSystem
-  content_strategy: ContentStrategy
-  closing_framework: ClosingFramework
-  execution_plan: ExecutionDay[]
-  scripts: Record<string, string>
-  created_at: string
-  status: "draft" | "active" | "archived"
-}
-
-// ─── Toolkit / Report ──────────────────────────────────────────────────────
-
-export interface Toolkit {
+export interface Course {
   id: string
   user_id: string
   title: string
-  niche: NicheId
-  growth_output: GrowthOutput
-  status: "draft" | "active" | "archived"
+  code: string | null
+  professor: string | null
+  semester: string | null
+  credit_hours: number | null
+  status: "active" | "completed" | "dropped"
+  color: string
   created_at: string
   updated_at: string
 }
 
-// ─── CRM / Leads ───────────────────────────────────────────────────────────
+// ─── Learn OS ──────────────────────────────────────────────────────────────
 
-export type LeadStage =
-  | "new"
-  | "contacted"
-  | "replied"
-  | "booked"
-  | "closed"
-  | "lost"
-
-export interface Lead {
-  id: string
-  user_id: string
-  toolkit_id?: string
-  name: string
-  company: string | null
-  linkedin_url: string | null
-  email: string | null
-  phone: string | null
-  stage: LeadStage
-  notes: string | null
-  deal_value: number | null
-  tags: string[]
-  last_contact_at: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface LeadActivity {
-  id: string
-  lead_id: string
-  user_id: string
-  type: "note" | "message_sent" | "reply_received" | "meeting_booked" | "status_change"
-  content: string
-  metadata: Json
-  created_at: string
-}
-
-// ─── Tasks ─────────────────────────────────────────────────────────────────
-
-export type TaskType =
-  | "send_connection_request"
-  | "send_follow_up"
-  | "post_content"
-  | "review_replies"
-  | "book_call"
-  | "send_proposal"
-  | "follow_up_call"
+export type MaterialType =
+  | "pdf"
+  | "lecture_slides"
+  | "handwritten_notes"
+  | "video_transcript"
+  | "youtube"
+  | "textbook"
   | "custom"
 
-export type TaskStatus = "pending" | "in_progress" | "completed" | "skipped"
-export type TaskPriority = "low" | "medium" | "high"
-
-export interface Task {
+export interface LearningMaterial {
   id: string
   user_id: string
-  toolkit_id?: string
-  lead_id?: string
+  course_id: string | null
   title: string
-  description: string | null
-  type: TaskType
-  status: TaskStatus
-  priority: TaskPriority
-  due_date: string | null
-  completed_at: string | null
-  day_number: number | null
+  type: MaterialType
+  file_url: string | null
+  content: string | null
+  topics: string[]
+  processed: boolean
   created_at: string
   updated_at: string
 }
 
-// ─── Templates ─────────────────────────────────────────────────────────────
-
-export type TemplateType =
-  | "outreach_message"
-  | "follow_up"
-  | "content_post"
-  | "closing_script"
-  | "connection_request"
-  | "objection_handler"
-
-export interface Template {
+export interface Flashcard {
   id: string
-  user_id: string | null
+  user_id: string
+  material_id: string | null
+  course_id: string | null
+  front: string
+  back: string
+  difficulty: "easy" | "medium" | "hard"
+  next_review_at: string | null
+  interval_days: number
+  repetitions: number
+  ease_factor: number
+  created_at: string
+  updated_at: string
+}
+
+export interface LearningSession {
+  id: string
+  user_id: string
+  course_id: string | null
+  duration_minutes: number
+  topic: string | null
+  mastery_score: number | null
+  created_at: string
+}
+
+// ─── Exam OS ───────────────────────────────────────────────────────────────
+
+export type QuestionType = "multiple_choice" | "short_answer" | "long_answer" | "true_false" | "fill_blank"
+export type DifficultyLevel = "easy" | "medium" | "hard" | "very_hard"
+
+export interface ExamQuestion {
+  id: string
+  exam_id: string
+  question: string
+  type: QuestionType
+  options: string[] | null
+  correct_answer: string
+  explanation: string | null
+  difficulty: DifficultyLevel
+  topic: string | null
+  marks: number
+}
+
+export interface Exam {
+  id: string
+  user_id: string
+  course_id: string | null
+  title: string
+  type: "mock" | "past_paper" | "practice" | "oral" | "practical"
+  duration_minutes: number | null
+  total_marks: number | null
+  questions: ExamQuestion[]
+  status: "draft" | "ready" | "in_progress" | "completed"
+  created_at: string
+  updated_at: string
+}
+
+export interface ExamAttempt {
+  id: string
+  user_id: string
+  exam_id: string
+  score: number | null
+  total_marks: number
+  duration_minutes: number | null
+  answers: Record<string, string>
+  started_at: string
+  completed_at: string | null
+}
+
+// ─── Assignment OS ─────────────────────────────────────────────────────────
+
+export type AssignmentType =
+  | "lab_report"
+  | "research_report"
+  | "technical_doc"
+  | "case_study"
+  | "essay"
+  | "reflection"
+  | "presentation"
+  | "poster"
+
+export type CitationFormat = "ieee" | "apa" | "mla" | "harvard" | "chicago" | "custom"
+
+export interface Assignment {
+  id: string
+  user_id: string
+  course_id: string | null
+  title: string
+  type: AssignmentType
+  description: string | null
+  citation_format: CitationFormat | null
+  due_date: string | null
+  word_count_target: number | null
+  content: string | null
+  status: "draft" | "in_progress" | "review" | "submitted"
+  grade: string | null
+  feedback: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ─── Project OS ────────────────────────────────────────────────────────────
+
+export type ProjectStatus = "planning" | "in_progress" | "review" | "completed" | "paused"
+export type MilestoneStatus = "pending" | "in_progress" | "completed" | "overdue"
+
+export interface Project {
+  id: string
+  user_id: string
+  course_id: string | null
   title: string
   description: string | null
-  type: TemplateType
-  niche: NicheId | "all"
-  content: string
-  variables: string[]
-  is_system: boolean
-  is_public: boolean
-  usage_count: number
+  status: ProjectStatus
+  start_date: string | null
+  end_date: string | null
+  team_members: string[]
   tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface Milestone {
+  id: string
+  project_id: string
+  user_id: string
+  title: string
+  description: string | null
+  status: MilestoneStatus
+  due_date: string | null
+  completed_at: string | null
+  order_index: number
+  created_at: string
+  updated_at: string
+}
+
+// ─── Research OS ───────────────────────────────────────────────────────────
+
+export interface ResearchPaper {
+  id: string
+  user_id: string
+  title: string
+  authors: string[]
+  publication_year: number | null
+  journal: string | null
+  doi: string | null
+  abstract: string | null
+  summary: string | null
+  key_findings: string[]
+  tags: string[]
+  file_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ─── Knowledge OS ──────────────────────────────────────────────────────────
+
+export interface KnowledgeNote {
+  id: string
+  user_id: string
+  course_id: string | null
+  title: string
+  content: string
+  tags: string[]
+  linked_note_ids: string[]
+  created_at: string
+  updated_at: string
+}
+
+// ─── Career OS ─────────────────────────────────────────────────────────────
+
+export interface CareerProfile {
+  id: string
+  user_id: string
+  target_role: string | null
+  target_industry: string | null
+  skills: string[]
+  internship_experiences: Json[]
+  projects_portfolio: Json[]
   created_at: string
   updated_at: string
 }
 
 // ─── Analytics ─────────────────────────────────────────────────────────────
 
-export interface AnalyticsOverview {
-  total_leads: number
-  new_leads_this_month: number
-  reply_rate: number
-  conversion_rate: number
-  pipeline_value: number
-  active_campaigns: number
-  meetings_booked: number
-  deals_closed: number
-  leads_by_stage: Record<LeadStage, number>
-  leads_by_month: { month: string; count: number }[]
-  revenue_by_month: { month: string; value: number }[]
+export interface AcademicAnalytics {
+  gpa: number | null
+  courses_active: number
+  courses_completed: number
+  exams_taken: number
+  exams_average_score: number
+  assignments_submitted: number
+  assignments_pending: number
+  study_hours_this_week: number
+  flashcards_reviewed_today: number
+  exam_readiness_score: number
+}
+
+// ─── Tasks (Academic) ──────────────────────────────────────────────────────
+
+export type AcademicTaskType =
+  | "study"
+  | "assignment"
+  | "exam_prep"
+  | "project_task"
+  | "research"
+  | "review_flashcards"
+  | "attend_lecture"
+  | "custom"
+
+export type TaskStatus = "pending" | "in_progress" | "completed" | "skipped"
+export type TaskPriority = "low" | "medium" | "high"
+
+export interface AcademicTask {
+  id: string
+  user_id: string
+  course_id: string | null
+  title: string
+  description: string | null
+  type: AcademicTaskType
+  status: TaskStatus
+  priority: TaskPriority
+  due_date: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 // ─── Usage Limits ──────────────────────────────────────────────────────────
@@ -254,61 +320,65 @@ export interface UsageLimits {
   id: string
   user_id: string
   month: string
-  toolkits_generated: number
-  leads_count: number
-  templates_used: number
-  reports_generated: number
+  lessons_generated: number
+  exams_generated: number
+  assignments_generated: number
+  projects_generated: number
+  research_analyses: number
+  translations: number
+  semester_plans: number
+  portfolios_generated: number
   reset_at: string
 }
 
 export const PLAN_LIMITS: Record<SubscriptionTier, {
-  toolkits_per_month: number
-  leads_max: number
-  templates_access: boolean
-  advanced_reports: boolean
-  ai_scripts: boolean
-  export: boolean
+  lessons_per_month: number
+  exams_per_month: number
+  assignments_per_month: number
+  projects_max: number
+  research_per_month: number
+  unlimited: boolean
+  collaboration: boolean
   team_members: number
 }> = {
   free: {
-    toolkits_per_month: 2,
-    leads_max: 25,
-    templates_access: false,
-    advanced_reports: false,
-    ai_scripts: false,
-    export: false,
+    lessons_per_month: 1,
+    exams_per_month: 1,
+    assignments_per_month: 1,
+    projects_max: 1,
+    research_per_month: 1,
+    unlimited: false,
+    collaboration: false,
     team_members: 1,
   },
-  pro: {
-    toolkits_per_month: -1, // unlimited
-    leads_max: -1,
-    templates_access: true,
-    advanced_reports: true,
-    ai_scripts: true,
-    export: true,
-    team_members: 5,
+  student_pro: {
+    lessons_per_month: -1,
+    exams_per_month: -1,
+    assignments_per_month: -1,
+    projects_max: -1,
+    research_per_month: -1,
+    unlimited: true,
+    collaboration: false,
+    team_members: 1,
   },
-  enterprise: {
-    toolkits_per_month: -1,
-    leads_max: -1,
-    templates_access: true,
-    advanced_reports: true,
-    ai_scripts: true,
-    export: true,
+  team_pro: {
+    lessons_per_month: -1,
+    exams_per_month: -1,
+    assignments_per_month: -1,
+    projects_max: -1,
+    research_per_month: -1,
+    unlimited: true,
+    collaboration: true,
+    team_members: 10,
+  },
+  university: {
+    lessons_per_month: -1,
+    exams_per_month: -1,
+    assignments_per_month: -1,
+    projects_max: -1,
+    research_per_month: -1,
+    unlimited: true,
+    collaboration: true,
     team_members: -1,
   },
-}
-
-// ─── Billing ───────────────────────────────────────────────────────────────
-
-export interface PricingPlan {
-  id: string
-  name: string
-  tier: SubscriptionTier
-  price: number
-  interval: "month" | "year"
-  stripe_price_id: string
-  features: string[]
-  highlighted?: boolean
-  cta: string
 }

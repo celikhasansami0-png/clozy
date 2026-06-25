@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Network, Loader2 } from "lucide-react"
+import { GraduationCap, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,17 +35,19 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-[380px]">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5 mb-6">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600">
-              <Network className="h-5 w-5 text-white" />
+          <Link href="/" className="flex items-center gap-2.5 mb-7">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
-            <span className="font-semibold text-slate-900 text-lg">LinkedIn Growth OS</span>
+            <span className="font-semibold text-slate-900 text-[15px] tracking-tight">
+              Engineering Autopilot OS
+            </span>
           </Link>
           <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-slate-500">Sign in to your account</p>
+          <p className="mt-1 text-sm text-slate-500">Sign in to your academic OS</p>
         </div>
 
         {/* Form */}
@@ -56,7 +58,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@company.com"
+                placeholder="you@university.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -66,7 +68,7 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/auth/forgot-password" className="text-xs text-indigo-600 hover:text-indigo-700">
+                <Link href="/auth/forgot-password" className="text-xs text-slate-500 hover:text-slate-700">
                   Forgot password?
                 </Link>
               </div>
@@ -82,7 +84,7 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white"
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -93,8 +95,8 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="font-medium text-indigo-600 hover:text-indigo-700">
-            Sign up free
+          <Link href="/auth/signup" className="font-medium text-slate-900 hover:underline">
+            Get started free
           </Link>
         </p>
       </div>
