@@ -5,8 +5,19 @@ import { createClient } from "@/lib/supabase/server"
 type EmbeddableTable = "learning_materials" | "knowledge_notes" | "research_papers"
 
 async function generateEmbedding(text: string): Promise<number[] | null> {
+  const voyageKey = process.env.VOYAGE_API_KEY
   const openaiKey = process.env.OPENAI_API_KEY
-  const anthropicKey = process.env.ANTHROPIC_API_KEY
+
+  if (voyageKey) {
+    const res = await fetch("https://api.voyageai.com/v1/embeddings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${voyageKey}` },
+      body: JSON.stringify({ input: text.slice(0, 32000), model: "voyage-large-2" }),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.data?.[0]?.embedding ?? null
+  }
 
   if (openaiKey) {
     const res = await fetch("https://api.openai.com/v1/embeddings", {
@@ -17,11 +28,6 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
     if (!res.ok) return null
     const data = await res.json()
     return data.data?.[0]?.embedding ?? null
-  }
-
-  if (anthropicKey) {
-    // Anthropic doesn't expose an embedding endpoint yet — fall back to null
-    return null
   }
 
   return null
@@ -36,7 +42,7 @@ export async function POST(req: Request) {
 
   const embedding = await generateEmbedding(text)
   if (!embedding) {
-    return NextResponse.json({ message: "No embedding provider available (set OPENAI_API_KEY)", embedded: false })
+    return NextResponse.json({ message: "No embedding provider available (set VOYAGE_API_KEY or OPENAI_API_KEY)", embedded: false })
   }
 
   const supabase = await createClient()

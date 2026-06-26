@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import {
   BookOpen, Plus, Trash2, Loader2, GraduationCap, Clock, CheckCircle, XCircle,
 } from "lucide-react"
@@ -137,13 +138,15 @@ export default function CoursesPage() {
                       <Card key={course.id} className="border-slate-200 overflow-hidden group">
                         <div className="h-1.5" style={{ backgroundColor: course.color }} />
                         <CardContent className="pt-4 pb-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-slate-900 truncate">{course.title}</p>
-                              {course.code && <p className="text-xs text-slate-400 mt-0.5">{course.code}</p>}
+                          <Link href={`/courses/${course.id}`} className="block mb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-900 truncate hover:underline">{course.title}</p>
+                                {course.code && <p className="text-xs text-slate-400 mt-0.5">{course.code}</p>}
+                              </div>
+                              <Badge className={`text-[10px] shrink-0 ml-2 ${cfg.color}`}>{cfg.label}</Badge>
                             </div>
-                            <Badge className={`text-[10px] shrink-0 ml-2 ${cfg.color}`}>{cfg.label}</Badge>
-                          </div>
+                          </Link>
                           <div className="space-y-1 mb-4">
                             {course.professor && (
                               <p className="text-xs text-slate-500">Prof. {course.professor}</p>

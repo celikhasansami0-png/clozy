@@ -12,8 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MarkdownEditor, MarkdownPreview } from "@/components/ui/markdown-editor"
 import { useAssignments } from "@/hooks/use-assignments"
 import { toast } from "sonner"
 import type { AssignmentType, CitationFormat } from "@/types"
@@ -217,7 +217,12 @@ export default function AssignmentOSPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label>Requirements / Description</Label>
-                    <Textarea rows={3} placeholder="Describe the assignment requirements..." value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className="resize-none" />
+                    <MarkdownEditor
+                      value={form.description}
+                      onChange={(v) => setForm((f) => ({ ...f, description: v }))}
+                      placeholder="Describe the assignment requirements. Supports Markdown and LaTeX math."
+                      minHeight="120px"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
@@ -260,7 +265,7 @@ export default function AssignmentOSPage() {
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{viewContent?.title}</DialogTitle></DialogHeader>
-          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">{viewContent?.content}</pre>
+          <div className="text-sm text-slate-700 leading-relaxed"><MarkdownPreview content={viewContent?.content ?? ""} /></div>
           <DialogFooter>
             <Button onClick={() => { navigator.clipboard.writeText(viewContent?.content ?? ""); toast.success("Copied!") }} variant="outline">Copy</Button>
             <Button onClick={() => setViewContent(null)} className="bg-slate-900 hover:bg-slate-800 text-white">Close</Button>

@@ -235,7 +235,12 @@ const MOCK_GROWTH_OUTPUT = {
 // ─── Factory ──────────────────────────────────────────────────────────────
 
 function createAIProvider(): AIProvider {
-  const provider = process.env.AI_PROVIDER ?? "mock"
+  const explicit = process.env.AI_PROVIDER
+  const provider = explicit ?? (
+    process.env.ANTHROPIC_API_KEY ? "anthropic" :
+    process.env.OPENAI_API_KEY ? "openai" :
+    "mock"
+  )
 
   switch (provider) {
     case "openai":
