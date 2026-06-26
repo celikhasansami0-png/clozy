@@ -21,6 +21,7 @@ import {
   BookOpen,
   CalendarDays,
   FlaskConical,
+  RotateCcw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
@@ -32,6 +33,7 @@ import { Separator } from "@/components/ui/separator"
 const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/flashcards", label: "Flashcards", icon: RotateCcw },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/formulas", label: "Formulas", icon: FlaskConical },
 ]
