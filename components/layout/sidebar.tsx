@@ -18,6 +18,8 @@ import {
   LogOut,
   GraduationCap,
   ChevronRight,
+  BookOpen,
+  CalendarDays,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
@@ -28,6 +30,8 @@ import { Separator } from "@/components/ui/separator"
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/courses", label: "Courses", icon: BookOpen },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ]
 
 const OS_MODULES = [

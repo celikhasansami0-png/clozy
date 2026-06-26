@@ -32,7 +32,8 @@ export default function LearnOSPage() {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
   const [generatingFlashcards, setGeneratingFlashcards] = useState(false)
-  const [form, setForm] = useState({ title: "", type: "pdf" as MaterialType, content: "" })
+  const [form, setForm] = useState({ title: "", type: "pdf" as MaterialType, content: "", youtubeUrl: "" })
+  const [processingYoutube, setProcessingYoutube] = useState(false)
   const [reviewIndex, setReviewIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
 
@@ -40,10 +41,44 @@ export default function LearnOSPage() {
   const { flashcards, dueCards, loading: cardLoading, createFlashcard, submitReview } = useFlashcards()
 
   const handleAddMaterial = async () => {
+    if (form.type === "youtube") {
+      if (!form.youtubeUrl) return
+      setProcessingYoutube(true)
+      try {
+        const res = await fetch("/api/ai/process-youtube", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: form.youtubeUrl }),
+        })
+        if (!res.ok) {
+          const err = await res.json()
+          toast.error(err.error ?? "Failed to process video")
+          return
+        }
+        const { content, title, topics } = await res.json()
+        await createMaterial({
+          title: form.title || title,
+          type: "youtube",
+          content,
+          file_url: form.youtubeUrl,
+          topics: topics ?? [],
+          processed: true,
+          course_id: null,
+        })
+        setForm({ title: "", type: "pdf", content: "", youtubeUrl: "" })
+        setAddOpen(false)
+        toast.success("YouTube lecture processed and saved!")
+      } catch {
+        toast.error("Failed to process YouTube video")
+      } finally {
+        setProcessingYoutube(false)
+      }
+      return
+    }
     if (!form.title || !form.content) return
     try {
       await createMaterial({ title: form.title, type: form.type, content: form.content, file_url: null, topics: [], processed: false, course_id: null })
-      setForm({ title: "", type: "pdf", content: "" })
+      setForm({ title: "", type: "pdf", content: "", youtubeUrl: "" })
       setAddOpen(false)
       toast.success("Material added!")
     } catch {
@@ -305,15 +340,33 @@ export default function LearnOSPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Content (paste text or notes)</Label>
-              <Textarea placeholder="Paste the content of your material here..." value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className="h-40" />
-            </div>
+            {form.type === "youtube" ? (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>YouTube URL</Label>
+                  <Input placeholder="https://www.youtube.com/watch?v=..." value={form.youtubeUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))} />
+                  <p className="text-[11px] text-slate-400">The video must have captions/subtitles enabled. AI will transcribe and summarize it automatically.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Custom title (optional)</Label>
+                  <Input placeholder="Leave blank to auto-detect from video" value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Content (paste text or notes)</Label>
+                <Textarea placeholder="Paste the content of your material here..." value={form.content}
+                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className="h-40" />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddMaterial} className="bg-slate-900 hover:bg-slate-800 text-white" disabled={!form.title || !form.content}>
-              Add Material
+            <Button onClick={handleAddMaterial} className="bg-slate-900 hover:bg-slate-800 text-white gap-2"
+              disabled={processingYoutube || (form.type === "youtube" ? !form.youtubeUrl : (!form.title || !form.content))}>
+              {processingYoutube ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : form.type === "youtube" ? <><Video className="h-4 w-4" /> Import & Summarize</> : "Add Material"}
             </Button>
           </DialogFooter>
         </DialogContent>

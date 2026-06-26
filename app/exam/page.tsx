@@ -210,7 +210,7 @@ export default function ExamOSPage() {
                           <Badge variant="secondary" className="mt-2 text-[10px] bg-slate-100 text-slate-600">{exam.type}</Badge>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white">Start exam</Button>
+                          <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white" onClick={() => window.location.href = `/exam/${exam.id}/attempt`}>Start exam</Button>
                           <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50"
                             onClick={async () => { await deleteExam(exam.id); toast.success("Deleted") }}>
                             <Trash2 className="h-4 w-4" />
