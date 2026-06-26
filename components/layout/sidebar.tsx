@@ -20,6 +20,7 @@ import {
   ChevronRight,
   BookOpen,
   CalendarDays,
+  FlaskConical,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
@@ -32,6 +33,7 @@ const MAIN_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/formulas", label: "Formulas", icon: FlaskConical },
 ]
 
 const OS_MODULES = [

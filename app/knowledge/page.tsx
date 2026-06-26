@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { MarkdownEditor, MarkdownPreview } from "@/components/ui/markdown-editor"
 import { useKnowledge } from "@/hooks/use-knowledge"
 import { toast } from "sonner"
 
@@ -146,7 +146,7 @@ export default function KnowledgeOSPage() {
                           <li key={note.id} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 group">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-slate-900">{note.title}</p>
-                              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{note.content}</p>
+                              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{note.content?.replace(/[#*_`$]/g, "").slice(0, 120)}</p>
                               {note.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {note.tags.map((tag) => (
@@ -262,8 +262,12 @@ export default function KnowledgeOSPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Content</Label>
-              <Textarea rows={6} placeholder="Write your note here..." value={form.content}
-                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className="resize-none" />
+              <MarkdownEditor
+                value={form.content}
+                onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                placeholder="Write your note. Supports Markdown, LaTeX math ($E=mc^2$), and code blocks."
+                minHeight="200px"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Tags (comma-separated)</Label>

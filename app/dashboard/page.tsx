@@ -3,7 +3,7 @@
 import Link from "next/link"
 import {
   Brain, ClipboardCheck, FileText, FolderOpen, Microscope, Database, Briefcase,
-  BarChart2, Zap, ArrowRight, BookOpen, TrendingUp, Target, Clock, Plus,
+  BarChart2, Zap, ArrowRight, BookOpen, TrendingUp, Target, Clock, Plus, Flame,
 } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
@@ -14,11 +14,13 @@ import { useTasks } from "@/hooks/use-tasks"
 import { useExams } from "@/hooks/use-exams"
 import { useAssignments } from "@/hooks/use-assignments"
 import { useFlashcards } from "@/hooks/use-flashcards"
+import { useGamification, BADGES } from "@/hooks/use-gamification"
 
 export default function DashboardPage() {
   const { profile } = useAuth()
   const firstName = profile?.full_name?.split(" ")[0] ?? "there"
 
+  const gamification = useGamification()
   const { tasks, todaysTasks, completedCount } = useTasks()
   const { exams } = useExams()
   const { assignments, active: activeAssignments } = useAssignments()
@@ -78,6 +80,55 @@ export default function DashboardPage() {
               </div>
             )
           })}
+        </div>
+
+        {/* Gamification streak + XP bar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${gamification.streak > 0 ? "bg-orange-100" : "bg-slate-100"}`}>
+              <Flame className={`h-5 w-5 ${gamification.streak > 0 ? "text-orange-500" : "text-slate-400"}`} />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-slate-900 leading-none">{gamification.streak} day{gamification.streak !== 1 ? "s" : ""}</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Study streak</p>
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0 sm:px-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-semibold text-slate-700">Level {gamification.level}</span>
+              <span className="text-[11px] text-slate-400">{gamification.xp} XP · {gamification.xpToNextLevel} to next</span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2">
+              <div
+                className="bg-slate-900 h-2 rounded-full transition-all"
+                style={{ width: `${Math.round((1 - gamification.xpToNextLevel / 200) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {gamification.badges.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {gamification.badges.slice(0, 4).map((badgeId) => {
+                const badge = Object.values(BADGES).find((b) => b.id === badgeId)
+                if (!badge) return null
+                return (
+                  <span key={badgeId} title={badge.label} className="text-lg cursor-default" role="img" aria-label={badge.label}>
+                    {badge.emoji}
+                  </span>
+                )
+              })}
+              {gamification.badges.length > 4 && (
+                <span className="text-[11px] text-slate-400">+{gamification.badges.length - 4}</span>
+              )}
+            </div>
+          )}
+
+          {!gamification.todayActive && (
+            <div className="text-[11px] text-slate-400 shrink-0">
+              <span className="text-amber-600 font-medium">Study today</span> to keep your streak!
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
