@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import {
   Brain, Upload, Video, FileText, Sparkles, ChevronRight, BookOpen,
-  Target, Layers, RotateCcw, Trash2, Loader2, CheckCircle2,
+  Target, Layers, RotateCcw, Trash2, Loader2, CheckCircle2, Timer, Play, Square, SkipForward,
 } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMaterials } from "@/hooks/use-materials"
 import { useFlashcards } from "@/hooks/use-flashcards"
+import { useLearningSession } from "@/hooks/use-learning-sessions"
 import { toast } from "sonner"
 import type { MaterialType } from "@/types"
 
@@ -139,6 +140,7 @@ export default function LearnOSPage() {
             <TabsTrigger value="materials" className="text-sm">Materials ({materials.length})</TabsTrigger>
             <TabsTrigger value="flashcards" className="text-sm">Flashcards {dueCards.length > 0 && `(${dueCards.length} due)`}</TabsTrigger>
             <TabsTrigger value="tutor" className="text-sm">AI Tutor</TabsTrigger>
+            <TabsTrigger value="timer" className="text-sm">Study Timer</TabsTrigger>
             <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
           </TabsList>
 
@@ -305,6 +307,10 @@ export default function LearnOSPage() {
             <TutorTab materials={materials} />
           </TabsContent>
 
+          <TabsContent value="timer">
+            <StudyTimerTab materials={materials} />
+          </TabsContent>
+
           <TabsContent value="analytics">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
@@ -384,6 +390,181 @@ export default function LearnOSPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+function StudyTimerTab({ materials }: { materials: { id: string; title: string; content: string | null }[] }) {
+  const [phase, setPhase] = useState<"focus" | "break">("focus")
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60)
+  const [running, setRunning] = useState(false)
+  const [sessionTopic, setSessionTopic] = useState("")
+  const [selectedMaterial, setSelectedMaterial] = useState("")
+  const [sessionCount, setSessionCount] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+  const { saveSession, saving } = useLearningSession()
+
+  const FOCUS_SECS = 25 * 60
+  const BREAK_SECS = 5 * 60
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+
+  const startTimer = () => {
+    if (running) return
+    setRunning(true)
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          setRunning(false)
+          if (phaseRef.current === "focus") {
+            setElapsed((e) => e + FOCUS_SECS)
+            setSessionCount((c) => c + 1)
+            setPhase("break")
+            setSecondsLeft(BREAK_SECS)
+            toast.success("Focus session complete! Take a 5-minute break.")
+          } else {
+            setPhase("focus")
+            setSecondsLeft(FOCUS_SECS)
+            toast("Break over — start your next focus session!")
+          }
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = null
+    setRunning(false)
+    const elapsedNow = FOCUS_SECS - secondsLeft
+    if (elapsedNow > 60 && phase === "focus") {
+      setElapsed((e) => e + elapsedNow)
+    }
+  }
+
+  const resetTimer = () => {
+    stopTimer()
+    setPhase("focus")
+    setSecondsLeft(FOCUS_SECS)
+  }
+
+  const handleSaveSession = async () => {
+    const totalMinutes = Math.round(elapsed / 60)
+    if (totalMinutes < 1) {
+      toast.error("Session too short to save (need at least 1 minute)")
+      return
+    }
+    const mat = materials.find((m) => m.id === selectedMaterial)
+    await saveSession({
+      duration_minutes: totalMinutes,
+      topic: sessionTopic || mat?.title || undefined,
+    })
+    toast.success(`Session saved: ${totalMinutes} min`)
+    setElapsed(0)
+    setSessionCount(0)
+    resetTimer()
+  }
+
+  const mins = Math.floor(secondsLeft / 60).toString().padStart(2, "0")
+  const secs = (secondsLeft % 60).toString().padStart(2, "0")
+  const totalStudied = Math.round(elapsed / 60)
+
+  return (
+    <div className="max-w-md mx-auto space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className={`h-2 w-2 rounded-full ${phase === "focus" ? "bg-slate-900" : "bg-emerald-500"}`} />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            {phase === "focus" ? "Focus" : "Break"}
+          </span>
+        </div>
+
+        <div className="text-6xl font-bold text-slate-900 mb-2 tabular-nums">
+          {mins}:{secs}
+        </div>
+        <p className="text-xs text-slate-400 mb-8">
+          {phase === "focus" ? "Stay focused — no distractions" : "Rest your eyes and stretch"}
+        </p>
+
+        <div className="flex items-center justify-center gap-3">
+          {!running ? (
+            <Button onClick={startTimer} className="bg-slate-900 hover:bg-slate-800 text-white gap-2 px-8">
+              <Play className="h-4 w-4" /> Start
+            </Button>
+          ) : (
+            <Button onClick={stopTimer} variant="outline" className="border-slate-200 gap-2 px-8">
+              <Square className="h-4 w-4" /> Pause
+            </Button>
+          )}
+          <Button onClick={resetTimer} variant="ghost" size="sm" className="text-slate-400">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {sessionCount > 0 && (
+          <p className="text-xs text-slate-500 mt-4">{sessionCount} session{sessionCount !== 1 ? "s" : ""} completed today</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+          <Timer className="h-4 w-4 text-slate-400" />
+          Session details
+        </h3>
+        <div className="space-y-1.5">
+          <label className="text-xs text-slate-500">Topic (optional)</label>
+          <input
+            type="text"
+            value={sessionTopic}
+            onChange={(e) => setSessionTopic(e.target.value)}
+            placeholder="e.g. Thermodynamics equations"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
+          />
+        </div>
+        {materials.length > 0 && (
+          <div className="space-y-1.5">
+            <label className="text-xs text-slate-500">Material (optional)</label>
+            <select
+              value={selectedMaterial}
+              onChange={(e) => setSelectedMaterial(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+            >
+              <option value="">No specific material</option>
+              {materials.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
+            </select>
+          </div>
+        )}
+        {totalStudied > 0 && (
+          <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-emerald-800">{totalStudied} min studied</p>
+              <p className="text-[11px] text-emerald-600">Ready to save to your record</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveSession}
+              disabled={saving}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
+            >
+              {saving ? <><Loader2 className="h-3 w-3 animate-spin" /> Saving</> : <><SkipForward className="h-3 w-3" /> Save session</>}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-medium text-slate-700 mb-1">How it works</p>
+        <ul className="text-[11px] text-slate-500 space-y-1">
+          <li>• 25 min focus → 5 min break (Pomodoro technique)</li>
+          <li>• Sessions are recorded to your Analytics OS</li>
+          <li>• Tracking builds your study hour history</li>
+        </ul>
+      </div>
     </div>
   )
 }
