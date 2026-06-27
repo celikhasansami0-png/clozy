@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, User, Shield, GraduationCap } from "lucide-react"
+import { Loader2, User, Shield } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -72,7 +72,7 @@ export default function SettingsPage() {
               <User className="h-4 w-4 text-slate-500" />
               <CardTitle className="text-base text-slate-900">Profile</CardTitle>
             </div>
-            <CardDescription>Update your personal and academic information.</CardDescription>
+            <CardDescription>Update your personal and company information.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-6">
@@ -99,27 +99,27 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="university">University</Label>
+                <Label htmlFor="university">Company</Label>
                 <Input
                   id="university"
                   value={form.university}
                   onChange={(e) => setForm({ ...form, university: e.target.value })}
-                  placeholder="MIT, Stanford, TU Berlin..."
+                  placeholder="Acme Inc."
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="department">Department / Major</Label>
+                <Label htmlFor="department">Role / Title</Label>
                 <Input
                   id="department"
                   value={form.department}
                   onChange={(e) => setForm({ ...form, department: e.target.value })}
-                  placeholder="Mechanical Engineering, Computer Science..."
+                  placeholder="Head of Growth, VP Sales, Founder..."
                 />
               </div>
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-slate-900 hover:bg-slate-800 text-white"
+                className="bg-[#1E3A5F] hover:bg-[#16304f] text-white"
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes

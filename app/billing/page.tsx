@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Loader2, ExternalLink, GraduationCap } from "lucide-react"
+import { Check, Loader2, ExternalLink, Crosshair } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,10 +18,10 @@ export default function BillingPage() {
 
   const tierLabel = () => {
     switch (tier) {
-      case "student_pro": return "Student Pro"
-      case "team_pro": return "Team Pro"
-      case "university": return "University"
-      default: return "Free"
+      case "student_pro": return "Starter"
+      case "team_pro": return "Growth"
+      case "university": return "Enterprise"
+      default: return "Free Trial"
     }
   }
 
@@ -101,7 +101,7 @@ export default function BillingPage() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                   <p className="text-sm text-slate-700">
-                    You&apos;re on {tierLabel()} — unlimited academic usage across all OS modules.
+                    You&apos;re on {tierLabel()} — your outreach engine is fully unlocked.
                   </p>
                 </div>
                 {stripeCustomerId && (
@@ -124,8 +124,8 @@ export default function BillingPage() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                   <p className="text-sm text-slate-600">
-                    You&apos;re on the Free plan. Every premium feature has one lifetime trial credit.
-                    Upgrade to Student Pro for unlimited access.
+                    You&apos;re on the free trial with full Growth access. Pick a plan below to keep
+                    your campaigns running after the trial ends.
                   </p>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function BillingPage() {
             {isPro ? "Available Plans" : "Upgrade your plan"}
           </h2>
           <p className="text-sm text-slate-500 mb-6">
-            Choose the plan that matches your academic needs.
+            Flat monthly pricing. Cancel anytime.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -157,7 +157,7 @@ export default function BillingPage() {
                   {plan.highlighted && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <span className="flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
-                        <GraduationCap className="h-3 w-3" /> Most Popular
+                        <Crosshair className="h-3 w-3" /> Most Popular
                       </span>
                     </div>
                   )}
@@ -215,9 +215,9 @@ export default function BillingPage() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="py-3 px-4 text-left font-medium text-slate-700">Feature</th>
-                  <th className="py-3 px-4 text-center font-medium text-slate-500">Free</th>
-                  <th className="py-3 px-4 text-center font-semibold text-slate-900">Student Pro</th>
-                  <th className="py-3 px-4 text-center font-medium text-slate-500">Team Pro</th>
+                  <th className="py-3 px-4 text-center font-medium text-slate-500">Trial</th>
+                  <th className="py-3 px-4 text-center font-medium text-slate-500">Starter</th>
+                  <th className="py-3 px-4 text-center font-semibold text-slate-900">Growth</th>
                 </tr>
               </thead>
               <tbody>
@@ -236,8 +236,8 @@ export default function BillingPage() {
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs text-slate-500 text-center">
-            30-day money-back guarantee · Cancel anytime · Secure payment via Stripe ·
-            University Plan available for institutions — <a href="mailto:hello@autopilot.os" className="underline">contact us</a>
+            14-day free trial · Cancel anytime · Secure payment via Stripe ·
+            Annual billing saves 20% — <a href="mailto:hello@scouting.so" className="underline">contact us</a>
           </p>
         </div>
       </div>
@@ -246,15 +246,15 @@ export default function BillingPage() {
 }
 
 const COMPARISON_ROWS = [
-  { feature: "AI lesson generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
-  { feature: "Exam generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
-  { feature: "Assignment generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
-  { feature: "Project generation", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
-  { feature: "Research analysis", free: "1 credit", student_pro: "Unlimited", team_pro: "Unlimited" },
-  { feature: "Knowledge OS", free: "✗", student_pro: "✓", team_pro: "✓" },
-  { feature: "Career OS", free: "✗", student_pro: "✓", team_pro: "✓" },
-  { feature: "Analytics OS", free: "Basic", student_pro: "Full", team_pro: "Full" },
-  { feature: "Team workspaces", free: "✗", student_pro: "✗", team_pro: "✓" },
-  { feature: "Team members", free: "1", student_pro: "1", team_pro: "10" },
-  { feature: "Priority support", free: "✗", student_pro: "✓", team_pro: "✓" },
+  { feature: "Active campaigns", free: "Unlimited", student_pro: "2", team_pro: "Unlimited" },
+  { feature: "Leads per month", free: "1,000", student_pro: "200", team_pro: "1,000" },
+  { feature: "AI messages generated", free: "Unlimited", student_pro: "400", team_pro: "Unlimited" },
+  { feature: "Voice profiles", free: "3", student_pro: "1", team_pro: "3" },
+  { feature: "Intent signals", free: "All 6", student_pro: "Basic", team_pro: "All 6" },
+  { feature: "A/B testing", free: "✓", student_pro: "✗", team_pro: "✓" },
+  { feature: "CRM integrations", free: "✓", student_pro: "✗", team_pro: "✓" },
+  { feature: "Analytics", free: "Advanced", student_pro: "Basic", team_pro: "Advanced" },
+  { feature: "Team members", free: "5", student_pro: "1", team_pro: "5" },
+  { feature: "Weekly reports", free: "✓", student_pro: "✓", team_pro: "✓" },
+  { feature: "Priority support", free: "✓", student_pro: "✗", team_pro: "✓" },
 ]

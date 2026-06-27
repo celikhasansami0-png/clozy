@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { GraduationCap, Loader2 } from "lucide-react"
+import { Crosshair, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,15 +39,13 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2.5 mb-7">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900">
-              <GraduationCap className="h-5 w-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1E3A5F]">
+              <Crosshair className="h-5 w-5 text-white" />
             </div>
-            <span className="font-semibold text-slate-900 text-[15px] tracking-tight">
-              Engineering Autopilot OS
-            </span>
+            <span className="font-semibold text-[#0F1B35] text-[16px] tracking-tight">Scouting</span>
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-slate-500">Sign in to your academic OS</p>
+          <h1 className="text-2xl font-bold text-[#0F1B35]">Welcome back</h1>
+          <p className="mt-1 text-sm text-slate-500">Sign in to your outreach engine</p>
         </div>
 
         {/* Form */}
@@ -58,7 +56,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@university.edu"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -84,7 +82,7 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+              className="w-full bg-[#1E3A5F] hover:bg-[#16304f] text-white"
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
