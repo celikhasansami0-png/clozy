@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { LeadCard } from "@/components/scouting/lead-card"
 import { IntentBadge } from "@/components/scouting/intent-badge"
-import { DEMO_LEADS, DEMO_ICPS } from "@/lib/scouting/mock-data"
 import { INDUSTRIES, FUNDING_STAGES } from "@/lib/scouting/constants"
-import { cn, generateId } from "@/lib/utils"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
+import { useIcps } from "@/hooks/use-icps"
+import { cn } from "@/lib/utils"
 import type { Lead, FundingStage, ResearchBrief } from "@/types/scouting"
 
 interface ICPForm {
@@ -34,11 +35,12 @@ const INITIAL_ICP: ICPForm = {
 }
 
 export default function ScoutPage() {
+  const { leads, createLeads, attachResearch } = useScoutingLeads()
+  const { icps } = useIcps()
   const [describe, setDescribe] = useState("")
   const [icp, setIcp] = useState<ICPForm>(INITIAL_ICP)
   const [parsing, setParsing] = useState(false)
   const [generating, setGenerating] = useState(false)
-  const [leads, setLeads] = useState<Lead[]>(DEMO_LEADS)
   const [researchingId, setResearchingId] = useState<string | null>(null)
   const [briefLead, setBriefLead] = useState<Lead | null>(null)
   const [minScore, setMinScore] = useState(0)
@@ -91,11 +93,7 @@ export default function ScoutPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      const now = new Date().toISOString()
-      const generated: Lead[] = (data.leads ?? []).map((l: Record<string, unknown>) => ({
-        id: generateId(),
-        userId: "demo-user",
-        campaignId: null,
+      const generated: Partial<Lead>[] = (data.leads ?? []).map((l: Record<string, unknown>) => ({
         firstName: l.firstName as string,
         lastName: l.lastName as string,
         title: l.title as string,
@@ -105,7 +103,6 @@ export default function ScoutPage() {
         avatarColor: l.avatarColor as string,
         employeeCount: l.employeeCount as number,
         fundingStage: l.fundingStage as FundingStage,
-        lastFundingDate: null,
         location: l.location as string,
         techStack: (l.techStack as string[]) ?? [],
         lastActivity: l.lastActivity as string,
@@ -114,14 +111,10 @@ export default function ScoutPage() {
         engagementScore: l.engagementScore as number,
         totalScore: l.totalScore as number,
         intentSignals: (l.intentSignals as Lead["intentSignals"]) ?? [],
-        researchBrief: null,
         stage: "prospected",
         status: "active",
-        createdAt: now,
-        updatedAt: now,
-        lastContactedAt: null,
       }))
-      setLeads(generated)
+      await createLeads(generated)
       toast.success(`Generated ${generated.length} qualified leads`)
     } catch {
       toast.error("Could not generate leads")
@@ -147,9 +140,8 @@ export default function ScoutPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       const brief: ResearchBrief = data.researchBrief
-      const updated = { ...lead, researchBrief: brief }
-      setLeads((prev) => prev.map((l) => (l.id === lead.id ? updated : l)))
-      setBriefLead(updated)
+      await attachResearch(lead.id, brief)
+      setBriefLead({ ...lead, researchBrief: brief })
       toast.success(`Research brief ready for ${lead.firstName}`)
     } catch {
       toast.error("Research failed")
@@ -285,7 +277,7 @@ export default function ScoutPage() {
           <div className="pt-1">
             <p className="text-[11px] text-slate-400 mb-1.5">Saved ICPs</p>
             <div className="space-y-1">
-              {DEMO_ICPS.map((saved) => (
+              {icps.map((saved) => (
                 <div key={saved.id} className="flex items-center gap-2 rounded-md border border-slate-100 px-2.5 py-1.5 text-[11px] text-slate-600">
                   <FileSearch className="h-3 w-3 text-slate-400" />
                   {saved.name}

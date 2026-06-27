@@ -6,22 +6,27 @@ import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { DEMO_CONVERSATIONS, getLeadById } from "@/lib/scouting/mock-data"
 import { REPLY_CLASS_META } from "@/lib/scouting/constants"
+import { useConversations } from "@/hooks/use-conversations"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
 import { IntentBadge } from "@/components/scouting/intent-badge"
 import { ScoreRing } from "@/components/scouting/score-ring"
 import { cn, getInitials } from "@/lib/utils"
-import type { Conversation } from "@/types/scouting"
+import type { ReplyClassification } from "@/types/scouting"
 
 const FILTERS = ["All", "Unread", "Hot", "Warm", "Nurture"] as const
 type FilterKey = (typeof FILTERS)[number]
 
 export default function InboxPage() {
-  const [conversations] = useState<Conversation[]>(DEMO_CONVERSATIONS)
-  const [activeId, setActiveId] = useState(DEMO_CONVERSATIONS[0].id)
+  const { conversations, sendReply, markRead, updateConversation } = useConversations()
+  const { leads } = useScoutingLeads()
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterKey>("All")
   const [draft, setDraft] = useState("")
   const [classifying, setClassifying] = useState(false)
+
+  const leadsById = Object.fromEntries(leads.map((l) => [l.id, l]))
+  const getLead = (id: string) => leadsById[id]
 
   const filtered = conversations.filter((c) => {
     if (filter === "All") return true
@@ -29,11 +34,16 @@ export default function InboxPage() {
     return REPLY_CLASS_META[c.classification].label.toLowerCase() === filter.toLowerCase()
   })
 
-  const active = conversations.find((c) => c.id === activeId)!
-  const activeLead = getLeadById(active.leadId)
-  const meta = REPLY_CLASS_META[active.classification]
+  const active = conversations.find((c) => c.id === activeId) ?? conversations[0]
+
+  function selectConversation(id: string) {
+    setActiveId(id)
+    const conv = conversations.find((c) => c.id === id)
+    if (conv?.unread) markRead(id)
+  }
 
   async function handleReclassify() {
+    if (!active) return
     const lastInbound = [...active.messages].reverse().find((m) => m.direction === "inbound")
     if (!lastInbound) return
     setClassifying(true)
@@ -45,6 +55,7 @@ export default function InboxPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
+      await updateConversation(active.id, { classification: data.classification as ReplyClassification })
       toast.success(`Classified as ${data.classification}`)
     } catch {
       toast.error("Classification failed")
@@ -53,11 +64,30 @@ export default function InboxPage() {
     }
   }
 
-  function handleSend() {
-    if (!draft.trim()) return
-    toast.success("Reply queued to send")
-    setDraft("")
+  async function handleSend() {
+    if (!draft.trim() || !active) return
+    try {
+      await sendReply(active.id, draft)
+      toast.success("Reply sent")
+      setDraft("")
+    } catch {
+      toast.error("Could not send reply")
+    }
   }
+
+  if (!active) {
+    return (
+      <div>
+        <PageHeader title="Inbox" description="Every reply, classified and ready to answer." />
+        <div className="p-12 text-center">
+          <p className="text-sm text-slate-500">No conversations yet. Replies from your campaigns will appear here.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const activeLead = getLead(active.leadId)
+  const meta = REPLY_CLASS_META[active.classification]
 
   return (
     <div>
@@ -83,14 +113,14 @@ export default function InboxPage() {
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
             {filtered.map((conv) => {
-              const lead = getLeadById(conv.leadId)
+              const lead = getLead(conv.leadId)
               const cm = REPLY_CLASS_META[conv.classification]
               const last = conv.messages[conv.messages.length - 1]
               if (!lead) return null
               return (
                 <button
                   key={conv.id}
-                  onClick={() => setActiveId(conv.id)}
+                  onClick={() => selectConversation(conv.id)}
                   className={cn(
                     "w-full text-left flex items-start gap-3 px-4 py-3 transition-colors",
                     activeId === conv.id ? "bg-[#E8F0FB]" : "hover:bg-slate-50"

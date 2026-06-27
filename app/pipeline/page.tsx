@@ -5,20 +5,24 @@ import { Building2, ArrowRight, MoveRight } from "lucide-react"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Badge } from "@/components/ui/badge"
-import { DEMO_LEADS } from "@/lib/scouting/mock-data"
 import { PIPELINE_STAGES, STAGE_COLORS } from "@/lib/scouting/constants"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
 import { ScoreRing } from "@/components/scouting/score-ring"
 import { IntentBadge } from "@/components/scouting/intent-badge"
 import { cn, getInitials, relativeTime } from "@/lib/utils"
 import type { Lead, PipelineStage } from "@/types/scouting"
 
 export default function PipelinePage() {
-  const [leads, setLeads] = useState<Lead[]>(DEMO_LEADS)
+  const { leads, moveStage } = useScoutingLeads()
 
-  function moveLead(id: string, stage: PipelineStage) {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, stage, updatedAt: new Date().toISOString() } : l)))
-    const label = PIPELINE_STAGES.find((s) => s.id === stage)?.label
-    toast.success(`Moved to ${label}`)
+  async function moveLead(id: string, stage: PipelineStage) {
+    try {
+      await moveStage(id, stage)
+      const label = PIPELINE_STAGES.find((s) => s.id === stage)?.label
+      toast.success(`Moved to ${label}`)
+    } catch {
+      toast.error("Could not move lead")
+    }
   }
 
   return (
