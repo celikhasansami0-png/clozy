@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"
 import { AppShell } from "@/components/layout/app-shell"
 
-export default function AnalyticsLayout({ children }: { children: React.ReactNode }) {
+export default function InboxLayout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>
 }

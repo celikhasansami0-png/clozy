@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { GraduationCap, Loader2 } from "lucide-react"
+import { Crosshair, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,15 +51,13 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2.5 mb-7">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900">
-              <GraduationCap className="h-5 w-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1E3A5F]">
+              <Crosshair className="h-5 w-5 text-white" />
             </div>
-            <span className="font-semibold text-slate-900 text-[15px] tracking-tight">
-              Engineering Autopilot OS
-            </span>
+            <span className="font-semibold text-[#0F1B35] text-[16px] tracking-tight">Scouting</span>
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
-          <p className="mt-1 text-sm text-slate-500">Free forever · No credit card required</p>
+          <h1 className="text-2xl font-bold text-[#0F1B35]">Start your free trial</h1>
+          <p className="mt-1 text-sm text-slate-500">14 days of Growth · No credit card required</p>
         </div>
 
         {/* Form */}
@@ -78,11 +76,11 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">University Email</Label>
+              <Label htmlFor="email">Work Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@university.edu"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -104,11 +102,11 @@ export default function SignupPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+              className="w-full bg-[#1E3A5F] hover:bg-[#16304f] text-white"
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
+              Start free trial
             </Button>
           </form>
 
