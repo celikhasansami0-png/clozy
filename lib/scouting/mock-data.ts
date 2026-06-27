@@ -5,6 +5,7 @@ import type {
   VoiceProfile,
   ICP,
   IntentSignal,
+  OutreachMessage,
 } from "@/types/scouting"
 
 const DEMO_USER = "demo-user"
@@ -670,6 +671,76 @@ export const DEMO_CONVERSATIONS: Conversation[] = [
       },
     ],
   },
+]
+
+// ─── Outbound messages (Send queue) ─────────────────────────────────────────
+
+function msg(
+  id: string,
+  leadId: string,
+  step: number,
+  type: OutreachMessage["type"],
+  content: string,
+  status: OutreachMessage["status"],
+  hooks: string[],
+): OutreachMessage {
+  return {
+    id,
+    leadId,
+    campaignId: "camp-1",
+    sequenceStep: step,
+    type,
+    direction: "outbound",
+    content,
+    generatedBy: "ai",
+    personalizationHooks: hooks,
+    confidence: 88,
+    quality: { verdict: "approve", reasons: ["Personalized, concise, human-sounding"] },
+    variant: null,
+    status,
+    charCount: content.length,
+    sentAt: null,
+    createdAt: "2026-06-26T09:00:00Z",
+  }
+}
+
+export const DEMO_MESSAGES: OutreachMessage[] = [
+  msg(
+    "msg-1",
+    "lead-3",
+    1,
+    "connection_request",
+    "Hey Marcus — just saw Ledgerwise closed your $4M seed, congrats. I help founders stand up outbound before they can afford an SDR. Mind if I connect?",
+    "approved",
+    ["Raised $4M seed"],
+  ),
+  msg(
+    "msg-2",
+    "lead-4",
+    1,
+    "connection_request",
+    "Hi Sofia — noticed Pingboard is hiring an SDR manager. Usually means the outbound engine is heating up. We help RevOps teams research + personalize at scale. Worth connecting?",
+    "draft",
+    ["Hiring SDR Manager"],
+  ),
+  msg(
+    "msg-3",
+    "lead-2",
+    3,
+    "follow_up",
+    "Following up, Priya — one stat: researched, personalized outreach gets 3-4x the reply rate of templated sequences. We get you there without adding headcount. Worth a 15-min look?",
+    "approved",
+    ["reply-rate angle", "social proof"],
+  ),
+  msg(
+    "msg-4",
+    "lead-5",
+    1,
+    "connection_request",
+    "Hi Tomás — noticed you've been looking at outreach tooling. We take a research-first approach vs the spray-and-pray crowd. Mind if I connect?",
+    "draft",
+    ["Engaged w/ competitor"],
+  ),
 ]
 
 export function getLeadById(id: string): Lead | undefined {

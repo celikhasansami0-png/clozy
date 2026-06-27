@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   XCircle,
   Wand2,
+  Send,
 } from "lucide-react"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
@@ -20,9 +21,10 @@ import { DEFAULT_SEQUENCE } from "@/lib/scouting/constants"
 import { DEMO_VOICE_PROFILE } from "@/lib/scouting/mock-data"
 import { useVoiceProfile } from "@/hooks/use-voice-profile"
 import { useScoutingLeads } from "@/hooks/use-scouting-leads"
+import { useScoutingMessages } from "@/hooks/use-scouting-messages"
 import { runQualityGate } from "@/lib/scouting/quality"
 import { cn } from "@/lib/utils"
-import type { MessageQuality } from "@/types/scouting"
+import type { MessageQuality, MessageType } from "@/types/scouting"
 
 interface DraftMessage {
   sequenceStep: number
@@ -36,6 +38,7 @@ interface DraftMessage {
 export default function CraftPage() {
   const { voice: savedVoice, saveVoice } = useVoiceProfile()
   const { leads } = useScoutingLeads()
+  const { createMessages } = useScoutingMessages()
   const voice = savedVoice ?? DEMO_VOICE_PROFILE
   const [retrainOpen, setRetrainOpen] = useState(false)
   const [samples, setSamples] = useState("")
@@ -44,6 +47,33 @@ export default function CraftPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
   const [messages, setMessages] = useState<DraftMessage[]>([])
   const [generating, setGenerating] = useState(false)
+  const [queuing, setQueuing] = useState(false)
+
+  async function handleQueue() {
+    if (!selectedLead || messages.length === 0) return
+    setQueuing(true)
+    try {
+      await createMessages(
+        messages.map((m) => ({
+          leadId: selectedLead.id,
+          campaignId: selectedLead.campaignId,
+          sequenceStep: m.sequenceStep,
+          type: m.type as MessageType,
+          direction: "outbound" as const,
+          content: m.content,
+          personalizationHooks: m.personalizationHooks,
+          confidence: m.confidence,
+          quality: m.quality,
+          status: "approved" as const,
+        }))
+      )
+      toast.success("Added to your Send queue")
+    } catch {
+      toast.error("Could not queue messages")
+    } finally {
+      setQueuing(false)
+    }
+  }
 
   const selectedLead = leads.find((l) => l.id === selectedLeadId) ?? leads[0]
 
@@ -277,6 +307,20 @@ export default function CraftPage() {
               />
             )
           })}
+
+          {messages.length > 0 && (
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-500">Happy with these? Add the sequence to your Send queue.</p>
+              <Button
+                onClick={handleQueue}
+                disabled={queuing}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              >
+                {queuing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Add to Send queue
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
