@@ -20,32 +20,51 @@ export function useAuth() {
 
   const supabase = createClient()
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchOrCreateProfile = useCallback(async (user: User): Promise<UserProfile | null> => {
     const { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("id", user.id)
       .single()
-    return data as UserProfile | null
+
+    if (data) return data as UserProfile
+
+    // Auto-create profile if it doesn't exist (e.g. after email/password signup)
+    const { data: created } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        email: user.email!,
+        full_name: user.user_metadata?.full_name ?? null,
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+        role: "student",
+        subscription_tier: "free",
+        subscription_status: "inactive",
+        language: "en",
+      })
+      .select()
+      .single()
+
+    return (created as UserProfile) ?? null
   }, [supabase])
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const user = session?.user ?? null
-      const profile = user ? await fetchProfile(user.id) : null
+      const profile = user ? await fetchOrCreateProfile(user) : null
       setState({ user, profile, loading: false })
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_, session) => {
         const user = session?.user ?? null
-        const profile = user ? await fetchProfile(user.id) : null
+        const profile = user ? await fetchOrCreateProfile(user) : null
         setState({ user, profile, loading: false })
       }
     )
 
     return () => subscription.unsubscribe()
-  }, [fetchProfile, supabase])
+  }, [fetchOrCreateProfile, supabase])
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -54,7 +73,7 @@ export function useAuth() {
 
   const refreshProfile = async () => {
     if (!state.user) return
-    const profile = await fetchProfile(state.user.id)
+    const profile = await fetchOrCreateProfile(state.user)
     setState((prev) => ({ ...prev, profile }))
   }
 
@@ -65,7 +84,10 @@ export function useAuth() {
     signOut,
     refreshProfile,
     isAuthenticated: !!state.user,
-    isPro: state.profile?.subscription_tier === "student_pro" || state.profile?.subscription_tier === "team_pro" || state.profile?.subscription_tier === "university",
+    isPro:
+      state.profile?.subscription_tier === "student_pro" ||
+      state.profile?.subscription_tier === "team_pro" ||
+      state.profile?.subscription_tier === "university",
     tier: state.profile?.subscription_tier ?? "free",
   }
 }

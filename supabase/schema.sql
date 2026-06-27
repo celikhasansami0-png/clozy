@@ -5,6 +5,23 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector";
 
+-- ─── Drop existing tables (cascade to remove all dependencies) ────────────────
+DROP TABLE IF EXISTS public.usage_limits CASCADE;
+DROP TABLE IF EXISTS public.career_profiles CASCADE;
+DROP TABLE IF EXISTS public.academic_tasks CASCADE;
+DROP TABLE IF EXISTS public.knowledge_notes CASCADE;
+DROP TABLE IF EXISTS public.research_papers CASCADE;
+DROP TABLE IF EXISTS public.milestones CASCADE;
+DROP TABLE IF EXISTS public.projects CASCADE;
+DROP TABLE IF EXISTS public.assignments CASCADE;
+DROP TABLE IF EXISTS public.exam_attempts CASCADE;
+DROP TABLE IF EXISTS public.exams CASCADE;
+DROP TABLE IF EXISTS public.learning_sessions CASCADE;
+DROP TABLE IF EXISTS public.flashcards CASCADE;
+DROP TABLE IF EXISTS public.learning_materials CASCADE;
+DROP TABLE IF EXISTS public.courses CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
 -- ─── Profiles ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,

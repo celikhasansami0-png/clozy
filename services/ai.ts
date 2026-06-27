@@ -4,6 +4,8 @@
  * Currently ships a high-fidelity mock for dev/demo.
  */
 
+import { routeScoutingMock } from "@/lib/scouting/ai-mocks"
+
 export interface AIMessage {
   role: "system" | "user" | "assistant"
   content: string
@@ -125,9 +127,18 @@ class AnthropicProvider implements AIProvider {
 class MockProvider implements AIProvider {
   async complete(options: AICompletionOptions): Promise<AICompletionResult> {
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400))
+    await new Promise((resolve) => setTimeout(resolve, 700 + Math.random() * 500))
 
     const userMessage = options.messages.findLast((m) => m.role === "user")?.content ?? ""
+
+    // Scouting module routing — returns contextual JSON for each AI endpoint
+    const scoutingResult = routeScoutingMock(userMessage)
+    if (scoutingResult !== null) {
+      return {
+        content: JSON.stringify(scoutingResult),
+        usage: { prompt_tokens: 600, completion_tokens: 900, total_tokens: 1500 },
+      }
+    }
 
     // Return contextual mock responses based on the prompt
     if (userMessage.includes("growth system") || userMessage.includes("positioning")) {
@@ -235,7 +246,12 @@ const MOCK_GROWTH_OUTPUT = {
 // ─── Factory ──────────────────────────────────────────────────────────────
 
 function createAIProvider(): AIProvider {
-  const provider = process.env.AI_PROVIDER ?? "mock"
+  const explicit = process.env.AI_PROVIDER
+  const provider = explicit ?? (
+    process.env.ANTHROPIC_API_KEY ? "anthropic" :
+    process.env.OPENAI_API_KEY ? "openai" :
+    "mock"
+  )
 
   switch (provider) {
     case "openai":

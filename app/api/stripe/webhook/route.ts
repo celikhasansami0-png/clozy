@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { constructWebhookEvent } from "@/services/stripe"
 import { createClient } from "@/lib/supabase/server"
 import type Stripe from "stripe"
+import type { SubscriptionTier } from "@/types"
+
+function tierFromPriceId(priceId: string | undefined): SubscriptionTier {
+  if (priceId === process.env.NEXT_PUBLIC_STRIPE_TEAM_PRO_PRICE_ID) return "team_pro"
+  return "student_pro"
+}
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -28,6 +34,7 @@ export async function POST(request: Request) {
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
+        const priceId = subscription.items.data[0]?.price.id
 
         const { data: profile } = await supabase
           .from("profiles")
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
         if (profile) {
           const tier =
             subscription.status === "active" || subscription.status === "trialing"
-              ? "pro"
+              ? tierFromPriceId(priceId)
               : "free"
 
           await supabase
@@ -93,10 +100,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ received: true })
-}
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
 }

@@ -1,0 +1,320 @@
+[
+  {
+    "id": "thermo",
+    "branch": "Thermodynamics",
+    "color": "#ef4444",
+    "formulas": [
+      {
+        "id": "thermo_1",
+        "name": "First Law of Thermodynamics",
+        "latex": "\\Delta U = Q - W",
+        "description": "The change in internal energy equals heat added minus work done by the system.",
+        "variables": [
+          { "symbol": "\\Delta U", "meaning": "Change in internal energy (J)" },
+          { "symbol": "Q", "meaning": "Heat added to the system (J)" },
+          { "symbol": "W", "meaning": "Work done by the system (J)" }
+        ],
+        "tags": ["energy", "heat", "work"]
+      },
+      {
+        "id": "thermo_2",
+        "name": "Entropy Change (Reversible)",
+        "latex": "dS = \\frac{\\delta Q_{rev}}{T}",
+        "description": "Entropy change for a reversible process equals heat transferred divided by absolute temperature.",
+        "variables": [
+          { "symbol": "dS", "meaning": "Change in entropy (J/K)" },
+          { "symbol": "\\delta Q_{rev}", "meaning": "Reversible heat transfer (J)" },
+          { "symbol": "T", "meaning": "Absolute temperature (K)" }
+        ],
+        "tags": ["entropy", "reversible"]
+      },
+      {
+        "id": "thermo_3",
+        "name": "Ideal Gas Law",
+        "latex": "PV = nRT",
+        "description": "Relates pressure, volume, moles, and temperature of an ideal gas.",
+        "variables": [
+          { "symbol": "P", "meaning": "Pressure (Pa)" },
+          { "symbol": "V", "meaning": "Volume (m³)" },
+          { "symbol": "n", "meaning": "Number of moles (mol)" },
+          { "symbol": "R", "meaning": "Gas constant = 8.314 J/(mol·K)" },
+          { "symbol": "T", "meaning": "Temperature (K)" }
+        ],
+        "tags": ["ideal gas", "pressure", "volume"]
+      },
+      {
+        "id": "thermo_4",
+        "name": "Carnot Efficiency",
+        "latex": "\\eta_{Carnot} = 1 - \\frac{T_L}{T_H}",
+        "description": "Maximum theoretical efficiency of a heat engine operating between two temperatures.",
+        "variables": [
+          { "symbol": "\\eta", "meaning": "Thermal efficiency (dimensionless)" },
+          { "symbol": "T_L", "meaning": "Cold reservoir temperature (K)" },
+          { "symbol": "T_H", "meaning": "Hot reservoir temperature (K)" }
+        ],
+        "tags": ["efficiency", "Carnot", "heat engine"]
+      },
+      {
+        "id": "thermo_5",
+        "name": "Fourier's Law of Heat Conduction",
+        "latex": "q = -k A \\frac{dT}{dx}",
+        "description": "Heat flux is proportional to the temperature gradient.",
+        "variables": [
+          { "symbol": "q", "meaning": "Heat transfer rate (W)" },
+          { "symbol": "k", "meaning": "Thermal conductivity (W/m·K)" },
+          { "symbol": "A", "meaning": "Cross-sectional area (m²)" },
+          { "symbol": "dT/dx", "meaning": "Temperature gradient (K/m)" }
+        ],
+        "tags": ["conduction", "heat transfer"]
+      }
+    ]
+  },
+  {
+    "id": "fluid",
+    "branch": "Fluid Mechanics",
+    "color": "#3b82f6",
+    "formulas": [
+      {
+        "id": "fluid_1",
+        "name": "Bernoulli's Equation",
+        "latex": "P + \\frac{1}{2}\\rho v^2 + \\rho g h = \\text{constant}",
+        "description": "Conservation of energy for inviscid, incompressible flow along a streamline.",
+        "variables": [
+          { "symbol": "P", "meaning": "Static pressure (Pa)" },
+          { "symbol": "\\rho", "meaning": "Fluid density (kg/m³)" },
+          { "symbol": "v", "meaning": "Flow velocity (m/s)" },
+          { "symbol": "g", "meaning": "Gravitational acceleration (m/s²)" },
+          { "symbol": "h", "meaning": "Height above datum (m)" }
+        ],
+        "tags": ["energy", "incompressible", "streamline"]
+      },
+      {
+        "id": "fluid_2",
+        "name": "Continuity Equation",
+        "latex": "A_1 v_1 = A_2 v_2",
+        "description": "Conservation of mass for incompressible flow: flow rate is constant.",
+        "variables": [
+          { "symbol": "A_1, A_2", "meaning": "Cross-sectional areas (m²)" },
+          { "symbol": "v_1, v_2", "meaning": "Flow velocities (m/s)" }
+        ],
+        "tags": ["continuity", "conservation of mass"]
+      },
+      {
+        "id": "fluid_3",
+        "name": "Reynolds Number",
+        "latex": "Re = \\frac{\\rho v D}{\\mu}",
+        "description": "Ratio of inertial to viscous forces; determines laminar vs turbulent flow.",
+        "variables": [
+          { "symbol": "\\rho", "meaning": "Fluid density (kg/m³)" },
+          { "symbol": "v", "meaning": "Characteristic velocity (m/s)" },
+          { "symbol": "D", "meaning": "Characteristic length/diameter (m)" },
+          { "symbol": "\\mu", "meaning": "Dynamic viscosity (Pa·s)" }
+        ],
+        "tags": ["turbulence", "dimensionless", "viscosity"]
+      },
+      {
+        "id": "fluid_4",
+        "name": "Hagen-Poiseuille (Pipe Flow)",
+        "latex": "Q = \\frac{\\pi R^4 \\Delta P}{8 \\mu L}",
+        "description": "Volumetric flow rate through a circular pipe under laminar flow conditions.",
+        "variables": [
+          { "symbol": "Q", "meaning": "Volumetric flow rate (m³/s)" },
+          { "symbol": "R", "meaning": "Pipe radius (m)" },
+          { "symbol": "\\Delta P", "meaning": "Pressure drop (Pa)" },
+          { "symbol": "\\mu", "meaning": "Dynamic viscosity (Pa·s)" },
+          { "symbol": "L", "meaning": "Pipe length (m)" }
+        ],
+        "tags": ["pipe flow", "laminar", "Poiseuille"]
+      }
+    ]
+  },
+  {
+    "id": "circuits",
+    "branch": "Circuit Analysis",
+    "color": "#f59e0b",
+    "formulas": [
+      {
+        "id": "circ_1",
+        "name": "Ohm's Law",
+        "latex": "V = IR",
+        "description": "Voltage across a resistor equals current times resistance.",
+        "variables": [
+          { "symbol": "V", "meaning": "Voltage (V)" },
+          { "symbol": "I", "meaning": "Current (A)" },
+          { "symbol": "R", "meaning": "Resistance (Ω)" }
+        ],
+        "tags": ["resistance", "voltage", "current"]
+      },
+      {
+        "id": "circ_2",
+        "name": "Kirchhoff's Voltage Law (KVL)",
+        "latex": "\\sum_{k=1}^{n} V_k = 0",
+        "description": "The algebraic sum of all voltages around any closed loop equals zero.",
+        "variables": [
+          { "symbol": "V_k", "meaning": "Voltage across element k (V)" }
+        ],
+        "tags": ["KVL", "loop analysis"]
+      },
+      {
+        "id": "circ_3",
+        "name": "Kirchhoff's Current Law (KCL)",
+        "latex": "\\sum_{k=1}^{n} I_k = 0",
+        "description": "The algebraic sum of all currents entering a node equals zero.",
+        "variables": [
+          { "symbol": "I_k", "meaning": "Current through branch k (A)" }
+        ],
+        "tags": ["KCL", "node analysis"]
+      },
+      {
+        "id": "circ_4",
+        "name": "Complex Impedance",
+        "latex": "Z = R + jX = R + j\\left(\\omega L - \\frac{1}{\\omega C}\\right)",
+        "description": "Total impedance of an RLC circuit in the frequency domain.",
+        "variables": [
+          { "symbol": "R", "meaning": "Resistance (Ω)" },
+          { "symbol": "\\omega", "meaning": "Angular frequency (rad/s)" },
+          { "symbol": "L", "meaning": "Inductance (H)" },
+          { "symbol": "C", "meaning": "Capacitance (F)" }
+        ],
+        "tags": ["impedance", "AC", "RLC", "phasors"]
+      },
+      {
+        "id": "circ_5",
+        "name": "Power in AC Circuit",
+        "latex": "P = V_{rms} I_{rms} \\cos\\phi",
+        "description": "Real (average) power dissipated in an AC circuit.",
+        "variables": [
+          { "symbol": "P", "meaning": "Average power (W)" },
+          { "symbol": "V_{rms}", "meaning": "RMS voltage (V)" },
+          { "symbol": "I_{rms}", "meaning": "RMS current (A)" },
+          { "symbol": "\\phi", "meaning": "Phase angle between V and I" }
+        ],
+        "tags": ["power", "AC", "RMS", "power factor"]
+      }
+    ]
+  },
+  {
+    "id": "diffeq",
+    "branch": "Differential Equations",
+    "color": "#8b5cf6",
+    "formulas": [
+      {
+        "id": "diffeq_1",
+        "name": "First-Order Linear ODE (General Solution)",
+        "latex": "y' + P(x)y = Q(x) \\implies y = e^{-\\int P\\,dx}\\left(\\int Q e^{\\int P\\,dx}\\,dx + C\\right)",
+        "description": "General solution using integrating factor method.",
+        "variables": [
+          { "symbol": "P(x), Q(x)", "meaning": "Known functions of x" },
+          { "symbol": "C", "meaning": "Arbitrary constant of integration" }
+        ],
+        "tags": ["ODE", "integrating factor", "first-order"]
+      },
+      {
+        "id": "diffeq_2",
+        "name": "Laplace Transform",
+        "latex": "\\mathcal{L}\\{f(t)\\} = F(s) = \\int_0^{\\infty} f(t) e^{-st}\\,dt",
+        "description": "Converts differential equations to algebraic equations in s-domain.",
+        "variables": [
+          { "symbol": "f(t)", "meaning": "Time-domain function" },
+          { "symbol": "s", "meaning": "Complex frequency variable" },
+          { "symbol": "F(s)", "meaning": "Laplace transform of f(t)" }
+        ],
+        "tags": ["Laplace", "s-domain", "transform"]
+      },
+      {
+        "id": "diffeq_3",
+        "name": "Euler's Formula",
+        "latex": "e^{i\\theta} = \\cos\\theta + i\\sin\\theta",
+        "description": "Fundamental relation linking exponential and trigonometric functions.",
+        "variables": [
+          { "symbol": "e", "meaning": "Euler's number ≈ 2.71828" },
+          { "symbol": "i", "meaning": "Imaginary unit (√-1)" },
+          { "symbol": "\\theta", "meaning": "Angle (radians)" }
+        ],
+        "tags": ["complex numbers", "Euler", "exponential"]
+      },
+      {
+        "id": "diffeq_4",
+        "name": "Second-Order ODE (Characteristic Equation)",
+        "latex": "ay'' + by' + cy = 0 \\implies ar^2 + br + c = 0",
+        "description": "The characteristic equation determines the form of the homogeneous solution.",
+        "variables": [
+          { "symbol": "a, b, c", "meaning": "Constant coefficients" },
+          { "symbol": "r", "meaning": "Characteristic roots" }
+        ],
+        "tags": ["second-order", "homogeneous", "characteristic equation"]
+      }
+    ]
+  },
+  {
+    "id": "mechanics",
+    "branch": "Mechanics of Materials",
+    "color": "#10b981",
+    "formulas": [
+      {
+        "id": "mech_1",
+        "name": "Normal Stress",
+        "latex": "\\sigma = \\frac{F}{A}",
+        "description": "Normal stress is the internal force per unit area perpendicular to the section.",
+        "variables": [
+          { "symbol": "\\sigma", "meaning": "Normal stress (Pa)" },
+          { "symbol": "F", "meaning": "Applied force (N)" },
+          { "symbol": "A", "meaning": "Cross-sectional area (m²)" }
+        ],
+        "tags": ["stress", "axial", "tension", "compression"]
+      },
+      {
+        "id": "mech_2",
+        "name": "Hooke's Law (Elastic)",
+        "latex": "\\sigma = E \\varepsilon",
+        "description": "In the elastic region, stress is proportional to strain via Young's modulus.",
+        "variables": [
+          { "symbol": "\\sigma", "meaning": "Normal stress (Pa)" },
+          { "symbol": "E", "meaning": "Young's modulus (Pa)" },
+          { "symbol": "\\varepsilon", "meaning": "Normal strain (dimensionless)" }
+        ],
+        "tags": ["elasticity", "Hooke", "Young's modulus"]
+      },
+      {
+        "id": "mech_3",
+        "name": "Bending Stress (Flexure Formula)",
+        "latex": "\\sigma = \\frac{Mc}{I}",
+        "description": "Maximum bending stress in a beam at distance c from the neutral axis.",
+        "variables": [
+          { "symbol": "\\sigma", "meaning": "Bending stress (Pa)" },
+          { "symbol": "M", "meaning": "Bending moment (N·m)" },
+          { "symbol": "c", "meaning": "Distance from neutral axis (m)" },
+          { "symbol": "I", "meaning": "Second moment of area (m⁴)" }
+        ],
+        "tags": ["bending", "beam", "flexure", "moment of inertia"]
+      },
+      {
+        "id": "mech_4",
+        "name": "Shear Stress (Torsion)",
+        "latex": "\\tau = \\frac{Tr}{J}",
+        "description": "Shear stress in a circular shaft due to applied torque.",
+        "variables": [
+          { "symbol": "\\tau", "meaning": "Shear stress (Pa)" },
+          { "symbol": "T", "meaning": "Applied torque (N·m)" },
+          { "symbol": "r", "meaning": "Radial distance (m)" },
+          { "symbol": "J", "meaning": "Polar moment of inertia (m⁴)" }
+        ],
+        "tags": ["torsion", "shear", "shaft", "torque"]
+      },
+      {
+        "id": "mech_5",
+        "name": "Deflection of Simply Supported Beam (Center Load)",
+        "latex": "\\delta_{max} = \\frac{PL^3}{48EI}",
+        "description": "Maximum deflection at the center of a simply supported beam under a central point load.",
+        "variables": [
+          { "symbol": "\\delta_{max}", "meaning": "Maximum deflection (m)" },
+          { "symbol": "P", "meaning": "Point load (N)" },
+          { "symbol": "L", "meaning": "Beam span (m)" },
+          { "symbol": "E", "meaning": "Young's modulus (Pa)" },
+          { "symbol": "I", "meaning": "Second moment of area (m⁴)" }
+        ],
+        "tags": ["deflection", "beam", "simply supported"]
+      }
+    ]
+  }
+]

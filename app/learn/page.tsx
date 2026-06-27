@@ -1,33 +1,125 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import {
-  Brain,
-  Upload,
-  Video,
-  FileText,
-  Sparkles,
-  ChevronRight,
-  BookOpen,
-  Target,
-  Layers,
-  RotateCcw,
+  Brain, Upload, Video, FileText, Sparkles, ChevronRight, BookOpen,
+  Target, Layers, RotateCcw, Trash2, Loader2, CheckCircle2, Timer, Play, Square, SkipForward,
 } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useMaterials } from "@/hooks/use-materials"
+import { useFlashcards } from "@/hooks/use-flashcards"
+import { useLearningSession } from "@/hooks/use-learning-sessions"
+import { toast } from "sonner"
+import type { MaterialType } from "@/types"
 
-const MATERIAL_TYPES = [
+const MATERIAL_TYPES: { id: MaterialType; label: string; icon: typeof FileText; description: string }[] = [
   { id: "pdf", label: "PDF / Document", icon: FileText, description: "Textbooks, papers, notes" },
-  { id: "slides", label: "Lecture Slides", icon: Layers, description: "PowerPoint, Keynote, PDF slides" },
+  { id: "lecture_slides", label: "Lecture Slides", icon: Layers, description: "PowerPoint, PDF slides" },
   { id: "youtube", label: "YouTube Lecture", icon: Video, description: "Paste a YouTube URL" },
-  { id: "handwritten", label: "Handwritten Notes", icon: BookOpen, description: "Photos of your notes" },
+  { id: "handwritten_notes", label: "Handwritten Notes", icon: BookOpen, description: "Photos of your notes" },
 ]
 
 export default function LearnOSPage() {
   const [activeTab, setActiveTab] = useState("materials")
+  const [addOpen, setAddOpen] = useState(false)
+  const [generateOpen, setGenerateOpen] = useState(false)
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
+  const [generatingFlashcards, setGeneratingFlashcards] = useState(false)
+  const [form, setForm] = useState({ title: "", type: "pdf" as MaterialType, content: "", youtubeUrl: "" })
+  const [processingYoutube, setProcessingYoutube] = useState(false)
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const [showAnswer, setShowAnswer] = useState(false)
+
+  const { materials, loading: matLoading, createMaterial, deleteMaterial } = useMaterials()
+  const { flashcards, dueCards, loading: cardLoading, createFlashcard, submitReview } = useFlashcards()
+
+  const handleAddMaterial = async () => {
+    if (form.type === "youtube") {
+      if (!form.youtubeUrl) return
+      setProcessingYoutube(true)
+      try {
+        const res = await fetch("/api/ai/process-youtube", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: form.youtubeUrl }),
+        })
+        if (!res.ok) {
+          const err = await res.json()
+          toast.error(err.error ?? "Failed to process video")
+          return
+        }
+        const { content, title, topics } = await res.json()
+        await createMaterial({
+          title: form.title || title,
+          type: "youtube",
+          content,
+          file_url: form.youtubeUrl,
+          topics: topics ?? [],
+          processed: true,
+          course_id: null,
+        })
+        setForm({ title: "", type: "pdf", content: "", youtubeUrl: "" })
+        setAddOpen(false)
+        toast.success("YouTube lecture processed and saved!")
+      } catch {
+        toast.error("Failed to process YouTube video")
+      } finally {
+        setProcessingYoutube(false)
+      }
+      return
+    }
+    if (!form.title || !form.content) return
+    try {
+      await createMaterial({ title: form.title, type: form.type, content: form.content, file_url: null, topics: [], processed: false, course_id: null })
+      setForm({ title: "", type: "pdf", content: "", youtubeUrl: "" })
+      setAddOpen(false)
+      toast.success("Material added!")
+    } catch {
+      toast.error("Failed to add material")
+    }
+  }
+
+  const handleGenerateFlashcards = async () => {
+    const material = materials.find((m) => m.id === selectedMaterialId)
+    if (!material) return
+    setGeneratingFlashcards(true)
+    try {
+      const res = await fetch("/api/ai/generate-flashcards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: material.content, title: material.title, count: 10 }),
+      })
+      const { flashcards: generated } = await res.json()
+      for (const card of generated) {
+        await createFlashcard({ ...card, material_id: material.id, course_id: material.course_id, next_review_at: null, interval_days: 1, repetitions: 0, ease_factor: 2.5 })
+      }
+      toast.success(`${generated.length} flashcards generated!`)
+      setGenerateOpen(false)
+      setActiveTab("flashcards")
+    } catch {
+      toast.error("Failed to generate flashcards")
+    } finally {
+      setGeneratingFlashcards(false)
+    }
+  }
+
+  const currentCard = dueCards[reviewIndex]
+
+  const handleReview = async (quality: 0 | 3 | 5) => {
+    if (!currentCard) return
+    await submitReview(currentCard.id, quality)
+    setShowAnswer(false)
+    if (reviewIndex < dueCards.length - 1) setReviewIndex((i) => i + 1)
+    else setReviewIndex(0)
+  }
 
   return (
     <div>
@@ -35,9 +127,9 @@ export default function LearnOSPage() {
         title="Learn OS"
         description="Transform any academic material into a personalized learning system."
         actions={
-          <Button className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
+          <Button onClick={() => setAddOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
             <Upload className="h-4 w-4" />
-            Upload material
+            Add material
           </Button>
         }
       />
@@ -45,45 +137,29 @@ export default function LearnOSPage() {
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 bg-slate-100 p-1">
-            <TabsTrigger value="materials" className="text-sm">Materials</TabsTrigger>
-            <TabsTrigger value="flashcards" className="text-sm">Flashcards</TabsTrigger>
+            <TabsTrigger value="materials" className="text-sm">Materials ({materials.length})</TabsTrigger>
+            <TabsTrigger value="flashcards" className="text-sm">Flashcards {dueCards.length > 0 && `(${dueCards.length} due)`}</TabsTrigger>
             <TabsTrigger value="tutor" className="text-sm">AI Tutor</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-sm">Learning Analytics</TabsTrigger>
+            <TabsTrigger value="timer" className="text-sm">Study Timer</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="materials">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Upload Area */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Drop zone */}
-                <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm">
-                    <Upload className="h-6 w-6 text-slate-400" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-slate-900 mb-1">
-                    Drop your material here
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-4">
-                    PDF, PPTX, DOCX, images up to 50MB
-                  </p>
-                  <Button variant="outline" size="sm" className="border-slate-200">
-                    Browse files
-                  </Button>
-                </div>
-
-                {/* Material type picker */}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900 mb-3">Or choose a source</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3">Add a source</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {MATERIAL_TYPES.map((type) => {
                       const Icon = type.icon
                       return (
                         <button
                           key={type.id}
+                          onClick={() => { setForm((f) => ({ ...f, type: type.id })); setAddOpen(true) }}
                           className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-slate-300 hover:shadow-sm transition-all"
                         >
                           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
-                            <Icon className="h-4.5 w-4.5 text-slate-600" />
+                            <Icon className="h-4 w-4 text-slate-600" />
                           </div>
                           <div>
                             <p className="text-sm font-medium text-slate-900">{type.label}</p>
@@ -96,53 +172,73 @@ export default function LearnOSPage() {
                   </div>
                 </div>
 
-                {/* Empty state for materials list */}
                 <Card className="border-slate-200">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold text-slate-900">
-                      Your Materials
-                    </CardTitle>
+                    <CardTitle className="text-sm font-semibold text-slate-900">Your Materials</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="py-10 text-center">
-                      <Brain className="h-10 w-10 text-slate-200 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-slate-500 mb-1">No materials yet</p>
-                      <p className="text-xs text-slate-400">
-                        Upload your first material to start learning
-                      </p>
-                    </div>
+                    {matLoading ? (
+                      <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>
+                    ) : materials.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <Brain className="h-10 w-10 text-slate-200 mx-auto mb-3" />
+                        <p className="text-sm font-medium text-slate-500 mb-1">No materials yet</p>
+                        <p className="text-xs text-slate-400">Add your first material above to start learning</p>
+                      </div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {materials.map((m) => (
+                          <li key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 group">
+                            <FileText className="h-4 w-4 text-slate-400 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-900 truncate">{m.title}</p>
+                              <p className="text-xs text-slate-400">{m.type.replace(/_/g, " ")} · {new Date(m.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button size="sm" variant="ghost" className="h-7 text-xs gap-1"
+                                onClick={() => { setSelectedMaterialId(m.id); setGenerateOpen(true) }}>
+                                <Sparkles className="h-3 w-3" /> Flashcards
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={async () => { await deleteMaterial(m.id); toast.success("Deleted") }}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Sidebar info */}
               <div className="space-y-4">
                 <Card className="border-slate-200">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold text-slate-900">
-                      What gets generated
-                    </CardTitle>
+                    <CardTitle className="text-sm font-semibold text-slate-900">What gets generated</CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <ul className="space-y-3">
-                      {GENERATION_ITEMS.map((item) => {
-                        const Icon = item.icon
-                        return (
-                          <li key={item.label} className="flex items-start gap-3">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 shrink-0 mt-0.5">
-                              <Icon className="h-3.5 w-3.5 text-slate-600" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium text-slate-900">{item.label}</p>
-                              <p className="text-[11px] text-slate-500 mt-0.5">{item.description}</p>
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ul>
+                  <CardContent className="pt-0 space-y-3">
+                    {[
+                      { icon: Layers, label: "Topic extraction", desc: "Key concepts automatically identified" },
+                      { icon: Brain, label: "Concept map", desc: "Visual knowledge graph" },
+                      { icon: RotateCcw, label: "Flashcard deck", desc: "Active recall with spaced repetition" },
+                      { icon: Target, label: "Exam readiness", desc: "How prepared you are" },
+                    ].map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <div key={item.label} className="flex items-start gap-3">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 shrink-0">
+                            <Icon className="h-3.5 w-3.5 text-slate-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-900">{item.label}</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">{item.desc}</p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </CardContent>
                 </Card>
-
                 <Card className="border-slate-200 bg-slate-50">
                   <CardContent className="pt-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -150,7 +246,7 @@ export default function LearnOSPage() {
                       <span className="text-xs font-semibold text-slate-700">AI Tutor included</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      Once processed, ask the AI tutor anything about your material. It adapts to your weak areas and adjusts its explanations accordingly.
+                      Once you add materials, ask the AI tutor anything about them. It adapts to your weak areas.
                     </p>
                   </CardContent>
                 </Card>
@@ -159,72 +255,375 @@ export default function LearnOSPage() {
           </TabsContent>
 
           <TabsContent value="flashcards">
-            <div className="py-16 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                <RotateCcw className="h-7 w-7 text-slate-400" />
+            {cardLoading ? (
+              <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>
+            ) : flashcards.length === 0 ? (
+              <div className="py-16 text-center">
+                <RotateCcw className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                <h3 className="text-base font-semibold text-slate-900 mb-2">No flashcards yet</h3>
+                <p className="text-sm text-slate-500 max-w-md mx-auto mb-5">Add a material and click Sparkles to generate flashcards automatically.</p>
+                <Button variant="outline" className="border-slate-200 gap-2" onClick={() => setActiveTab("materials")}>
+                  <Upload className="h-4 w-4" /> Go to Materials
+                </Button>
               </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">Spaced Repetition System</h3>
-              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-                Upload learning materials first. The system automatically generates flashcards
-                and schedules them using the SM-2 spaced repetition algorithm.
-              </p>
-              <Button variant="outline" className="border-slate-200 gap-2">
-                <Upload className="h-4 w-4" />
-                Upload material to generate flashcards
-              </Button>
-            </div>
+            ) : dueCards.length === 0 ? (
+              <div className="py-16 text-center">
+                <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto mb-4" />
+                <h3 className="text-base font-semibold text-slate-900 mb-2">All caught up!</h3>
+                <p className="text-sm text-slate-500">No flashcards due for review. Total: {flashcards.length} cards.</p>
+              </div>
+            ) : (
+              <div className="max-w-lg mx-auto">
+                <p className="text-sm text-slate-500 text-center mb-6">{reviewIndex + 1} / {dueCards.length} due</p>
+                <div
+                  className="rounded-2xl border border-slate-200 bg-white p-10 text-center cursor-pointer shadow-sm hover:shadow-md transition-shadow min-h-[240px] flex flex-col items-center justify-center"
+                  onClick={() => setShowAnswer((v) => !v)}
+                >
+                  {showAnswer ? (
+                    <>
+                      <p className="text-xs font-medium text-slate-400 mb-4 uppercase tracking-wider">Answer</p>
+                      <p className="text-lg font-medium text-slate-900 leading-relaxed">{currentCard.back}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-medium text-slate-400 mb-4 uppercase tracking-wider">Question</p>
+                      <p className="text-lg font-medium text-slate-900 leading-relaxed">{currentCard.front}</p>
+                      <p className="text-xs text-slate-400 mt-6">Tap to reveal answer</p>
+                    </>
+                  )}
+                </div>
+                {showAnswer && (
+                  <div className="flex gap-3 mt-6 justify-center">
+                    <Button onClick={() => handleReview(0)} variant="outline" className="border-red-200 text-red-600 hover:bg-red-50">Again</Button>
+                    <Button onClick={() => handleReview(3)} variant="outline" className="border-amber-200 text-amber-600 hover:bg-amber-50">Hard</Button>
+                    <Button onClick={() => handleReview(5)} className="bg-slate-900 hover:bg-slate-800 text-white">Easy</Button>
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="tutor">
-            <div className="py-16 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                <Brain className="h-7 w-7 text-slate-400" />
-              </div>
-              <h3 className="text-base font-semibold text-slate-900 mb-2">AI Tutor</h3>
-              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-                Upload at least one material to activate your personalized AI tutor. It will answer
-                questions, explain concepts, and identify your knowledge gaps.
-              </p>
-              <Button variant="outline" className="border-slate-200 gap-2">
-                <Upload className="h-4 w-4" />
-                Upload material to activate tutor
-              </Button>
-            </div>
+            <TutorTab materials={materials} />
+          </TabsContent>
+
+          <TabsContent value="timer">
+            <StudyTimerTab materials={materials} />
           </TabsContent>
 
           <TabsContent value="analytics">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {LEARNING_METRICS.map((m) => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: "Total materials", value: materials.length },
+                { label: "Total flashcards", value: flashcards.length },
+                { label: "Due for review", value: dueCards.length },
+                { label: "Mastered cards", value: flashcards.filter((f) => f.repetitions >= 5).length },
+              ].map((m) => (
                 <div key={m.label} className="rounded-xl border border-slate-200 bg-white p-5">
                   <div className="text-2xl font-bold text-slate-900 mb-0.5">{m.value}</div>
                   <div className="text-xs text-slate-500">{m.label}</div>
                 </div>
               ))}
             </div>
-            <div className="py-10 text-center rounded-xl border border-slate-200 bg-slate-50">
-              <Target className="h-8 w-8 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">
-                Start studying to see your learning analytics here
-              </p>
-            </div>
           </TabsContent>
         </Tabs>
+      </div>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Add Learning Material</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Title</Label>
+              <Input placeholder="e.g. Thermodynamics Chapter 4" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as MaterialType }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MATERIAL_TYPES.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {form.type === "youtube" ? (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>YouTube URL</Label>
+                  <Input placeholder="https://www.youtube.com/watch?v=..." value={form.youtubeUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))} />
+                  <p className="text-[11px] text-slate-400">The video must have captions/subtitles enabled. AI will transcribe and summarize it automatically.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Custom title (optional)</Label>
+                  <Input placeholder="Leave blank to auto-detect from video" value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Content (paste text or notes)</Label>
+                <Textarea placeholder="Paste the content of your material here..." value={form.content}
+                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className="h-40" />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddMaterial} className="bg-slate-900 hover:bg-slate-800 text-white gap-2"
+              disabled={processingYoutube || (form.type === "youtube" ? !form.youtubeUrl : (!form.title || !form.content))}>
+              {processingYoutube ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : form.type === "youtube" ? <><Video className="h-4 w-4" /> Import & Summarize</> : "Add Material"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Generate Flashcards</DialogTitle></DialogHeader>
+          <p className="text-sm text-slate-600">AI will generate 10 flashcards from <strong>{materials.find((m) => m.id === selectedMaterialId)?.title}</strong> using spaced repetition.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGenerateOpen(false)}>Cancel</Button>
+            <Button onClick={handleGenerateFlashcards} className="bg-slate-900 hover:bg-slate-800 text-white gap-2" disabled={generatingFlashcards}>
+              {generatingFlashcards ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function StudyTimerTab({ materials }: { materials: { id: string; title: string; content: string | null }[] }) {
+  const [phase, setPhase] = useState<"focus" | "break">("focus")
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60)
+  const [running, setRunning] = useState(false)
+  const [sessionTopic, setSessionTopic] = useState("")
+  const [selectedMaterial, setSelectedMaterial] = useState("")
+  const [sessionCount, setSessionCount] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+  const { saveSession, saving } = useLearningSession()
+
+  const FOCUS_SECS = 25 * 60
+  const BREAK_SECS = 5 * 60
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+
+  const startTimer = () => {
+    if (running) return
+    setRunning(true)
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          setRunning(false)
+          if (phaseRef.current === "focus") {
+            setElapsed((e) => e + FOCUS_SECS)
+            setSessionCount((c) => c + 1)
+            setPhase("break")
+            setSecondsLeft(BREAK_SECS)
+            toast.success("Focus session complete! Take a 5-minute break.")
+          } else {
+            setPhase("focus")
+            setSecondsLeft(FOCUS_SECS)
+            toast("Break over — start your next focus session!")
+          }
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = null
+    setRunning(false)
+    const elapsedNow = FOCUS_SECS - secondsLeft
+    if (elapsedNow > 60 && phase === "focus") {
+      setElapsed((e) => e + elapsedNow)
+    }
+  }
+
+  const resetTimer = () => {
+    stopTimer()
+    setPhase("focus")
+    setSecondsLeft(FOCUS_SECS)
+  }
+
+  const handleSaveSession = async () => {
+    const totalMinutes = Math.round(elapsed / 60)
+    if (totalMinutes < 1) {
+      toast.error("Session too short to save (need at least 1 minute)")
+      return
+    }
+    const mat = materials.find((m) => m.id === selectedMaterial)
+    await saveSession({
+      duration_minutes: totalMinutes,
+      topic: sessionTopic || mat?.title || undefined,
+    })
+    toast.success(`Session saved: ${totalMinutes} min`)
+    setElapsed(0)
+    setSessionCount(0)
+    resetTimer()
+  }
+
+  const mins = Math.floor(secondsLeft / 60).toString().padStart(2, "0")
+  const secs = (secondsLeft % 60).toString().padStart(2, "0")
+  const totalStudied = Math.round(elapsed / 60)
+
+  return (
+    <div className="max-w-md mx-auto space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className={`h-2 w-2 rounded-full ${phase === "focus" ? "bg-slate-900" : "bg-emerald-500"}`} />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            {phase === "focus" ? "Focus" : "Break"}
+          </span>
+        </div>
+
+        <div className="text-6xl font-bold text-slate-900 mb-2 tabular-nums">
+          {mins}:{secs}
+        </div>
+        <p className="text-xs text-slate-400 mb-8">
+          {phase === "focus" ? "Stay focused — no distractions" : "Rest your eyes and stretch"}
+        </p>
+
+        <div className="flex items-center justify-center gap-3">
+          {!running ? (
+            <Button onClick={startTimer} className="bg-slate-900 hover:bg-slate-800 text-white gap-2 px-8">
+              <Play className="h-4 w-4" /> Start
+            </Button>
+          ) : (
+            <Button onClick={stopTimer} variant="outline" className="border-slate-200 gap-2 px-8">
+              <Square className="h-4 w-4" /> Pause
+            </Button>
+          )}
+          <Button onClick={resetTimer} variant="ghost" size="sm" className="text-slate-400">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {sessionCount > 0 && (
+          <p className="text-xs text-slate-500 mt-4">{sessionCount} session{sessionCount !== 1 ? "s" : ""} completed today</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+          <Timer className="h-4 w-4 text-slate-400" />
+          Session details
+        </h3>
+        <div className="space-y-1.5">
+          <label className="text-xs text-slate-500">Topic (optional)</label>
+          <input
+            type="text"
+            value={sessionTopic}
+            onChange={(e) => setSessionTopic(e.target.value)}
+            placeholder="e.g. Thermodynamics equations"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
+          />
+        </div>
+        {materials.length > 0 && (
+          <div className="space-y-1.5">
+            <label className="text-xs text-slate-500">Material (optional)</label>
+            <select
+              value={selectedMaterial}
+              onChange={(e) => setSelectedMaterial(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+            >
+              <option value="">No specific material</option>
+              {materials.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
+            </select>
+          </div>
+        )}
+        {totalStudied > 0 && (
+          <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-emerald-800">{totalStudied} min studied</p>
+              <p className="text-[11px] text-emerald-600">Ready to save to your record</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveSession}
+              disabled={saving}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
+            >
+              {saving ? <><Loader2 className="h-3 w-3 animate-spin" /> Saving</> : <><SkipForward className="h-3 w-3" /> Save session</>}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-medium text-slate-700 mb-1">How it works</p>
+        <ul className="text-[11px] text-slate-500 space-y-1">
+          <li>• 25 min focus → 5 min break (Pomodoro technique)</li>
+          <li>• Sessions are recorded to your Analytics OS</li>
+          <li>• Tracking builds your study hour history</li>
+        </ul>
       </div>
     </div>
   )
 }
 
-const GENERATION_ITEMS = [
-  { label: "Topic extraction", description: "Key concepts automatically identified", icon: Layers },
-  { label: "Concept map", description: "Visual knowledge graph of the material", icon: Brain },
-  { label: "Flashcard deck", description: "Active recall cards with spaced repetition", icon: RotateCcw },
-  { label: "Learning path", description: "Personalized study sequence", icon: Target },
-  { label: "Exam readiness score", description: "How prepared you are", icon: Target },
-]
+function TutorTab({ materials }: { materials: { id: string; title: string; content: string | null }[] }) {
+  const [question, setQuestion] = useState("")
+  const [contextId, setContextId] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [history, setHistory] = useState<{ role: "user" | "assistant"; content: string }[]>([])
 
-const LEARNING_METRICS = [
-  { label: "Topic mastery", value: "—" },
-  { label: "Retention score", value: "—" },
-  { label: "Confidence score", value: "—" },
-  { label: "Exam readiness", value: "—" },
-]
+  const ask = async () => {
+    if (!question) return
+    setLoading(true)
+    const material = materials.find((m) => m.id === contextId)
+    try {
+      const res = await fetch("/api/ai/tutor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, context: material?.content, history }),
+      })
+      const { answer } = await res.json()
+      setHistory((h) => [...h, { role: "user", content: question }, { role: "assistant", content: answer }])
+      setQuestion("")
+    } catch {
+      toast.error("Failed to get response")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-4">
+      {history.length === 0 && (
+        <div className="py-8 text-center">
+          <Brain className="h-12 w-12 text-slate-200 mx-auto mb-3" />
+          <p className="text-sm text-slate-500">Ask your AI tutor anything about your materials</p>
+        </div>
+      )}
+      {history.map((msg, i) => (
+        <div key={i} className={`rounded-xl p-4 text-sm ${msg.role === "user" ? "bg-slate-900 text-white ml-12" : "bg-slate-100 text-slate-900 mr-12"}`}>
+          {msg.content}
+        </div>
+      ))}
+      {materials.length > 0 && (
+        <Select value={contextId} onValueChange={setContextId}>
+          <SelectTrigger className="border-slate-200"><SelectValue placeholder="Select material context (optional)" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">No specific material</SelectItem>
+            {materials.map((m) => <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      )}
+      <div className="flex gap-2">
+        <Input placeholder="Ask a question..." value={question} onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && ask()} />
+        <Button onClick={ask} disabled={loading || !question} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask"}
+        </Button>
+      </div>
+    </div>
+  )
+}
