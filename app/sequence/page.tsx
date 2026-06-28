@@ -16,10 +16,11 @@ import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DEMO_CAMPAIGNS } from "@/lib/scouting/mock-data"
 import { DEFAULT_SEQUENCE, SAFETY } from "@/lib/scouting/constants"
+import { useCampaigns } from "@/hooks/use-campaigns"
+import { NewCampaignWizard } from "@/components/scouting/new-campaign-wizard"
 import { cn } from "@/lib/utils"
-import type { Campaign, CampaignStatus, MessageType } from "@/types/scouting"
+import type { CampaignStatus, MessageType } from "@/types/scouting"
 
 const TYPE_ICON: Record<MessageType, typeof UserPlus> = {
   connection_request: UserPlus,
@@ -29,24 +30,53 @@ const TYPE_ICON: Record<MessageType, typeof UserPlus> = {
 }
 
 export default function SequencePage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(DEMO_CAMPAIGNS)
-  const [selectedId, setSelectedId] = useState(DEMO_CAMPAIGNS[0].id)
+  const { campaigns, updateCampaign, refetch } = useCampaigns()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [wizardOpen, setWizardOpen] = useState(false)
 
-  const selected = campaigns.find((c) => c.id === selectedId)!
+  const selected = campaigns.find((c) => c.id === selectedId) ?? campaigns[0]
 
-  function toggleStatus(id: string) {
-    setCampaigns((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c
-        const next: CampaignStatus = c.status === "active" ? "paused" : "active"
-        toast.success(`Campaign ${next === "active" ? "resumed" : "paused"}`)
-        return { ...c, status: next }
-      })
-    )
+  async function toggleStatus(id: string, current: CampaignStatus) {
+    const next: CampaignStatus = current === "active" ? "paused" : "active"
+    try {
+      await updateCampaign(id, { status: next })
+      toast.success(`Campaign ${next === "active" ? "resumed" : "paused"}`)
+    } catch {
+      toast.error("Could not update campaign")
+    }
   }
 
   const sentToday = 14 // demo: connections sent today
   const messagesToday = 31
+
+  if (!selected) {
+    return (
+      <div>
+        <PageHeader
+          title="Sequence"
+          description="Campaigns, timelines, and account-safe sending."
+          actions={
+            <Button onClick={() => setWizardOpen(true)} className="bg-[#1E3A5F] hover:bg-[#16304f] text-white gap-1.5">
+              <Plus className="h-4 w-4" />
+              New campaign
+            </Button>
+          }
+        />
+        <div className="p-12 text-center">
+          <p className="text-sm text-slate-500">No campaigns yet. Create your first one to start sending.</p>
+        </div>
+        {wizardOpen && (
+          <NewCampaignWizard
+            onClose={() => setWizardOpen(false)}
+            onCreated={(c) => {
+              refetch()
+              setSelectedId(c.id)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -54,12 +84,14 @@ export default function SequencePage() {
         title="Sequence"
         description="Campaigns, timelines, and account-safe sending."
         actions={
-          <Button className="bg-[#1E3A5F] hover:bg-[#16304f] text-white gap-1.5">
+          <Button onClick={() => setWizardOpen(true)} className="bg-[#1E3A5F] hover:bg-[#16304f] text-white gap-1.5">
             <Plus className="h-4 w-4" />
             New campaign
           </Button>
         }
       />
+
+      {wizardOpen && <NewCampaignWizard onClose={() => setWizardOpen(false)} />}
 
       <div className="p-6 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 max-w-[1200px] items-start">
         {/* Campaign list */}
@@ -113,7 +145,7 @@ export default function SequencePage() {
                 </div>
               </div>
               <Button
-                onClick={() => toggleStatus(selected.id)}
+                onClick={() => toggleStatus(selected.id, selected.status)}
                 variant={selected.status === "active" ? "outline" : "default"}
                 className={cn("gap-1.5", selected.status !== "active" && "bg-[#1E3A5F] hover:bg-[#16304f] text-white")}
               >

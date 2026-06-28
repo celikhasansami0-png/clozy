@@ -7,6 +7,7 @@ import {
   Radar,
   PenLine,
   GitBranch,
+  Send,
   Inbox,
   KanbanSquare,
   BarChart2,
@@ -29,6 +30,7 @@ const MODULES = [
   { href: "/scout", label: "Scout", icon: Radar },
   { href: "/craft", label: "Craft", icon: PenLine },
   { href: "/sequence", label: "Sequence", icon: GitBranch },
+  { href: "/send", label: "Send", icon: Send },
   { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
 ]

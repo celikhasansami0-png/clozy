@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Radar,
   Inbox,
@@ -16,18 +18,36 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/hooks/use-auth"
-import { DEMO_LEADS, DEMO_CAMPAIGNS, DEMO_CONVERSATIONS, getLeadById } from "@/lib/scouting/mock-data"
+import { useCampaigns } from "@/hooks/use-campaigns"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
+import { useConversations } from "@/hooks/use-conversations"
+import { useIcps } from "@/hooks/use-icps"
 import { REPLY_CLASS_META, STAGE_COLORS, PIPELINE_STAGES } from "@/lib/scouting/constants"
 import { IntentBadge } from "@/components/scouting/intent-badge"
 import { ScoreRing } from "@/components/scouting/score-ring"
 import { getInitials, cn } from "@/lib/utils"
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { profile } = useAuth()
+  const { campaigns } = useCampaigns()
+  const { leads } = useScoutingLeads()
+  const { conversations } = useConversations()
+  const { icps, loading: icpsLoading } = useIcps()
   const firstName = profile?.full_name?.split(" ")[0] ?? "there"
 
-  // Aggregate demo metrics across campaigns
-  const totals = DEMO_CAMPAIGNS.reduce(
+  // First-run: a user with no ICP hasn't onboarded yet.
+  useEffect(() => {
+    if (!icpsLoading && icps.length === 0) {
+      router.replace("/onboarding")
+    }
+  }, [icpsLoading, icps.length, router])
+
+  const leadsById = Object.fromEntries(leads.map((l) => [l.id, l]))
+  const getLeadById = (id: string) => leadsById[id]
+
+  // Aggregate metrics across campaigns
+  const totals = campaigns.reduce(
     (acc, c) => ({
       leads: acc.leads + c.totalLeads,
       sent: acc.sent + c.connectionsSent,
@@ -40,11 +60,11 @@ export default function DashboardPage() {
   const replyRate = totals.sent ? ((totals.replies / totals.sent) * 100).toFixed(1) : "0"
   const acceptRate = totals.sent ? ((totals.accepted / totals.sent) * 100).toFixed(0) : "0"
 
-  const hotLeads = [...DEMO_LEADS].sort((a, b) => b.totalScore - a.totalScore).slice(0, 4)
-  const needsReply = DEMO_CONVERSATIONS.filter((c) => c.unread)
+  const hotLeads = [...leads].sort((a, b) => b.totalScore - a.totalScore).slice(0, 4)
+  const needsReply = conversations.filter((c) => c.unread)
 
   const metrics = [
-    { label: "Leads in pipeline", value: totals.leads.toLocaleString(), icon: Users, sub: "across 3 campaigns" },
+    { label: "Leads in pipeline", value: totals.leads.toLocaleString(), icon: Users, sub: `across ${campaigns.length} campaigns` },
     { label: "Connections sent", value: totals.sent.toLocaleString(), icon: Send, sub: `${acceptRate}% accepted` },
     { label: "Reply rate", value: `${replyRate}%`, icon: TrendingUp, sub: "benchmark 8–15%" },
     { label: "Meetings booked", value: totals.meetings.toString(), icon: CalendarCheck, sub: "this month" },
@@ -170,7 +190,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-slate-100">
-            {DEMO_CAMPAIGNS.map((c) => (
+            {campaigns.map((c) => (
               <Link
                 key={c.id}
                 href="/sequence"
@@ -210,7 +230,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {PIPELINE_STAGES.map((stage) => {
-              const count = DEMO_LEADS.filter((l) => l.stage === stage.id).length
+              const count = leads.filter((l) => l.stage === stage.id).length
               return (
                 <div
                   key={stage.id}

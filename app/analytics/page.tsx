@@ -13,7 +13,8 @@ import {
 } from "recharts"
 import { TrendingUp, Target, CalendarCheck, ThumbsUp, Sparkles } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
-import { DEMO_CAMPAIGNS, DEMO_LEADS } from "@/lib/scouting/mock-data"
+import { useCampaigns } from "@/hooks/use-campaigns"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
 import { PIPELINE_STAGES } from "@/lib/scouting/constants"
 
 const WEEKLY = [
@@ -33,7 +34,10 @@ const TOP_HOOKS = [
 ]
 
 export default function AnalyticsPage() {
-  const totals = DEMO_CAMPAIGNS.reduce(
+  const { campaigns } = useCampaigns()
+  const { leads } = useScoutingLeads()
+
+  const totals = campaigns.reduce(
     (acc, c) => ({
       sent: acc.sent + c.connectionsSent,
       accepted: acc.accepted + c.connectionsAccepted,
@@ -43,15 +47,16 @@ export default function AnalyticsPage() {
     { sent: 0, accepted: 0, replies: 0, meetings: 0 }
   )
 
-  const acceptanceRate = ((totals.accepted / totals.sent) * 100).toFixed(0)
-  const replyRate = ((totals.replies / totals.sent) * 100).toFixed(1)
+  const safeDiv = (a: number, b: number) => (b ? (a / b) * 100 : 0)
+  const acceptanceRate = safeDiv(totals.accepted, totals.sent).toFixed(0)
+  const replyRate = safeDiv(totals.replies, totals.sent).toFixed(1)
   const positiveReplies = Math.round(totals.replies * 0.55)
-  const positiveRate = ((positiveReplies / totals.replies) * 100).toFixed(0)
-  const meetingRate = ((totals.meetings / totals.replies) * 100).toFixed(0)
+  const positiveRate = safeDiv(positiveReplies, totals.replies).toFixed(0)
+  const meetingRate = safeDiv(totals.meetings, totals.replies).toFixed(0)
 
   const stageData = PIPELINE_STAGES.map((s) => ({
     label: s.label,
-    count: DEMO_LEADS.filter((l) => l.stage === s.id).length,
+    count: leads.filter((l) => l.stage === s.id).length,
   })).filter((d) => d.count > 0)
 
   const funnel = [

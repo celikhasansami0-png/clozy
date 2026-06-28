@@ -10,17 +10,21 @@ import {
   AlertTriangle,
   XCircle,
   Wand2,
+  Send,
 } from "lucide-react"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { DEMO_LEADS, DEMO_VOICE_PROFILE } from "@/lib/scouting/mock-data"
 import { DEFAULT_SEQUENCE } from "@/lib/scouting/constants"
+import { DEMO_VOICE_PROFILE } from "@/lib/scouting/mock-data"
+import { useVoiceProfile } from "@/hooks/use-voice-profile"
+import { useScoutingLeads } from "@/hooks/use-scouting-leads"
+import { useScoutingMessages } from "@/hooks/use-scouting-messages"
 import { runQualityGate } from "@/lib/scouting/quality"
 import { cn } from "@/lib/utils"
-import type { VoiceProfile, MessageQuality } from "@/types/scouting"
+import type { MessageQuality, MessageType } from "@/types/scouting"
 
 interface DraftMessage {
   sequenceStep: number
@@ -32,16 +36,46 @@ interface DraftMessage {
 }
 
 export default function CraftPage() {
-  const [voice, setVoice] = useState<VoiceProfile>(DEMO_VOICE_PROFILE)
+  const { voice: savedVoice, saveVoice } = useVoiceProfile()
+  const { leads } = useScoutingLeads()
+  const { createMessages } = useScoutingMessages()
+  const voice = savedVoice ?? DEMO_VOICE_PROFILE
   const [retrainOpen, setRetrainOpen] = useState(false)
   const [samples, setSamples] = useState("")
   const [training, setTraining] = useState(false)
 
-  const [selectedLeadId, setSelectedLeadId] = useState(DEMO_LEADS[0].id)
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
   const [messages, setMessages] = useState<DraftMessage[]>([])
   const [generating, setGenerating] = useState(false)
+  const [queuing, setQueuing] = useState(false)
 
-  const selectedLead = DEMO_LEADS.find((l) => l.id === selectedLeadId)!
+  async function handleQueue() {
+    if (!selectedLead || messages.length === 0) return
+    setQueuing(true)
+    try {
+      await createMessages(
+        messages.map((m) => ({
+          leadId: selectedLead.id,
+          campaignId: selectedLead.campaignId,
+          sequenceStep: m.sequenceStep,
+          type: m.type as MessageType,
+          direction: "outbound" as const,
+          content: m.content,
+          personalizationHooks: m.personalizationHooks,
+          confidence: m.confidence,
+          quality: m.quality,
+          status: "approved" as const,
+        }))
+      )
+      toast.success("Added to your Send queue")
+    } catch {
+      toast.error("Could not queue messages")
+    } finally {
+      setQueuing(false)
+    }
+  }
+
+  const selectedLead = leads.find((l) => l.id === selectedLeadId) ?? leads[0]
 
   async function handleRetrain() {
     const list = samples.split("\n").map((s) => s.trim()).filter(Boolean)
@@ -59,8 +93,7 @@ export default function CraftPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       const v = data.voiceProfile
-      setVoice({
-        ...voice,
+      await saveVoice({
         formalityLevel: v.formalityLevel ?? voice.formalityLevel,
         avgMessageLength: v.avgMessageLength ?? voice.avgMessageLength,
         openingStyle: v.openingStyle ?? voice.openingStyle,
@@ -68,7 +101,6 @@ export default function CraftPage() {
         characteristicPhrases: v.characteristicPhrases ?? voice.characteristicPhrases,
         phrasesToAvoid: v.phrasesToAvoid ?? voice.phrasesToAvoid,
         signOffStyle: v.signOffStyle ?? voice.signOffStyle,
-        version: voice.version + 1,
         trainingMessages: list,
       })
       setRetrainOpen(false)
@@ -82,6 +114,10 @@ export default function CraftPage() {
   }
 
   async function handleGenerate() {
+    if (!selectedLead) {
+      toast.error("Generate some leads in Scout first")
+      return
+    }
     setGenerating(true)
     try {
       const res = await fetch("/api/scouting/generate-sequence", {
@@ -216,11 +252,11 @@ export default function CraftPage() {
                   Lead
                 </label>
                 <select
-                  value={selectedLeadId}
+                  value={selectedLead?.id ?? ""}
                   onChange={(e) => setSelectedLeadId(e.target.value)}
                   className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                 >
-                  {DEMO_LEADS.map((l) => (
+                  {leads.map((l) => (
                     <option key={l.id} value={l.id}>
                       {l.firstName} {l.lastName} — {l.title}, {l.company} ({l.totalScore})
                     </option>
@@ -229,14 +265,14 @@ export default function CraftPage() {
               </div>
               <Button
                 onClick={handleGenerate}
-                disabled={generating}
+                disabled={generating || !selectedLead}
                 className="bg-[#1E3A5F] hover:bg-[#16304f] text-white gap-1.5"
               >
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Generate sequence
               </Button>
             </div>
-            {selectedLead.researchBrief ? (
+            {selectedLead?.researchBrief ? (
               <p className="text-[11px] text-emerald-600 mt-2 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" /> Research brief available — messages will use {selectedLead.firstName}&apos;s top hook
               </p>
@@ -271,6 +307,20 @@ export default function CraftPage() {
               />
             )
           })}
+
+          {messages.length > 0 && (
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-500">Happy with these? Add the sequence to your Send queue.</p>
+              <Button
+                onClick={handleQueue}
+                disabled={queuing}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              >
+                {queuing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Add to Send queue
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

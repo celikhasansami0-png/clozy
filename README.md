@@ -46,6 +46,10 @@ Run `supabase/schema.sql` (shared `profiles`/auth) then `supabase/scouting-schem
 
 ## Environment
 
+See **[docs/SETUP.md](docs/SETUP.md)** for the full step-by-step go-live guide
+(Supabase, Anthropic, Stripe, Vercel) and **`.env.example`** for every variable.
+The app runs fully in demo mode with none of these set.
+
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase |
