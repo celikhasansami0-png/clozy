@@ -1,13 +1,14 @@
 import React from 'react'
 
-// Green accent palette (BioNova / sustainability theme)
+// Monochrome accent — Bionova design system is strictly black & white
+// (only project colors stay colored). All "accent" usages render white/grey.
 export const accent = {
-  base:   '#4ade80',                    // green-400
-  bright: '#86efac',                    // green-300 (tall bars / highlights)
-  deep:   '#22c55e',                    // green-500
-  dark:   '#2e6b45',                    // muted/short bars
-  soft:   'rgba(74,222,128,0.12)',
-  border: 'rgba(74,222,128,0.35)',
+  base:   '#F2F2F2',                    // primary white
+  bright: '#FFFFFF',                    // pure white (highlights / tall bars)
+  deep:   '#A0A0A0',                    // secondary grey
+  dark:   '#606060',                    // muted/short bars
+  soft:   'rgba(242,242,242,0.08)',
+  border: 'rgba(242,242,242,0.20)',
 }
 
 const C = { text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', border:'#262626', elevated:'#161616', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }

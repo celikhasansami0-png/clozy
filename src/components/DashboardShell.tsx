@@ -3,17 +3,20 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import CreateProvider, { useCreate } from './CreateProvider'
+import { NicheProvider, useNiche } from './NicheProvider'
 import { accent } from './ui'
+import type { ModuleConfig } from '@/config/modules'
+import { plural } from '@/config/modules'
 
 const C = { bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060' }
 
 type Action = { label: string; kind: 'project' | 'task' | 'permit' | 'member' }
-function routeMeta(path: string): { crumb: string; action?: Action } {
-  if (path === '/dashboard') return { crumb: 'Dashboard', action: { label: 'New Project', kind: 'project' } }
-  if (path.startsWith('/dashboard/jobs')) return { crumb: 'Projects', action: { label: 'New Task', kind: 'task' } }
+function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: string; action?: Action } {
+  if (path === '/dashboard') return { crumb: 'Dashboard', action: { label: `New ${term.project}`, kind: 'project' } }
+  if (path.startsWith('/dashboard/jobs')) return { crumb: plural(term.project), action: { label: `New ${term.task}`, kind: 'task' } }
   if (path.startsWith('/dashboard/permits')) return { crumb: 'Permits', action: { label: 'New Permit', kind: 'permit' } }
-  if (path.startsWith('/dashboard/crew')) return { crumb: 'Team', action: { label: 'Add Member', kind: 'member' } }
-  if (path.startsWith('/dashboard/schedule')) return { crumb: 'Schedule', action: { label: 'New Task', kind: 'task' } }
+  if (path.startsWith('/dashboard/crew')) return { crumb: term.team, action: { label: 'Add Member', kind: 'member' } }
+  if (path.startsWith('/dashboard/schedule')) return { crumb: term.schedule, action: { label: `New ${term.task}`, kind: 'task' } }
   if (path.startsWith('/dashboard/reports')) return { crumb: 'Reports' }
   if (path.startsWith('/dashboard/assistant')) return { crumb: 'Assistant' }
   return { crumb: 'Dashboard' }
@@ -21,7 +24,8 @@ function routeMeta(path: string): { crumb: string; action?: Action } {
 
 function Topbar({ onMenu }: { onMenu: () => void }) {
   const create = useCreate()
-  const meta = routeMeta(usePathname() || '/dashboard')
+  const { term } = useNiche()
+  const meta = routeMeta(usePathname() || '/dashboard', term)
 
   function runAction(kind: Action['kind']) {
     if (kind === 'project') create.newProject()
@@ -72,10 +76,12 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
   )
 }
 
-export default function DashboardShell({ userId, children }: { userId: string; children: React.ReactNode }) {
+export default function DashboardShell({ userId, niche, children }: { userId: string; niche: string; children: React.ReactNode }) {
   return (
-    <CreateProvider userId={userId}>
-      <Chrome userId={userId}>{children}</Chrome>
-    </CreateProvider>
+    <NicheProvider niche={niche}>
+      <CreateProvider userId={userId}>
+        <Chrome userId={userId}>{children}</Chrome>
+      </CreateProvider>
+    </NicheProvider>
   )
 }

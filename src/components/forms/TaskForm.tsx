@@ -4,12 +4,14 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { useNiche } from '../NicheProvider'
 import type { Job, Task, TaskStatus, TaskPriority, CrewMember } from '@/lib/types'
-
-const TAGS = ['Rough-in', 'Permit', 'Inspection', 'Engineering', 'Survey', 'Commissioning', 'General']
 
 export default function TaskForm({ userId, onClose, jobId, task }: { userId: string; onClose: () => void; jobId?: string; task?: Task }) {
   const supabase = createClient()
+  const { module, term } = useNiche()
+  // Tag suggestions from this niche's stages plus a couple of generic tags.
+  const TAGS = [...module.stages, 'Inspection', 'General']
   const editing = !!task
   const [jobs, setJobs] = useState<Pick<Job, 'id' | 'name'>[]>([])
   const [crew, setCrew] = useState<CrewMember[]>([])
@@ -54,7 +56,7 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
   }
 
   return (
-    <Modal title={editing ? 'Edit task' : 'New task'} onClose={onClose}>
+    <Modal title={`${editing ? 'Edit' : 'New'} ${term.task.toLowerCase()}`} onClose={onClose}>
       <form onSubmit={submit}>
         <Field label="Title" required error={titleErr ? 'Title is required' : undefined}>
           <TextInput value={title} error={titleErr} onChange={v => { setTitle(v); setTitleErr(false) }} placeholder="Pile driving — rows 18–32" />
@@ -63,7 +65,7 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
           <Field label="Status"><Select value={status} onChange={v => setStatus(v as TaskStatus)} options={[{ value: 'todo', label: 'To Do' }, { value: 'in_progress', label: 'In Progress' }, { value: 'done', label: 'Done' }]} /></Field>
           <Field label="Priority"><Select value={priority} onChange={v => setPriority(v as TaskPriority)} options={['urgent', 'high', 'normal'].map(p => ({ value: p, label: p[0].toUpperCase() + p.slice(1) }))} /></Field>
         </div>
-        <Field label="Project"><Select value={project} onChange={setProject} options={jobs.map(j => ({ value: j.id, label: j.name }))} /></Field>
+        <Field label={term.project}><Select value={project} onChange={setProject} options={jobs.map(j => ({ value: j.id, label: j.name }))} /></Field>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Field label="Assignee"><Select value={assignee} onChange={setAssignee} options={[{ value: '', label: 'Unassigned' }, ...crew.map(c => ({ value: c.id, label: c.name }))]} /></Field>
           <Field label="Due date"><TextInput type="date" value={due} onChange={setDue} /></Field>
@@ -72,7 +74,7 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
           <TextInput value={tag} onChange={setTag} list="tag-suggestions" />
           <datalist id="tag-suggestions">{TAGS.map(t => <option key={t} value={t} />)}</datalist>
         </Field>
-        <SubmitButton loading={loading}>{editing ? 'Save changes' : 'Create task'}</SubmitButton>
+        <SubmitButton loading={loading}>{editing ? 'Save changes' : `Create ${term.task.toLowerCase()}`}</SubmitButton>
       </form>
     </Modal>
   )

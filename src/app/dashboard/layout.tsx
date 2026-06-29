@@ -7,5 +7,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth')
 
-  return <DashboardShell userId={user.id}>{children}</DashboardShell>
+  const { data: profile } = await supabase.from('profiles').select('niche').eq('id', user.id).single()
+
+  return <DashboardShell userId={user.id} niche={profile?.niche || 'solar_epc'}>{children}</DashboardShell>
 }

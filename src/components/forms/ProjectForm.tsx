@@ -4,18 +4,20 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, Select, ColorPicker, Slider, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { useNiche } from '../NicheProvider'
 import type { Job, JobStatus } from '@/lib/types'
 
 const STATUS: JobStatus[] = ['In Progress', 'On Track', 'Delayed', 'Complete']
-const PHASE = ['Planning', 'Site Survey', 'Design', 'Permitting', 'Construction', 'Commissioning', 'Complete']
 
 export default function ProjectForm({ userId, onClose }: { userId: string; onClose: () => void }) {
   const supabase = createClient()
+  const { niche, module, term } = useNiche()
+  const PHASE = module.stages
   const [name, setName] = useState('')
   const [nameErr, setNameErr] = useState(false)
   const [color, setColor] = useState('#F5A623')
   const [status, setStatus] = useState<JobStatus>('In Progress')
-  const [phase, setPhase] = useState('Planning')
+  const [phase, setPhase] = useState(PHASE[0])
   const [completion, setCompletion] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -27,15 +29,15 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
     const optimistic: Job = { id: tempId, owner_id: userId, name: name.trim(), color, status, phase, completion, created_at: new Date().toISOString() }
     emit(evt.add('project'), optimistic)
     onClose()
-    const { data, error } = await supabase.from('jobs').insert({ owner_id: userId, name: name.trim(), color, status, phase, completion }).select('*').single()
+    const { data, error } = await supabase.from('jobs').insert({ owner_id: userId, niche, name: name.trim(), color, status, phase, completion }).select('*').single()
     if (error || !data) emit(evt.remove('project'), tempId)
     else emit<ReplacePayload<Job>>(evt.replace('project'), { tempId, row: data as Job })
   }
 
   return (
-    <Modal title="New project" subtitle="Added to your projects" onClose={onClose}>
+    <Modal title={`New ${term.project.toLowerCase()}`} subtitle={`Added to your ${term.project.toLowerCase()}s`} onClose={onClose}>
       <form onSubmit={submit}>
-        <Field label="Project name" required error={nameErr ? 'Project name is required' : undefined}>
+        <Field label={`${term.project} name`} required error={nameErr ? `${term.project} name is required` : undefined}>
           <TextInput value={name} error={nameErr} onChange={v => { setName(v); setNameErr(false) }} placeholder="Cedar Ridge Solar Farm — 12 MW" />
         </Field>
         <Field label="Color"><ColorPicker value={color} onChange={setColor} /></Field>
@@ -44,7 +46,7 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
           <Field label="Phase"><Select value={phase} onChange={setPhase} options={PHASE.map(s => ({ value: s, label: s }))} /></Field>
         </div>
         <Field label="Completion"><Slider value={completion} onChange={setCompletion} /></Field>
-        <SubmitButton loading={loading}>Create project</SubmitButton>
+        <SubmitButton loading={loading}>Create {term.project.toLowerCase()}</SubmitButton>
       </form>
     </Modal>
   )

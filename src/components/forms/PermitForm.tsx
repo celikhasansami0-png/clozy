@@ -4,18 +4,20 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, TextArea, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { useNiche } from '../NicheProvider'
 import type { Job, Permit, PermitStatus } from '@/lib/types'
 
-const TYPES = ['Electrical', 'Low Voltage', 'Building', 'Mechanical', 'Fire', 'Other']
 const STATUS: PermitStatus[] = ['Pending', 'Under Review', 'Approved', 'Rejected']
 
 export default function PermitForm({ userId, onClose }: { userId: string; onClose: () => void }) {
   const supabase = createClient()
+  const { module } = useNiche()
+  const TYPES = module.permitTypes
   const [jobs, setJobs] = useState<Pick<Job, 'id' | 'name'>[]>([])
   const [number, setNumber] = useState('')
   const [numberErr, setNumberErr] = useState(false)
   const [project, setProject] = useState('')
-  const [type, setType] = useState('Electrical')
+  const [type, setType] = useState(TYPES[0])
   const [status, setStatus] = useState<PermitStatus>('Pending')
   const [submitted, setSubmitted] = useState(new Date().toISOString().slice(0, 10))
   const [notes, setNotes] = useState('')

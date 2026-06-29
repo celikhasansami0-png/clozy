@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { accent } from './ui'
+import { useNiche } from './NicheProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import type { Job } from '@/lib/types'
 
@@ -21,8 +22,15 @@ const navItems = [
 
 export default function Sidebar({ userId, className = '', onNavigate }: { userId: string; className?: string; onNavigate?: () => void }) {
   const pathname = usePathname()
+  const { term, plural } = useNiche()
   const [jobs, setJobs] = useState<Job[]>([])
   const supabase = createClient()
+
+  const labelFor: Record<string, string> = {
+    '/dashboard/jobs': plural(term.project),
+    '/dashboard/crew': term.team,
+    '/dashboard/schedule': term.schedule,
+  }
 
   useEffect(() => {
     supabase.from('jobs').select('id,name,color').eq('owner_id', userId).order('created_at').then(({ data }) => { if (data) setJobs(data as Job[]) })
@@ -58,7 +66,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
               background: active ? C.elevated : 'transparent',
             }}>
               <span style={{ display:'flex', color: active ? accent.base : C.muted }}>{item.icon}</span>
-              {item.label}
+              {labelFor[item.href] || item.label}
               {active && <span style={{ marginLeft:'auto', width:6, height:6, borderRadius:'50%', background:accent.base, flexShrink:0 }} />}
             </Link>
           )
@@ -67,7 +75,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
 
       {/* Active projects */}
       <div style={{ padding:'8px 10px', flex:1, overflowY:'auto' }}>
-        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active Projects</div>
+        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active {plural(term.project)}</div>
         {jobs.map(j => (
           <Link key={j.id} href={`/dashboard/jobs?job=${j.id}`} onClick={onNavigate} style={{
             display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:6,
@@ -81,7 +89,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
             <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{j.name}</span>
           </Link>
         ))}
-        {jobs.length === 0 && <div style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No projects yet</div>}
+        {jobs.length === 0 && <div style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No {plural(term.project.toLowerCase())} yet</div>}
       </div>
 
       {/* User */}

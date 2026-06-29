@@ -58,7 +58,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (v: 
 export function Slider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#4ade80' }} />
+      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#F2F2F2' }} />
       <div style={{ fontSize:12, color:C.sub, marginTop:4 }}>{value}%</div>
     </div>
   )

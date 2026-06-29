@@ -1,9 +1,20 @@
-# BioNova — Setup Guide
+# Bionova — Setup Guide
 
-Project ops for **solar EPC teams & energy consultants** — track solar projects,
-permits, team and commissioning across engineering, procurement and construction,
-with **@Bionova AI** built in (chat, risk alerts, auto-assign, permit agent, and
-an AI report agent).
+**The operating system for renewable energy companies.** One product, eight
+niches (Solar EPC, BESS, EV Charging, Wind, Hydro, Biogas, O&M, Consulting) —
+the module config in `src/config/modules.ts` drives all UI labels, stages,
+permit types and demo data per niche. With **@Bionova AI** built in.
+
+> **Day 2 setup notes**
+> 1. Run **both** SQL files in order in the Supabase SQL Editor:
+>    `supabase/migrations/001_schema.sql` then `supabase/migrations/002_profiles_and_niche.sql`.
+>    The 002 migration adds `profiles`, the new-user trigger, niche columns on
+>    `jobs`, and the per-niche `seed_demo_data(owner_id, niche)`.
+> 2. In Supabase → **Authentication → URL Configuration**, add your site URL and
+>    redirect URLs: `<site>/auth/callback` (email verification) and
+>    `<site>/auth/reset` (password reset). For local dev use `http://localhost:3000`.
+> 3. New signups are routed through onboarding (niche + company) by `middleware.ts`
+>    before reaching the dashboard.
 
 ## 1. Install dependencies
 ```bash
