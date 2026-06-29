@@ -1,6 +1,7 @@
 'use client'
 import { Tag, ProgressBar, StatusDot, jobStatusColor, statusCfg } from './ui'
 import type { Job, Task, Permit } from '@/lib/types'
+import { riskAlerts } from '@/lib/insights'
 import { useRouter } from 'next/navigation'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)' }
@@ -11,6 +12,7 @@ export default function DashboardHome({ jobs, tasks, permits }: { jobs:Job[], ta
   const urgent = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done').length
   const done = tasks.filter(t => t.status === 'done').length
   const urgentItems = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done')
+  const risks = riskAlerts(tasks)
 
   const stats = [
     { label:'Active Projects', value:jobs.length, dim:false },
@@ -62,6 +64,30 @@ export default function DashboardHome({ jobs, tasks, permits }: { jobs:Job[], ta
               <div style={{ display:'flex', justifyContent:'space-between', marginTop:7, fontSize:11, color:C.muted }}>
                 <span>{j.phase}</span><span>{j.completion}%</span>
               </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+        <div style={{ fontSize:11, fontWeight:600, color:C.dim, letterSpacing:'0.08em', textTransform:'uppercase' }}>Risk Alerts</div>
+        {risks.length > 0 && <span style={{ fontSize:10, fontWeight:700, color:C.text, background:C.highBg, border:`1px solid ${C.highBorder}`, padding:'1px 7px', borderRadius:10 }}>{risks.length}</span>}
+      </div>
+      <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:10, overflow:'hidden', marginBottom:28 }}>
+        {risks.length === 0 && (
+          <div style={{ padding:'20px 18px', fontSize:13, color:C.muted }}>No deadlines within 3 days — nothing at risk.</div>
+        )}
+        {risks.map((r, i) => {
+          const job = jobs.find(j => j.id === r.task.job_id)
+          const overdue = r.daysLeft < 0
+          return (
+            <div key={r.task.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 18px', borderBottom:i<risks.length-1?`1px solid ${C.borderSubtle}`:'none' }}>
+              <StatusDot status={r.task.status} />
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:500 }}>{r.task.title}</div>
+                <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{job?.name} · Due {r.task.due_date}</div>
+              </div>
+              <Tag label={overdue ? `${Math.abs(r.daysLeft)}d overdue` : r.daysLeft === 0 ? 'Due today' : `${r.daysLeft}d left`} color={overdue?C.text:C.muted} bg={overdue?C.highBg:'transparent'} border={overdue?C.highBorder:undefined} />
             </div>
           )
         })}

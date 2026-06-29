@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Tag, ProgressBar, StatusDot, Avatar, statusCfg, priorityCfg, jobStatusColor } from './ui'
 import { createClient } from '@/lib/supabase'
+import { suggestAssignee } from '@/lib/insights'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
@@ -19,6 +20,25 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
   const [filter, setFilter] = useState('all')
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiNote, setAiNote] = useState('')
+
+  // Realtime: keep tasks in sync across sessions (requires the `tasks` table in
+  // the Supabase realtime publication).
+  useEffect(() => {
+    const channel = supabase
+      .channel('rt-tasks')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, ({ new: row }) => {
+        setTasks(prev => prev.some(t => t.id === (row as Task).id) ? prev : [...prev, row as Task])
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tasks' }, ({ new: row }) => {
+        setTasks(prev => prev.map(t => t.id === (row as Task).id ? { ...t, ...(row as Task) } : t))
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tasks' }, ({ old: row }) => {
+        setTasks(prev => prev.filter(t => t.id !== (row as { id: string }).id))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   const job = jobs.find(j => j.id === activeJobId) || jobs[0]
   const jobTasks = tasks.filter(t => t.job_id === job?.id)
@@ -40,15 +60,21 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
       const titleMatch = aiInput.match(/(?:create|add)\s+(?:task\s+)?["']?(.+?)["']?\s*(?:and|$)/i)
       const title = titleMatch?.[1] || aiInput.replace(/create|add|task/gi,'').trim()
       if (title) {
+        // Auto-assign: suggest the least-loaded team member.
+        const suggested = suggestAssignee(crew, tasks)
         const { data } = await supabase.from('tasks').insert({
           job_id: job.id,
           owner_id: (await supabase.auth.getUser()).data.user?.id,
           title: title.charAt(0).toUpperCase() + title.slice(1),
           status: 'todo',
           priority: input.includes('urgent') ? 'urgent' : input.includes('high') ? 'high' : 'normal',
+          assignee_id: suggested?.id ?? null,
           tag: 'General',
         }).select('*, assignee:crew_members(*)').single()
-        if (data) setTasks(prev => [...prev, data as Task])
+        if (data) {
+          setTasks(prev => prev.some(t => t.id === (data as Task).id) ? prev : [...prev, data as Task])
+          if (suggested) setAiNote(`Auto-assigned to ${suggested.name} (lightest workload)`)
+        }
       }
     }
     setAiInput('')
@@ -132,8 +158,9 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
 
         {/* AI bar */}
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
+          {aiNote && <div style={{ fontSize:11, color:C.sub, marginBottom:8 }}>✦ {aiNote}</div>}
           <div style={{ display:'flex', alignItems:'center', gap:10, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'8px 12px' }}>
-            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Voltly</span>
+            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Bionova</span>
             <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Torque module clamps — row 12" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
             <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:C.text, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
               <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#080808" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>

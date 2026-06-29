@@ -1,10 +1,13 @@
 'use client'
 import { Tag, permitCfg } from './ui'
+import { flaggedPermits } from '@/lib/insights'
 import type { Permit } from '@/lib/types'
 
-const C = { bgCard:'#0F0F0F', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030' }
+const C = { bgCard:'#0F0F0F', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030', warnBg:'rgba(245,166,35,0.10)', warnBorder:'rgba(245,166,35,0.35)', warn:'#f5a623' }
 
 export default function PermitsView({ permits }: { permits: Permit[] }) {
+  const flagged = flaggedPermits(permits)
+  const flaggedDays = new Map(flagged.map(f => [f.permit.id, f.daysInReview]))
   const stats = [
     { label:'Total',           value:permits.length,                                      dim:false },
     { label:'Approved',        value:permits.filter(p=>p.status==='Approved').length,      dim:false },
@@ -17,6 +20,12 @@ export default function PermitsView({ permits }: { permits: Permit[] }) {
         <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Permit Tracker</div>
         <div style={{ fontSize:14, color:C.muted }}>Building, electrical, interconnection & PTO permits across active project sites.</div>
       </div>
+
+      {flagged.length > 0 && (
+        <div style={{ background:C.warnBg, border:`1px solid ${C.warnBorder}`, borderRadius:10, padding:'12px 16px', marginBottom:16, fontSize:13, color:C.text }}>
+          <span style={{ fontWeight:700, color:C.warn }}>⚠ Permit agent:</span> {flagged.length} permit(s) have been &ldquo;Under Review&rdquo; for more than 14 days — follow up with the AHJ/utility.
+        </div>
+      )}
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:28 }}>
         {stats.map(s => (
@@ -39,7 +48,12 @@ export default function PermitsView({ permits }: { permits: Permit[] }) {
           return (
             <div key={p.id} style={{ display:'grid', gridTemplateColumns:'1fr 120px 120px 110px', padding:'13px 18px', borderBottom:i<permits.length-1?`1px solid ${C.borderSubtle}`:'none', alignItems:'center' }}>
               <div>
-                <div style={{ fontSize:13, fontWeight:500 }}>{p.permit_number}</div>
+                <div style={{ fontSize:13, fontWeight:500, display:'flex', alignItems:'center', gap:8 }}>
+                  {p.permit_number}
+                  {flaggedDays.has(p.id) && (
+                    <span style={{ fontSize:10, fontWeight:700, color:C.warn, background:C.warnBg, border:`1px solid ${C.warnBorder}`, padding:'1px 6px', borderRadius:4 }}>⚠ {flaggedDays.get(p.id)}d in review</span>
+                  )}
+                </div>
                 <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>
                   {(p as any).job?.name}
                   {p.notes && <span style={{ color:C.dim }}> · {p.notes}</span>}

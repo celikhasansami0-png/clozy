@@ -37,6 +37,53 @@ input, textarea { font-family: inherit; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
+/* Loading skeleton shimmer */
+.bn-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+.bn-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(242, 242, 242, 0.06), transparent);
+  animation: bn-shimmer 1.4s infinite;
+}
+@keyframes bn-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Mobile menu button — hidden on desktop, shown on small screens */
+.bn-menu-btn { display: none; }
+.bn-sidebar-backdrop { display: none; }
+
+@media (max-width: 760px) {
+  .bn-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Off-canvas sidebar on mobile */
+  .bn-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .bn-sidebar.bn-open { transform: translateX(0); }
+  .bn-sidebar-backdrop.bn-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

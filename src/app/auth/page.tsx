@@ -58,7 +58,7 @@ export default function AuthPage() {
         <div style={S.logo}>
           {/* Replace with your logo */}
           <div style={S.logoBox}>LOGO</div>
-          <span style={S.logoText}>Voltly</span>
+          <span style={S.logoText}>BioNova</span>
         </div>
 
         <div style={S.tabs}>

@@ -8,13 +8,13 @@ export default function CrewView({ crew, tasks, jobs }: { crew:CrewMember[], tas
   return (
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
       <div style={{ marginBottom:24 }}>
-        <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Crew</div>
-        <div style={{ fontSize:14, color:C.muted }}>Who's working what, and what's next.</div>
+        <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Team</div>
+        <div style={{ fontSize:14, color:C.muted }}>Who&apos;s working what, and what&apos;s next.</div>
       </div>
 
       {crew.length === 0 && (
         <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'24px', color:C.muted, fontSize:13 }}>
-          No crew members yet.
+          No team members yet.
         </div>
       )}
 
