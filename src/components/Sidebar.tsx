@@ -46,28 +46,29 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
   return (
     <div className={`bn-sidebar ${className}`} style={{ width:220, flexShrink:0, background:C.bg, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
       {/* Logo */}
-      <div style={{ padding:'15px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:10 }}>
-        {/* Replace this div with your logo: <img src="/logo.svg" width="28" height="28" alt="BioNova" /> */}
+      <div className="bn-logo-row" style={{ padding:'15px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:10 }}>
+        {/* Replace this div with your logo: <img src="/logo.svg" width="28" height="28" alt="Bionova" /> */}
         <div style={{ width:28, height:28, borderRadius:6, background:C.elevated, border:`1px dashed ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, color:C.dim, fontWeight:600, letterSpacing:'0.04em', flexShrink:0 }}>LOGO</div>
-        <span style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>BioNova</span>
-        <span style={{ marginLeft:'auto', fontSize:10, color:C.muted, background:C.elevated, padding:'2px 6px', borderRadius:4, border:`1px solid ${C.border}` }}>Beta</span>
+        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Bionova</span>
+        <span className="bn-label" style={{ marginLeft:'auto', fontSize:10, color:C.muted, background:C.elevated, padding:'2px 6px', borderRadius:4, border:`1px solid ${C.border}` }}>Beta</span>
       </div>
 
       {/* Nav */}
       <div style={{ padding:'12px 10px 8px' }}>
-        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Workspace</div>
+        <div className="bn-label" style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Workspace</div>
         {navItems.map(item => {
           const active = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)
+          const label = labelFor[item.href] || item.label
           return (
-            <Link key={item.href} href={item.href} onClick={onNavigate} style={{
+            <Link key={item.href} href={item.href} onClick={onNavigate} title={label} className="bn-nav-item" style={{
               display:'flex', alignItems:'center', gap:9, padding:'6px 8px', borderRadius:6,
               fontSize:13, fontWeight:500, marginBottom:1, transition:'all 0.1s',
               color: active ? C.text : C.muted,
               background: active ? C.elevated : 'transparent',
             }}>
               <span style={{ display:'flex', color: active ? accent.base : C.muted }}>{item.icon}</span>
-              {labelFor[item.href] || item.label}
-              {active && <span style={{ marginLeft:'auto', width:6, height:6, borderRadius:'50%', background:accent.base, flexShrink:0 }} />}
+              <span className="bn-label">{label}</span>
+              {active && <span className="bn-active-dot" style={{ marginLeft:'auto', width:6, height:6, borderRadius:'50%', background:accent.base, flexShrink:0 }} />}
             </Link>
           )
         })}
@@ -75,9 +76,9 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
 
       {/* Active projects */}
       <div style={{ padding:'8px 10px', flex:1, overflowY:'auto' }}>
-        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active {plural(term.project)}</div>
+        <div className="bn-label" style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active {plural(term.project)}</div>
         {jobs.map(j => (
-          <Link key={j.id} href={`/dashboard/jobs?job=${j.id}`} onClick={onNavigate} style={{
+          <Link key={j.id} href={`/dashboard/jobs?job=${j.id}`} onClick={onNavigate} title={j.name} className="bn-nav-item" style={{
             display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:6,
             fontSize:12, fontWeight:500, marginBottom:1, transition:'all 0.1s',
             color: C.muted, background:'transparent',
@@ -86,18 +87,18 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
           onMouseLeave={e=>(e.currentTarget.style.background='transparent')}
           >
             <div style={{ width:6, height:6, borderRadius:'50%', background:j.color, flexShrink:0 }} />
-            <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{j.name}</span>
+            <span className="bn-label" style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{j.name}</span>
           </Link>
         ))}
-        {jobs.length === 0 && <div style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No {plural(term.project.toLowerCase())} yet</div>}
+        {jobs.length === 0 && <div className="bn-label" style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No {plural(term.project.toLowerCase())} yet</div>}
       </div>
 
       {/* User */}
-      <div style={{ padding:'12px 14px', borderTop:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:9 }}>
-        <div style={{ width:28, height:28, borderRadius:'50%', background:C.elevated, border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:C.text }}>
+      <div className="bn-user-row" style={{ padding:'12px 14px', borderTop:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:9 }}>
+        <div style={{ width:28, height:28, borderRadius:'50%', background:C.elevated, border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:C.text, flexShrink:0 }}>
           {userId.slice(0,2).toUpperCase()}
         </div>
-        <div style={{ flex:1, overflow:'hidden' }}>
+        <div className="bn-label" style={{ flex:1, overflow:'hidden' }}>
           <div style={{ fontSize:12, fontWeight:600, color:C.text, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>My Account</div>
           <div style={{ fontSize:10, color:C.muted }}>Owner</div>
         </div>

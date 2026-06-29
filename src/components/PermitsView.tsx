@@ -4,6 +4,7 @@ import { Tag, permitCfg } from './ui'
 import { flaggedPermits } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
+import EmptyState, { Icons } from './EmptyState'
 import type { Permit } from '@/lib/types'
 
 const C = { bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030', warnBg:'rgba(245,166,35,0.10)', warnBorder:'rgba(245,166,35,0.35)', warn:'#f5a623' }
@@ -50,10 +51,7 @@ export default function PermitsView({ permits: initialPermits }: { permits: Perm
       </div>
 
       {permits.length === 0 ? (
-        <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'40px 24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
-          <div style={{ fontSize:14, color:C.muted }}>No permits tracked yet. Add your first permit to start tracking approvals.</div>
-          <button onClick={()=>create.newPermit()} style={{ background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New permit</button>
-        </div>
+        <EmptyState icon={Icons.permit} title="Track your first permit" description="Log permit numbers, types and approval status to stay ahead of inspections." cta={{ label: 'New Permit', onClick: () => create.newPermit() }} />
       ) : (
         <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, overflow:'hidden' }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 120px 110px', padding:'10px 18px', borderBottom:`1px solid ${C.border}`, fontSize:10, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:C.dim, fontWeight:600 }}>

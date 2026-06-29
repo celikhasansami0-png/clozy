@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Tag, StatusDot, Avatar } from './ui'
 import { useCreate } from './CreateProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
+import EmptyState, { Icons } from './EmptyState'
 import type { CrewMember, Task, Job } from '@/lib/types'
 
 const C = { bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
@@ -26,10 +27,7 @@ export default function CrewView({ crew: initialCrew, tasks, jobs }: { crew:Crew
       </div>
 
       {crew.length === 0 ? (
-        <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'40px 24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
-          <div style={{ fontSize:14, color:C.muted }}>No team members yet. Add installers, engineers and consultants to assign work.</div>
-          <button onClick={()=>create.newMember()} style={{ background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ Add member</button>
-        </div>
+        <EmptyState icon={Icons.team} title="Invite your first team member" description="Add installers, engineers and consultants so you can assign work." cta={{ label: 'Add Member', onClick: () => create.newMember() }} />
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12 }}>
           {crew.map(c => {

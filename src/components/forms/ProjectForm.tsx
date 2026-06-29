@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, Select, ColorPicker, Slider, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { logActivity, notify } from '@/lib/log'
 import { useNiche } from '../NicheProvider'
 import type { Job, JobStatus } from '@/lib/types'
 
@@ -31,7 +32,12 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
     onClose()
     const { data, error } = await supabase.from('jobs').insert({ owner_id: userId, niche, name: name.trim(), color, status, phase, completion }).select('*').single()
     if (error || !data) emit(evt.remove('project'), tempId)
-    else emit<ReplacePayload<Job>>(evt.replace('project'), { tempId, row: data as Job })
+    else {
+      const row = data as Job
+      emit<ReplacePayload<Job>>(evt.replace('project'), { tempId, row })
+      logActivity(supabase, { projectId: row.id, ownerId: userId, action: 'project_created', entityType: 'project', entityId: row.id, metadata: { name: row.name, actor: 'You' } })
+      if (completion === 100) notify(supabase, userId, { title: `${term.project} complete`, body: `${row.name} is at 100%`, type: 'project', link: `/dashboard/jobs?job=${row.id}` })
+    }
   }
 
   return (

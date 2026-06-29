@@ -1,14 +1,16 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import CreateProvider, { useCreate } from './CreateProvider'
 import { NicheProvider, useNiche } from './NicheProvider'
+import NotificationBell from './NotificationBell'
+import SearchOverlay from './SearchOverlay'
 import { accent } from './ui'
 import type { ModuleConfig } from '@/config/modules'
 import { plural } from '@/config/modules'
 
-const C = { bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060' }
+const C = { bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
 
 type Action = { label: string; kind: 'project' | 'task' | 'permit' | 'member' }
 function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: string; action?: Action } {
@@ -22,7 +24,7 @@ function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: st
   return { crumb: 'Dashboard' }
 }
 
-function Topbar({ onMenu }: { onMenu: () => void }) {
+function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () => void; onOpenSearch: () => void }) {
   const create = useCreate()
   const { term } = useNiche()
   const meta = routeMeta(usePathname() || '/dashboard', term)
@@ -47,6 +49,12 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         </div>
       </div>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <button onClick={onOpenSearch} aria-label="Search" style={{ display:'inline-flex', alignItems:'center', gap:7, background:C.bgElevated, border:`1px solid ${C.border}`, color:C.muted, borderRadius:7, padding:'5px 10px', fontSize:12.5, fontFamily:'inherit', cursor:'pointer' }}>
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+          <span className="bn-label">Search</span>
+          <kbd style={{ fontSize:10, border:`1px solid ${C.border}`, borderRadius:4, padding:'0 4px', color:C.dim }}>⌘K</kbd>
+        </button>
+        <NotificationBell userId={userId} />
         {meta.action && (
           <button onClick={() => runAction(meta.action!.kind)} style={{ display:'inline-flex', alignItems:'center', gap:6, background:accent.soft, border:`1px solid ${accent.border}`, color:accent.bright, borderRadius:7, padding:'6px 12px', fontSize:13, fontWeight:600, fontFamily:'inherit' }}>
             <span style={{ fontSize:15, lineHeight:1 }}>+</span>{meta.action.label}
@@ -64,14 +72,25 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
 
 function Chrome({ userId, children }: { userId: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(v => !v) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#080808' }}>
-      <Topbar onMenu={() => setOpen(v => !v)} />
+      <Topbar userId={userId} onMenu={() => setOpen(v => !v)} onOpenSearch={() => setSearchOpen(true)} />
       <div style={{ flex:1, display:'flex', overflow:'hidden', position:'relative' }}>
         <div className={`bn-sidebar-backdrop ${open ? 'bn-open' : ''}`} onClick={() => setOpen(false)} />
         <Sidebar userId={userId} className={open ? 'bn-open' : ''} onNavigate={() => setOpen(false)} />
         <main style={{ flex:1, display:'flex', overflow:'hidden' }}>{children}</main>
       </div>
+      <SearchOverlay userId={userId} open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }

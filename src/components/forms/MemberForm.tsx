@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { logActivity, notify } from '@/lib/log'
 import type { CrewMember } from '@/lib/types'
 
 const ROLES = ['Foreman', 'Electrician', 'Engineer', 'Project Manager', 'Apprentice', 'Consultant']
@@ -38,7 +39,12 @@ export default function MemberForm({ userId, onClose }: { userId: string; onClos
     onClose()
     const { data, error } = await supabase.from('crew_members').insert(payload).select('*').single()
     if (error || !data) emit(evt.remove('member'), tempId)
-    else emit<ReplacePayload<CrewMember>>(evt.replace('member'), { tempId, row: data as CrewMember })
+    else {
+      const row = data as CrewMember
+      emit<ReplacePayload<CrewMember>>(evt.replace('member'), { tempId, row })
+      notify(supabase, userId, { title: 'Team member added', body: `${row.name} (${row.role}) joined the team`, type: 'team', link: '/dashboard/crew' })
+      logActivity(supabase, { ownerId: userId, action: 'member_added', entityType: 'member', entityId: row.id, metadata: { name: row.name, actor: 'You' } })
+    }
   }
 
   return (

@@ -4,6 +4,7 @@ import type { Job, Task, Permit, CrewMember } from '@/lib/types'
 import { riskAlerts } from '@/lib/insights'
 import { useNiche } from './NicheProvider'
 import { useCreate } from './CreateProvider'
+import EmptyState, { Icons } from './EmptyState'
 import { useRouter } from 'next/navigation'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)' }
@@ -40,7 +41,7 @@ export default function DashboardHome({ jobs, tasks, permits, crew }: { jobs:Job
         <Title>Active {projects}</Title>
         <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
           {jobs.length === 0 && (
-            <Card><div style={{ padding:'24px 20px', color:C.muted, fontSize:13 }}>No {projects.toLowerCase()} yet. <span style={{ color:C.text, cursor:'pointer', textDecoration:'underline' }} onClick={()=>create.newProject()}>Create your first {term.project.toLowerCase()} →</span></div></Card>
+            <EmptyState icon={Icons.project} title={`Start by creating your first ${term.project.toLowerCase()}`} description={`Add a ${term.project.toLowerCase()} to track stages, ${plural(term.task.toLowerCase())}, permits and documents.`} cta={{ label: `New ${term.project}`, onClick: () => create.newProject() }} />
           )}
           {jobs.map(j => {
             const open = tasks.filter(t => t.job_id === j.id && t.status !== 'done').length

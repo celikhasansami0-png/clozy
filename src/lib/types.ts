@@ -47,3 +47,38 @@ export interface CrewMember {
   owner_id: string
   created_at: string
 }
+
+export interface DocumentRow {
+  id: string
+  project_id: string
+  owner_id: string
+  file_name: string
+  file_path: string
+  file_size: number
+  file_type: string
+  uploaded_by: string | null
+  created_at: string
+}
+
+export interface NotificationRow {
+  id: string
+  owner_id: string
+  title: string
+  body: string
+  type: string
+  read: boolean
+  link: string
+  created_at: string
+}
+
+export interface ActivityLog {
+  id: string
+  project_id: string | null
+  owner_id: string
+  actor_id: string | null
+  action: string
+  entity_type: string
+  entity_id: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}

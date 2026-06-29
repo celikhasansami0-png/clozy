@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase'
 import Modal from '../Modal'
 import { Field, TextInput, TextArea, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
+import { logActivity, notify } from '@/lib/log'
 import { useNiche } from '../NicheProvider'
 import type { Job, Permit, PermitStatus } from '@/lib/types'
 
@@ -43,7 +44,12 @@ export default function PermitForm({ userId, onClose }: { userId: string; onClos
     onClose()
     const { data, error } = await supabase.from('permits').insert(payload).select('*, job:jobs(*)').single()
     if (error || !data) emit(evt.remove('permit'), tempId)
-    else emit<ReplacePayload<Permit>>(evt.replace('permit'), { tempId, row: data as Permit })
+    else {
+      const row = data as Permit
+      emit<ReplacePayload<Permit>>(evt.replace('permit'), { tempId, row })
+      logActivity(supabase, { projectId: project, ownerId: userId, action: 'permit_added', entityType: 'permit', entityId: row.id, metadata: { name: `${row.permit_number} (${row.status})`, actor: 'You' } })
+      notify(supabase, userId, { title: 'Permit added', body: `${row.permit_number} — ${row.type} (${row.status})`, type: 'permit', link: '/dashboard/permits' })
+    }
   }
 
   return (

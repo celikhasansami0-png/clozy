@@ -5,11 +5,13 @@ export default async function JobsPage() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: jobs }, { data: tasks }, { data: crew }] = await Promise.all([
+  const [{ data: jobs }, { data: tasks }, { data: crew }, { data: profile }] = await Promise.all([
     supabase.from('jobs').select('*').eq('owner_id', user!.id).order('created_at'),
     supabase.from('tasks').select('*, assignee:crew_members(*)').eq('owner_id', user!.id).order('created_at'),
     supabase.from('crew_members').select('*').eq('owner_id', user!.id).order('name'),
+    supabase.from('profiles').select('full_name').eq('id', user!.id).single(),
   ])
 
-  return <JobsView jobs={jobs||[]} tasks={tasks||[]} crew={crew||[]} />
+  const uploaderName = profile?.full_name?.trim() || 'You'
+  return <JobsView jobs={jobs||[]} tasks={tasks||[]} crew={crew||[]} ownerId={user!.id} uploaderName={uploaderName} />
 }

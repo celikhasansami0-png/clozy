@@ -5,20 +5,27 @@ import { Tag, ProgressBar, StatusDot, Avatar, statusCfg, priorityCfg, jobStatusC
 import { createClient } from '@/lib/supabase'
 import { suggestAssignee } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
+import { useNiche } from './NicheProvider'
+import { logActivity, notify } from '@/lib/log'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
+import DocumentsPanel from './DocumentsPanel'
+import ActivityFeed from './ActivityFeed'
+import EmptyState, { Icons } from './EmptyState'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
 
-export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew }: { jobs:Job[], tasks:Task[], crew:CrewMember[] }) {
+export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew, ownerId, uploaderName }: { jobs:Job[], tasks:Task[], crew:CrewMember[], ownerId:string, uploaderName:string }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
   const create = useCreate()
+  const { term, plural } = useNiche()
 
   const [jobs, setJobs] = useState(initialJobs)
   const [tasks, setTasks] = useState(initialTasks)
   const [activeJobId, setActiveJobId] = useState(searchParams.get('job') || initialJobs[0]?.id || '')
+  const [activeTab, setActiveTab] = useState<'tasks'|'documents'|'activity'>(searchParams.get('tab') === 'documents' ? 'documents' : 'tasks')
   const [activeTaskId, setActiveTaskId] = useState<string|null>(null)
   const [filter, setFilter] = useState('all')
   const [aiInput, setAiInput] = useState('')
@@ -58,8 +65,19 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
   const activeTask = activeTaskId ? jobTasks.find(t => t.id === activeTaskId) : null
 
   async function updateTaskStatus(taskId: string, status: string) {
+    const t = tasks.find(x => x.id === taskId)
+    setTasks(prev => prev.map(x => x.id === taskId ? { ...x, status: status as Task['status'] } : x))
     await supabase.from('tasks').update({ status }).eq('id', taskId)
-    setTasks(prev => prev.map(t => t.id === taskId ? {...t, status: status as any} : t))
+    if (t) {
+      logActivity(supabase, { projectId: t.job_id, ownerId, action: 'task_status', entityType: 'task', entityId: taskId, metadata: { name: `"${t.title}" → ${status.replace('_', ' ')}`, actor: 'You' } })
+      if (status === 'done') {
+        const jobTasksAfter = tasks.filter(x => x.job_id === t.job_id).map(x => x.id === taskId ? { ...x, status } : x)
+        if (jobTasksAfter.every(x => x.status === 'done')) {
+          const j = jobs.find(x => x.id === t.job_id)
+          if (j) notify(supabase, ownerId, { title: 'Project complete', body: `All ${plural(term.task.toLowerCase())} done on ${j.name}`, type: 'project', link: `/dashboard/jobs?job=${j.id}` })
+        }
+      }
+    }
   }
 
   async function handleAI(e: React.FormEvent) {
@@ -84,8 +102,11 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
           tag: 'General',
         }).select('*, assignee:crew_members(*)').single()
         if (data) {
-          setTasks(prev => prev.some(t => t.id === (data as Task).id) ? prev : [...prev, data as Task])
+          const row = data as Task
+          setTasks(prev => prev.some(t => t.id === row.id) ? prev : [...prev, row])
           if (suggested) setAiNote(`Auto-assigned to ${suggested.name} (lightest workload)`)
+          logActivity(supabase, { projectId: job.id, ownerId, action: 'task_created', entityType: 'task', entityId: row.id, metadata: { name: `"${row.title}"`, actor: 'You' } })
+          if (suggested) notify(supabase, ownerId, { title: `${term.task} assigned`, body: `"${row.title}" → ${suggested.name}`, type: 'task', link: `/dashboard/jobs?job=${job.id}` })
         }
       }
     }
@@ -105,7 +126,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
       {/* Project list */}
       <div style={{ width:255, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
         <div style={{ padding:'16px 14px', borderBottom:`1px solid ${C.borderSubtle}` }}>
-          <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>All Projects</div>
+          <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>All {plural(term.project)}</div>
           {jobs.map(j => (
             <div key={j.id} onClick={()=>{ setActiveJobId(j.id); setActiveTaskId(null); router.replace(`/dashboard/jobs?job=${j.id}`) }}
               style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:7, cursor:'pointer', marginBottom:2, background:activeJobId===j.id?C.bgElevated:'transparent', border:`1px solid ${activeJobId===j.id?C.border:'transparent'}`, transition:'all 0.1s' }}>
@@ -129,6 +150,17 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
           <ProgressBar value={job.completion} />
         </div>
 
+        {/* Project-level tabs */}
+        <div style={{ display:'flex', padding:'0 20px', borderBottom:`1px solid ${C.borderSubtle}`, gap:2 }}>
+          {([['tasks', plural(term.task)], ['documents', 'Documents'], ['activity', 'Activity']] as const).map(([t, label]) => (
+            <button key={t} onClick={()=>{ setActiveTab(t); setActiveTaskId(null) }} style={{ background:'none', border:'none', cursor:'pointer', padding:'11px 14px', fontSize:13, fontWeight:600, color:activeTab===t?C.text:C.muted, borderBottom:`2px solid ${activeTab===t?C.text:'transparent'}`, marginBottom:-1, fontFamily:'inherit' }}>{label}</button>
+          ))}
+        </div>
+
+        {activeTab === 'documents' && <DocumentsPanel projectId={job.id} ownerId={ownerId} uploaderName={uploaderName} />}
+        {activeTab === 'activity' && <ActivityFeed projectId={job.id} />}
+
+        {activeTab === 'tasks' && (<>
         <div style={{ display:'flex', padding:'0 20px', borderBottom:`1px solid ${C.borderSubtle}` }}>
           {['all','todo','in_progress','done'].map(f => (
             <button key={f} onClick={()=>setFilter(f)} style={{ background:'none', border:'none', cursor:'pointer', padding:'10px 14px', fontSize:12, fontWeight:500, color:filter===f?C.text:C.muted, borderBottom:`2px solid ${filter===f?C.sub:'transparent'}`, marginBottom:-1, transition:'all 0.1s', fontFamily:'inherit' }}>
@@ -165,7 +197,9 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
             )
           })}
           {filtered.length === 0 && (
-            <div style={{ padding:'24px 20px', fontSize:13, color:C.muted }}>No tasks here.</div>
+            <div style={{ padding:'20px' }}>
+              <EmptyState icon={Icons.task} title={`Add your first ${term.task.toLowerCase()}`} description={`No ${plural(term.task.toLowerCase())} here yet.`} cta={{ label: `New ${term.task}`, onClick: () => create.newTask(job.id) }} compact />
+            </div>
           )}
         </div>
 
@@ -180,10 +214,11 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
             </button>
           </div>
         </form>
+        </>)}
       </div>
 
       {/* Task detail */}
-      {activeTask && (
+      {activeTab === 'tasks' && activeTask && (
         <div style={{ width:285, borderLeft:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <div style={{ padding:'14px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <span style={{ fontSize:13, fontWeight:600 }}>Task Detail</span>

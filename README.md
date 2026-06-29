@@ -5,11 +5,12 @@ niches (Solar EPC, BESS, EV Charging, Wind, Hydro, Biogas, O&M, Consulting) —
 the module config in `src/config/modules.ts` drives all UI labels, stages,
 permit types and demo data per niche. With **@Bionova AI** built in.
 
-> **Day 2 setup notes**
-> 1. Run **both** SQL files in order in the Supabase SQL Editor:
->    `supabase/migrations/001_schema.sql` then `supabase/migrations/002_profiles_and_niche.sql`.
->    The 002 migration adds `profiles`, the new-user trigger, niche columns on
->    `jobs`, and the per-niche `seed_demo_data(owner_id, niche)`.
+> **Setup notes**
+> 1. Run the SQL files **in order** in the Supabase SQL Editor:
+>    `001_schema.sql` → `002_profiles_and_niche.sql` → `003_documents_notifications_activity.sql`.
+>    002 adds `profiles`, the new-user trigger, niche columns and per-niche seed;
+>    003 adds `documents`, `notifications`, `activity_logs` and the private
+>    `project-documents` Storage bucket (with policies).
 > 2. In Supabase → **Authentication → URL Configuration**, add your site URL and
 >    redirect URLs: `<site>/auth/callback` (email verification) and
 >    `<site>/auth/reset` (password reset). For local dev use `http://localhost:3000`.

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useCreate } from './CreateProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
+import EmptyState, { Icons } from './EmptyState'
 import type { Task, Job } from '@/lib/types'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', accent:'#F2F2F2', accentBorder:'rgba(242,242,242,0.20)' }
@@ -39,10 +40,7 @@ export default function ScheduleView({ tasks: initialTasks, jobs }: { tasks: Tas
       </div>
 
       {scheduled === 0 ? (
-        <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'40px 24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
-          <div style={{ fontSize:14, color:C.muted }}>Nothing scheduled. Create a task with a due date to see it here.</div>
-          <button onClick={()=>create.newTask()} style={{ background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New task</button>
-        </div>
+        <EmptyState icon={Icons.activity} title="Nothing scheduled yet" description="Create a task with a due date and it will appear on the calendar." cta={{ label: 'New task', onClick: () => create.newTask() }} />
       ) : (
         <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, overflow:'hidden' }}>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
