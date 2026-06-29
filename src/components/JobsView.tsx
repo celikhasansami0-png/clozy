@@ -57,16 +57,16 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
 
   if (!job) return (
     <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:C.muted, fontSize:14 }}>
-      No jobs yet. Create one to get started.
+      No projects yet. Create one to get started.
     </div>
   )
 
   return (
     <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
-      {/* Job list */}
+      {/* Project list */}
       <div style={{ width:255, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
         <div style={{ padding:'16px 14px', borderBottom:`1px solid ${C.borderSubtle}` }}>
-          <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>All Jobs</div>
+          <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>All Projects</div>
           {jobs.map(j => (
             <div key={j.id} onClick={()=>{ setActiveJobId(j.id); setActiveTaskId(null); router.replace(`/dashboard/jobs?job=${j.id}`) }}
               style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:7, cursor:'pointer', marginBottom:2, background:activeJobId===j.id?C.bgElevated:'transparent', border:`1px solid ${activeJobId===j.id?C.border:'transparent'}`, transition:'all 0.1s' }}>
@@ -134,7 +134,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'8px 12px' }}>
             <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Voltly</span>
-            <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Install panel covers" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
+            <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Torque module clamps — row 12" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
             <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:C.text, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
               <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#080808" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
@@ -162,8 +162,8 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
               </div>
             ))}
             <div style={{ marginTop:20 }}>
-              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:10 }}>NEC Checklist</div>
-              {['Verify circuit sizing (210.19)','Confirm AFCI protection (210.12)','Panel labeling (408.4)','Load calc reviewed'].map((item,i) => (
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:10 }}>PV QA Checklist</div>
+              {['Module torque to spec (mfr)','Rapid shutdown verified (690.12)','String voltage within inverter window','Grounding & bonding checked (690.43)'].map((item,i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 0', borderBottom:`1px solid ${C.borderSubtle}`, fontSize:12, color:i<2?C.muted:C.text }}>
                   <div style={{ width:14, height:14, borderRadius:3, border:`1.5px solid ${i<2?C.sub:C.border}`, background:i<2?C.bgElevated:'transparent', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, color:C.sub, flexShrink:0 }}>{i<2?'✓':''}</div>
                   <span style={{ textDecoration:i<2?'line-through':'none' }}>{item}</span>

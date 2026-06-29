@@ -13,7 +13,7 @@ export default function DashboardHome({ jobs, tasks, permits }: { jobs:Job[], ta
   const urgentItems = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done')
 
   const stats = [
-    { label:'Active Jobs',  value:jobs.length,  dim:false },
+    { label:'Active Projects', value:jobs.length, dim:false },
     { label:'In Progress',  value:inProgress,   dim:false },
     { label:'Urgent Items', value:urgent,        dim:false },
     { label:'Completed',    value:done,          dim:true },
@@ -23,7 +23,7 @@ export default function DashboardHome({ jobs, tasks, permits }: { jobs:Job[], ta
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
       <div style={{ marginBottom:28 }}>
         <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Good morning</div>
-        <div style={{ fontSize:14, color:C.muted }}>Here's where things stand across all active jobs.</div>
+        <div style={{ fontSize:14, color:C.muted }}>Here's where things stand across all active solar projects.</div>
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:28 }}>
@@ -35,11 +35,11 @@ export default function DashboardHome({ jobs, tasks, permits }: { jobs:Job[], ta
         ))}
       </div>
 
-      <div style={{ fontSize:11, fontWeight:600, color:C.dim, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:8 }}>Job Sites</div>
+      <div style={{ fontSize:11, fontWeight:600, color:C.dim, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:8 }}>Project Sites</div>
       <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:28 }}>
         {jobs.length === 0 && (
           <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:10, padding:'24px 20px', color:C.muted, fontSize:13 }}>
-            No jobs yet. <span style={{ color:C.text, cursor:'pointer', textDecoration:'underline' }} onClick={()=>router.push('/dashboard/jobs')}>Create your first job →</span>
+            No projects yet. <span style={{ color:C.text, cursor:'pointer', textDecoration:'underline' }} onClick={()=>router.push('/dashboard/jobs')}>Create your first project →</span>
           </div>
         )}
         {jobs.map(j => {

@@ -1,5 +1,8 @@
 # Voltly — Setup Guide
 
+Project ops for **solar EPC teams** — track solar projects, permits, crew and
+commissioning across engineering, procurement and construction in one place.
+
 ## 1. Install dependencies
 ```bash
 npm install

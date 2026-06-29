@@ -15,7 +15,7 @@ export default function PermitsView({ permits }: { permits: Permit[] }) {
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
       <div style={{ marginBottom:24 }}>
         <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Permit Tracker</div>
-        <div style={{ fontSize:14, color:C.muted }}>All permits across active job sites.</div>
+        <div style={{ fontSize:14, color:C.muted }}>Building, electrical, interconnection & PTO permits across active project sites.</div>
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:28 }}>

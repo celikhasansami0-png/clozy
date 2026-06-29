@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Voltly — Project ops for electrical contractors',
-  description: 'Track jobs, permits, crew and inspections in one place.',
+  title: 'Voltly — Project ops for solar EPC teams',
+  description: 'Track solar projects, permits, crew and commissioning in one place.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -9,7 +9,7 @@ const C = { bg:'#0F0F0F', elevated:'#161616', border:'#262626', borderSubtle:'#1
 
 const navItems = [
   { label:'Dashboard', href:'/dashboard',         icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
-  { label:'Jobs',      href:'/dashboard/jobs',     icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg> },
+  { label:'Projects',  href:'/dashboard/jobs',     icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg> },
   { label:'Permits',   href:'/dashboard/permits',  icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h8a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm1 3v1.5h6V4H5zm0 3v1.5h6V7H5zm0 3v1.5h4V10H5z"/></svg> },
   { label:'Crew',      href:'/dashboard/crew',     icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/><circle cx="12" cy="5" r="2"/><path d="M10.5 13c0-1.66.9-3.12 2.25-3.9"/></svg> },
 ]
@@ -53,7 +53,7 @@ export default function Sidebar({ userId }: { userId: string }) {
 
       {/* Jobs */}
       <div style={{ padding:'8px 10px', flex:1, overflowY:'auto' }}>
-        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active Jobs</div>
+        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active Projects</div>
         {jobs.map(j => (
           <Link key={j.id} href={`/dashboard/jobs?job=${j.id}`} style={{
             display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:6,
