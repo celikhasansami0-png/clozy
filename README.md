@@ -1,59 +1,51 @@
-# Scouting
+# Voltly — Setup Guide
 
-**AI-powered LinkedIn B2B outreach for SaaS teams.**
-
-> Define your ideal customer. Scouting finds them, researches each one in real time,
-> writes in your voice, follows up — and stops only when they reply.
-
-Built on Next.js 16, Supabase, Tailwind, and the Anthropic API.
-
-## The five modules
-
-Scouting maps to the stages of an outbound pipeline:
-
-| Module | Route | What it does |
-| --- | --- | --- |
-| **Scout** | `/scout` | ICP builder (plain-English → structured), scored lead generation, intent-signal detection |
-| **Craft** | `/craft` | Voice learning + deep research → a 5-step sequence written in your voice, with a quality gate |
-| **Sequence** | `/sequence` | Campaign management, visual sequence timeline, account-safety controls |
-| **Inbox** | `/inbox` | Reply classification (hot/warm/nurture/…) + one-click AI response suggestions |
-| **Pipeline** | `/pipeline` | Kanban board across 10 stages |
-| **Analytics** | `/analytics` | Acceptance / reply / meeting funnel, reply-rate trend, best-performing hooks |
-
-## AI layer
-
-The AI service (`services/ai.ts`) supports Anthropic, OpenAI, and a high-fidelity
-**mock provider** that powers the whole product end-to-end with no API key — ideal for
-demos. Set `ANTHROPIC_API_KEY` (and optionally `ANTHROPIC_MODEL`) to use a live model.
-
-Endpoints live under `app/api/scouting/`:
-`parse-icp`, `generate-leads`, `research`, `generate-sequence`, `classify-reply`, `learn-voice`.
-
-## Getting started
-
+## 1. Install dependencies
 ```bash
 npm install
-npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The dashboard and all modules
-run on realistic demo data out of the box.
+## 2. Create Supabase project
+1. Go to https://supabase.com and create a free account
+2. Create a new project
+3. Go to **Settings → API** and copy:
+   - Project URL
+   - anon/public key
 
-## Database
+## 3. Set environment variables
+```bash
+cp .env.local.example .env.local
+```
+Edit `.env.local` and paste your Supabase values.
 
-Run `supabase/schema.sql` (shared `profiles`/auth) then `supabase/scouting-schema.sql`
-(leads, campaigns, messages, conversations, ICPs, voice profiles — all RLS-protected).
+## 4. Run the database schema
+1. In Supabase, go to **SQL Editor**
+2. Copy the contents of `supabase/migrations/001_schema.sql`
+3. Paste and run it
 
-## Environment
+## 5. Seed demo data (optional)
+After signing up, run this in Supabase SQL Editor (replace with your user ID from Auth → Users):
+```sql
+select seed_demo_data('YOUR-USER-UUID-HERE');
+```
 
-See **[docs/SETUP.md](docs/SETUP.md)** for the full step-by-step go-live guide
-(Supabase, Anthropic, Stripe, Vercel) and **`.env.example`** for every variable.
-The app runs fully in demo mode with none of these set.
+## 6. Run locally
+```bash
+npm run dev
+```
+Open http://localhost:3000
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase |
-| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | Live AI (optional — mock used otherwise) |
-| `STRIPE_SECRET_KEY` + `NEXT_PUBLIC_STRIPE_*_PRICE_ID` | Billing (optional) |
+## 7. Deploy to Vercel
+```bash
+npm install -g vercel
+vercel
+```
+Add your environment variables in Vercel dashboard → Settings → Environment Variables.
 
-*Scouting — Find them. Write for them. Win them.*
+## Logo
+Replace the LOGO placeholder in:
+- `src/components/Sidebar.tsx` (line with `{/* Replace this div with your logo */}`)
+- `src/app/auth/page.tsx` (same comment)
+
+Change `<div style={{...}}>LOGO</div>` to `<img src="/logo.svg" width="28" height="28" alt="Logo" />`
+and put your logo file in the `public/` folder.
