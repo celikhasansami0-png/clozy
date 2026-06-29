@@ -1,11 +1,21 @@
 import React from 'react'
 
+// Green accent palette (BioNova / sustainability theme)
+export const accent = {
+  base:   '#4ade80',                    // green-400
+  bright: '#86efac',                    // green-300 (tall bars / highlights)
+  deep:   '#22c55e',                    // green-500
+  dark:   '#2e6b45',                    // muted/short bars
+  soft:   'rgba(74,222,128,0.12)',
+  border: 'rgba(74,222,128,0.35)',
+}
+
 const C = { text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', border:'#262626', elevated:'#161616', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }
 
 export const statusCfg: Record<string,{label:string,color:string,bg:string,border:string}> = {
-  todo:        { label:'To Do',       color:C.muted,  bg:'transparent', border:C.dim },
-  in_progress: { label:'In Progress', color:C.text,   bg:C.highBg,      border:C.highBorder },
-  done:        { label:'Done',        color:C.muted,  bg:C.lowBg,       border:C.lowBorder },
+  todo:        { label:'To Do',       color:C.muted,       bg:'transparent', border:C.dim },
+  in_progress: { label:'In Progress', color:accent.bright, bg:accent.soft,   border:accent.border },
+  done:        { label:'Done',        color:C.muted,       bg:C.lowBg,       border:C.lowBorder },
 }
 export const priorityCfg: Record<string,{label:string,color:string}> = {
   urgent: { label:'Urgent', color:C.text },
@@ -19,10 +29,10 @@ export const permitCfg: Record<string,{color:string,bg:string,border:string}> = 
   'Rejected':     { color:C.muted, bg:C.lowBg,  border:C.lowBorder },
 }
 export const jobStatusColor: Record<string,string> = {
-  'In Progress': C.text,
-  'On Track':    C.sub,
-  'Delayed':     C.muted,
-  'Complete':    C.dim,
+  'In Progress': accent.base,
+  'On Track':    accent.bright,
+  'Delayed':     C.sub,
+  'Complete':    accent.deep,
 }
 
 export function Tag({ label, color=C.muted, bg='transparent', border }: { label:string, color?:string, bg?:string, border?:string }) {
@@ -36,7 +46,7 @@ export function Tag({ label, color=C.muted, bg='transparent', border }: { label:
 export function ProgressBar({ value }: { value:number }) {
   return (
     <div style={{ height:2, background:C.border, borderRadius:2, overflow:'hidden', width:'100%' }}>
-      <div style={{ width:`${value}%`, height:'100%', background:C.muted, borderRadius:2, transition:'width 0.4s' }} />
+      <div style={{ width:`${value}%`, height:'100%', background:accent.base, borderRadius:2, transition:'width 0.4s' }} />
     </div>
   )
 }

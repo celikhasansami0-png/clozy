@@ -1,6 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { Tag, ProgressBar, jobStatusColor } from './ui'
+import { Tag, ProgressBar, jobStatusColor, accent } from './ui'
 import { Skeleton } from './Skeleton'
 import { riskAlerts, flaggedPermits } from '@/lib/insights'
 import type { Job, Task, Permit } from '@/lib/types'
@@ -101,7 +101,7 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
           {weeks.map(w => (
             <div key={w.label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
               <div style={{ flex:1, width:'100%', display:'flex', alignItems:'flex-end' }}>
-                <div title={`${w.count} tasks`} style={{ width:'100%', height:`${(w.count / maxWeek) * 100}%`, minHeight:2, background:C.highBg, border:`1px solid ${C.highBorder}`, borderRadius:'4px 4px 0 0', transition:'height 0.4s' }} />
+                <div title={`${w.count} tasks`} style={{ width:'100%', height:`${(w.count / maxWeek) * 100}%`, minHeight:2, background:accent.base, borderRadius:'4px 4px 0 0', transition:'height 0.4s' }} />
               </div>
               <div style={{ fontSize:10, color:C.muted }}>{w.label}</div>
               <div style={{ fontSize:11, color:C.sub, fontWeight:600 }}>{w.count}</div>

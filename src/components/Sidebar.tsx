@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { accent } from './ui'
 import type { Job } from '@/lib/types'
 
 const C = { bg:'#0F0F0F', elevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030' }
@@ -47,7 +48,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
               color: active ? C.text : C.muted,
               background: active ? C.elevated : 'transparent',
             }}>
-              {item.icon}{item.label}
+              <span style={{ display:'flex', color: active ? accent.base : C.muted }}>{item.icon}</span>{item.label}
             </Link>
           )
         })}

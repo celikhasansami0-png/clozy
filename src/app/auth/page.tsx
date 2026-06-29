@@ -12,7 +12,7 @@ const S = {
   title: { fontSize:20, fontWeight:700, letterSpacing:'-0.03em', color:'#F2F2F2', marginBottom:6 } as React.CSSProperties,
   sub: { fontSize:13, color:'#606060', marginBottom:28 } as React.CSSProperties,
   tabs: { display:'flex', gap:0, marginBottom:24, borderBottom:'1px solid #181818' } as React.CSSProperties,
-  tab: (active:boolean) => ({ background:'none', border:'none', padding:'8px 16px', fontSize:13, fontWeight:500, color: active ? '#F2F2F2' : '#606060', borderBottom: active ? '2px solid #A0A0A0' : '2px solid transparent', marginBottom:-1, cursor:'pointer', fontFamily:'inherit', transition:'all 0.1s' }) as React.CSSProperties,
+  tab: (active:boolean) => ({ background:'none', border:'none', padding:'8px 16px', fontSize:13, fontWeight:500, color: active ? '#F2F2F2' : '#606060', borderBottom: active ? '2px solid #4ade80' : '2px solid transparent', marginBottom:-1, cursor:'pointer', fontFamily:'inherit', transition:'all 0.1s' }) as React.CSSProperties,
   label: { fontSize:11, fontWeight:600, color:'#606060', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:6, display:'block' },
   input: { width:'100%', background:'#161616', border:'1px solid #262626', borderRadius:8, padding:'10px 12px', fontSize:13, color:'#F2F2F2', outline:'none', fontFamily:'inherit', marginBottom:14, transition:'border-color 0.15s' } as React.CSSProperties,
   btn: { width:'100%', background:'#F2F2F2', border:'none', borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, color:'#080808', cursor:'pointer', fontFamily:'inherit', marginTop:6, transition:'opacity 0.15s' } as React.CSSProperties,
@@ -71,19 +71,19 @@ export default function AuthPage() {
             <div>
               <label style={S.label}>Your name</label>
               <input style={S.input} type="text" placeholder="Marcus T." value={name} onChange={e=>setName(e.target.value)} required
-                onFocus={e=>(e.target.style.borderColor='#A0A0A0')}
+                onFocus={e=>(e.target.style.borderColor='#4ade80')}
                 onBlur={e=>(e.target.style.borderColor='#262626')}
               />
             </div>
           )}
           <label style={S.label}>Email</label>
           <input style={S.input} type="email" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)} required
-            onFocus={e=>(e.target.style.borderColor='#A0A0A0')}
+            onFocus={e=>(e.target.style.borderColor='#4ade80')}
             onBlur={e=>(e.target.style.borderColor='#262626')}
           />
           <label style={S.label}>Password</label>
           <input style={S.input} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} required
-            onFocus={e=>(e.target.style.borderColor='#A0A0A0')}
+            onFocus={e=>(e.target.style.borderColor='#4ade80')}
             onBlur={e=>(e.target.style.borderColor='#262626')}
           />
           <button style={{...S.btn, opacity: loading ? 0.6 : 1}} type="submit" disabled={loading}>
@@ -96,7 +96,7 @@ export default function AuthPage() {
 
         <p style={S.divider}>
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <span style={{color:'#A0A0A0', cursor:'pointer'}} onClick={()=>setMode(mode==='login'?'signup':'login')}>
+          <span style={{color:'#4ade80', cursor:'pointer'}} onClick={()=>setMode(mode==='login'?'signup':'login')}>
             {mode === 'login' ? 'Sign up' : 'Log in'}
           </span>
         </p>
