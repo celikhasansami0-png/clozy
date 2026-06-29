@@ -4,6 +4,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Tag, ProgressBar, StatusDot, Avatar, statusCfg, priorityCfg, jobStatusColor } from './ui'
 import { createClient } from '@/lib/supabase'
 import { suggestAssignee } from '@/lib/insights'
+import { useCreate } from './CreateProvider'
+import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
@@ -12,6 +14,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
   const searchParams = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
+  const create = useCreate()
 
   const [jobs, setJobs] = useState(initialJobs)
   const [tasks, setTasks] = useState(initialTasks)
@@ -39,6 +42,15 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [])
+
+  // Optimistic updates via the in-app event bus.
+  useBus<Task>(evt.add('task'), t => setTasks(prev => prev.some(x => x.id === t.id) ? prev : [...prev, t]))
+  useBus<ReplacePayload<Task>>(evt.replace('task'), ({ tempId, row }) => setTasks(prev => prev.map(x => x.id === tempId ? row : x)))
+  useBus<string>(evt.remove('task'), id => setTasks(prev => prev.filter(x => x.id !== id)))
+  useBus<Task>(evt.update('task'), t => setTasks(prev => prev.map(x => x.id === t.id ? { ...x, ...t } : x)))
+  useBus<Job>(evt.add('project'), j => setJobs(prev => prev.some(x => x.id === j.id) ? prev : [...prev, j]))
+  useBus<ReplacePayload<Job>>(evt.replace('project'), ({ tempId, row }) => setJobs(prev => prev.map(x => x.id === tempId ? row : x)))
+  useBus<string>(evt.remove('project'), id => setJobs(prev => prev.filter(x => x.id !== id)))
 
   const job = jobs.find(j => j.id === activeJobId) || jobs[0]
   const jobTasks = tasks.filter(t => t.job_id === job?.id)
@@ -82,8 +94,9 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
   }
 
   if (!job) return (
-    <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:C.muted, fontSize:14 }}>
-      No projects yet. Create one to get started.
+    <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:C.muted, fontSize:14, padding:24, textAlign:'center' }}>
+      <div>No projects yet. Create your first solar project to get started.</div>
+      <button onClick={()=>create.newProject()} style={{ background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New project</button>
     </div>
   )
 
@@ -174,7 +187,10 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew 
         <div style={{ width:285, borderLeft:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <div style={{ padding:'14px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <span style={{ fontSize:13, fontWeight:600 }}>Task Detail</span>
-            <button onClick={()=>setActiveTaskId(null)} style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', fontSize:18, padding:0, lineHeight:1 }}>×</button>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <button onClick={()=>create.editTask(activeTask)} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.sub, cursor:'pointer', fontSize:11, fontWeight:600, padding:'3px 9px', borderRadius:5, fontFamily:'inherit' }}>Edit</button>
+              <button onClick={()=>setActiveTaskId(null)} style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', fontSize:18, padding:0, lineHeight:1 }}>×</button>
+            </div>
           </div>
           <div style={{ padding:'16px 18px', overflowY:'auto', flex:1 }}>
             <div style={{ fontSize:14, fontWeight:600, marginBottom:4 }}>{activeTask.title}</div>

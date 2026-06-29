@@ -19,19 +19,29 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
   const risks = useMemo(() => riskAlerts(tasks), [tasks])
   const flagged = useMemo(() => flaggedPermits(permits), [permits])
 
-  // Weekly activity: tasks created per week over the last 6 weeks.
-  const weeks = useMemo(() => {
+  // Activity chart filtered by a selectable date range (default: last 30 days).
+  const [range, setRange] = useState(30)
+  const activity = useMemo(() => {
     const now = Date.now()
-    const buckets = Array.from({ length: 6 }, (_, i) => ({ label: `W-${5 - i}`, count: 0 }))
+    const start = now - range * DAY
+    const n = range <= 7 ? 7 : range <= 30 ? 6 : range <= 90 ? 9 : 12
+    const size = range / n
+    const buckets = Array.from({ length: n }, (_, i) => {
+      const d = new Date(start + i * size * DAY)
+      const label = range <= 7
+        ? d.toLocaleDateString('en', { weekday: 'short' })
+        : d.toLocaleDateString('en', { month: 'short', day: 'numeric' })
+      return { label, count: 0 }
+    })
     for (const t of tasks) {
       if (!t.created_at) continue
-      const age = now - new Date(t.created_at).getTime()
-      const idx = 5 - Math.floor(age / (7 * DAY))
-      if (idx >= 0 && idx < 6) buckets[idx].count++
+      const c = new Date(t.created_at).getTime()
+      if (c >= start && c <= now) buckets[Math.min(n - 1, Math.floor((c - start) / (size * DAY)))].count++
     }
     return buckets
-  }, [tasks])
-  const maxWeek = Math.max(1, ...weeks.map(w => w.count))
+  }, [tasks, range])
+  const maxAct = Math.max(1, ...activity.map(a => a.count))
+  const RANGES = [{ v: 7, l: 'Last 7 days' }, { v: 30, l: 'Last 30 days' }, { v: 90, l: 'Last 90 days' }, { v: 365, l: 'This year' }]
 
   const stats = [
     { label:'Projects',          value:jobs.length },
@@ -94,17 +104,22 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
         ))}
       </div>
 
-      {/* Weekly activity chart */}
+      {/* Activity chart */}
       <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'18px 20px', marginBottom:24 }}>
-        <div style={{ fontSize:13, fontWeight:600, marginBottom:16 }}>Weekly activity — tasks created</div>
-        <div style={{ display:'flex', alignItems:'flex-end', gap:14, height:120 }}>
-          {weeks.map(w => (
-            <div key={w.label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:16 }}>
+          <div style={{ fontSize:13, fontWeight:600 }}>Activity — tasks created</div>
+          <select value={range} onChange={e => setRange(Number(e.target.value))} style={{ background:C.bgElevated, color:C.text, border:`1px solid ${C.border}`, borderRadius:7, padding:'6px 10px', fontSize:12, fontFamily:'inherit', cursor:'pointer', outline:'none' }}>
+            {RANGES.map(r => <option key={r.v} value={r.v}>{r.l}</option>)}
+          </select>
+        </div>
+        <div style={{ display:'flex', alignItems:'flex-end', gap:10, height:120 }}>
+          {activity.map((a, i) => (
+            <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:8, minWidth:0 }}>
               <div style={{ flex:1, width:'100%', display:'flex', alignItems:'flex-end' }}>
-                <div title={`${w.count} tasks`} style={{ width:'100%', height:`${(w.count / maxWeek) * 100}%`, minHeight:2, background:accent.base, borderRadius:'4px 4px 0 0', transition:'height 0.4s' }} />
+                <div title={`${a.count} tasks`} style={{ width:'100%', height:`${(a.count / maxAct) * 100}%`, minHeight:2, background:accent.base, borderRadius:'4px 4px 0 0', transition:'height 0.4s ease' }} />
               </div>
-              <div style={{ fontSize:10, color:C.muted }}>{w.label}</div>
-              <div style={{ fontSize:11, color:C.sub, fontWeight:600 }}>{w.count}</div>
+              <div style={{ fontSize:9.5, color:C.muted, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%' }}>{a.label}</div>
+              <div style={{ fontSize:11, color:C.sub, fontWeight:600 }}>{a.count}</div>
             </div>
           ))}
         </div>
