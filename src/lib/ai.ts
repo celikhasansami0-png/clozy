@@ -16,7 +16,7 @@ function getClient() {
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
-const SCOUT_SYSTEM = `You are @Scout, the in-app AI assistant for Scout — a project
+const DOPPIO_SYSTEM = `You are @Doppio, the in-app AI assistant for Doppio — a project
 operations platform used by teams across many industries. You help project managers and
 their teams reason about project health, documents, deadlines, workload and risk.
 
@@ -32,10 +32,10 @@ function textOf(res: Anthropic.Message): string {
     .trim()
 }
 
-/** @Scout chat — real Anthropic response, or a graceful mock when no key is set. */
-export async function scoutChat(messages: ChatMessage[], context?: string): Promise<string> {
+/** @Doppio chat — real Anthropic response, or a graceful mock when no key is set. */
+export async function doppioChat(messages: ChatMessage[], context?: string): Promise<string> {
   if (!aiEnabled()) return mockChat(messages, context)
-  const system = context ? `${SCOUT_SYSTEM}\n\n## Current workspace\n${context}` : SCOUT_SYSTEM
+  const system = context ? `${DOPPIO_SYSTEM}\n\n## Current workspace\n${context}` : DOPPIO_SYSTEM
   const res = await getClient().messages.create({
     model: MODEL,
     max_tokens: 1024,
@@ -51,7 +51,7 @@ export async function projectSummary(context: string): Promise<string> {
   const res = await getClient().messages.create({
     model: MODEL,
     max_tokens: 1024,
-    system: `${SCOUT_SYSTEM}\n\nYou are generating an executive project-health summary for a
+    system: `${DOPPIO_SYSTEM}\n\nYou are generating an executive project-health summary for a
 portfolio of projects. Output 3 short sections in markdown-free plain text:
 "Overall", "Risks", and "Recommended next steps". Keep it under 180 words.`,
     messages: [{ role: 'user', content: `Summarize the health of this portfolio:\n\n${context}` }],
@@ -68,7 +68,7 @@ export async function aiInsights(context: string): Promise<Insight[]> {
     const res = await getClient().messages.create({
       model: MODEL,
       max_tokens: 700,
-      system: `${SCOUT_SYSTEM}\n\nYou generate concise, actionable dashboard insights for a project
+      system: `${DOPPIO_SYSTEM}\n\nYou generate concise, actionable dashboard insights for a project
 operator. Return ONLY a JSON array (no prose, no markdown fences) of 3 to 5 objects, each
 {"icon","title","detail"}. icon must be one of: "risk","document","task","team","trend". title is
 <= 6 words. detail is one actionable sentence <= 22 words grounded in the data provided.`,
@@ -98,7 +98,7 @@ function mockInsights(): Insight[] {
 function mockChat(messages: ChatMessage[], context?: string): string {
   const last = messages.filter((m) => m.role === 'user').pop()?.content || ''
   return [
-    `(@Scout demo mode — set ANTHROPIC_API_KEY for live answers.)`,
+    `(@Doppio demo mode — set ANTHROPIC_API_KEY for live answers.)`,
     ``,
     `You asked: "${last.slice(0, 200)}"`,
     context

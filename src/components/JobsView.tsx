@@ -15,7 +15,7 @@ import DeleteProjectModal from './DeleteProjectModal'
 import Pager, { PAGE_SIZE } from './Pager'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
-const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
+const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 
 export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew, ownerId, uploaderName }: { jobs:Job[], tasks:Task[], crew:CrewMember[], ownerId:string, uploaderName:string }) {
   const searchParams = useSearchParams()
@@ -172,7 +172,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   if (!job) return (
     <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:C.muted, fontSize:14, padding:24, textAlign:'center' }}>
       <div>No projects yet. Create your first project to get started.</div>
-      <button onClick={()=>create.newProject()} style={{ background:'#4D7FFF', color:'#FFFFFF', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New project</button>
+      <button onClick={()=>create.newProject()} style={{ background:'#CC785C', color:'#FFFFFF', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New project</button>
     </div>
   )
 
@@ -194,9 +194,9 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               </div>
               <button onClick={e=>{ e.stopPropagation(); setMenuJobId(menuJobId===j.id?null:j.id) }} aria-label="Project actions" style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', padding:'2px 4px', fontSize:15, lineHeight:1, flexShrink:0 }}>⋯</button>
               {menuJobId === j.id && (
-                <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', top:34, right:6, zIndex:10, width:170, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:8, boxShadow:'0 8px 24px rgba(0,0,0,0.5)', overflow:'hidden' }}>
+                <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', top:34, right:6, zIndex:10, width:170, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:8, boxShadow:'0 8px 24px rgba(60,50,40,0.15)', overflow:'hidden' }}>
                   {[['Duplicate', ()=>duplicateProject(j)], ['Archive', ()=>archiveProject(j)], ['Delete', ()=>{ setMenuJobId(null); setDeleteTarget(j) }]].map(([label, fn]) => (
-                    <button key={label as string} onClick={fn as () => void} style={{ width:'100%', textAlign:'left', background:'none', border:'none', padding:'9px 14px', fontSize:13, color: label==='Delete'?'#f87171':C.text, fontFamily:'inherit', cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background=C.bgElevated} onMouseLeave={e=>e.currentTarget.style.background='none'}>{label as string} {label!=='Delete' ? term.project.toLowerCase() : ''}</button>
+                    <button key={label as string} onClick={fn as () => void} style={{ width:'100%', textAlign:'left', background:'none', border:'none', padding:'9px 14px', fontSize:13, color: label==='Delete'?'#C2574A':C.text, fontFamily:'inherit', cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background=C.bgElevated} onMouseLeave={e=>e.currentTarget.style.background='none'}>{label as string} {label!=='Delete' ? term.project.toLowerCase() : ''}</button>
                   ))}
                 </div>
               )}
@@ -243,7 +243,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
 
         {filtered.length > 0 && (
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 20px', borderBottom:`1px solid ${C.borderSubtle}` }}>
-            <input type="checkbox" checked={selected.size > 0 && filtered.every(t => selected.has(t.id))} onChange={e => setSelected(e.target.checked ? new Set(filtered.map(t => t.id)) : new Set())} style={{ accentColor:'#F5F6F7', cursor:'pointer' }} />
+            <input type="checkbox" checked={selected.size > 0 && filtered.every(t => selected.has(t.id))} onChange={e => setSelected(e.target.checked ? new Set(filtered.map(t => t.id)) : new Set())} style={{ accentColor:'#1F1E1C', cursor:'pointer' }} />
             <span style={{ fontSize:11, color:C.muted }}>{selected.size > 0 ? `${selected.size} selected` : 'Select all'}</span>
           </div>
         )}
@@ -257,7 +257,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
                 onMouseEnter={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background=C.bgHover }}
                 onMouseLeave={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background='transparent' }}
               >
-                <input type="checkbox" checked={checked} onClick={e=>e.stopPropagation()} onChange={()=>toggleSel(t.id)} style={{ marginTop:3, accentColor:'#F5F6F7', cursor:'pointer', flexShrink:0 }} />
+                <input type="checkbox" checked={checked} onClick={e=>e.stopPropagation()} onChange={()=>toggleSel(t.id)} style={{ marginTop:3, accentColor:'#1F1E1C', cursor:'pointer', flexShrink:0 }} />
                 <div onClick={e=>{ e.stopPropagation(); const next = t.status==='todo'?'in_progress':t.status==='in_progress'?'done':'todo'; updateTaskStatus(t.id,next) }}>
                   <StatusDot status={t.status} />
                 </div>
@@ -291,7 +291,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               <option value="__ph" disabled>Status…</option><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="done">Done</option>
             </select>
             {bulkDeleteConfirm ? (
-              <button onClick={bulkDelete} style={{ background:'rgba(248,113,113,0.12)', border:'1px solid rgba(248,113,113,0.4)', color:'#f87171', borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm delete</button>
+              <button onClick={bulkDelete} style={{ background:'rgba(194,87,74,0.12)', border:'1px solid rgba(194,87,74,0.4)', color:'#C2574A', borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm delete</button>
             ) : (
               <button onClick={()=>setBulkDeleteConfirm(true)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:6, padding:'5px 10px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Delete</button>
             )}
@@ -303,10 +303,10 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
           {aiNote && <div style={{ fontSize:11, color:C.sub, marginBottom:8 }}>✦ {aiNote}</div>}
           <div style={{ display:'flex', alignItems:'center', gap:10, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'8px 12px' }}>
-            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Scout</span>
+            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Doppio</span>
             <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Torque module clamps — row 12" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
-            <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:'#4D7FFF', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
-              <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#0A0B0D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:'#CC785C', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
+              <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#FAF9F5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
           </div>
         </form>

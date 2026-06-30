@@ -16,7 +16,7 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
   const PHASE = mod.stages
   const [name, setName] = useState('')
   const [nameErr, setNameErr] = useState(false)
-  const [color, setColor] = useState('#4D7FFF')
+  const [color, setColor] = useState('#CC785C')
   const [status, setStatus] = useState<JobStatus>('In Progress')
   const [phase, setPhase] = useState(PHASE[0])
   const [completion, setCompletion] = useState(0)

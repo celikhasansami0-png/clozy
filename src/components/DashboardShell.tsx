@@ -10,7 +10,7 @@ import { accent } from './ui'
 import type { ModuleConfig } from '@/config/modules'
 import { plural } from '@/config/modules'
 
-const C = { bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
+const C = { bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 
 type Action = { label: string; kind: 'project' | 'task' | 'document' | 'member' }
 function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: string; action?: Action } {
@@ -39,13 +39,13 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
   }
 
   return (
-    <div style={{ height:46, borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', padding:'0 16px', background:'#12141A', flexShrink:0, justifyContent:'space-between', gap:10 }}>
+    <div style={{ height:46, borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', padding:'0 16px', background:'#FFFFFF', flexShrink:0, justifyContent:'space-between', gap:10 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
         <button className="bn-menu-btn" aria-label="Toggle menu" onClick={onMenu} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.sub, borderRadius:6, width:30, height:26, padding:0 }}>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12V12H2z"/></svg>
         </button>
         <div style={{ fontSize:13, display:'flex', alignItems:'center', gap:7, overflow:'hidden' }}>
-          <span style={{ color:C.muted }}>Scout</span>
+          <span style={{ color:C.muted }}>Doppio</span>
           <span style={{ color:C.muted }}>/</span>
           <span style={{ color:C.text, fontWeight:600, whiteSpace:'nowrap' }}>{meta.crumb}</span>
         </div>
@@ -90,7 +90,7 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
   }, [create])
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0A0B0D' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#FAF9F5' }}>
       <Topbar userId={userId} onMenu={() => setOpen(v => !v)} onOpenSearch={() => setSearchOpen(true)} />
       <div style={{ flex:1, display:'flex', overflow:'hidden', position:'relative' }}>
         <div className={`bn-sidebar-backdrop ${open ? 'bn-open' : ''}`} onClick={() => setOpen(false)} />

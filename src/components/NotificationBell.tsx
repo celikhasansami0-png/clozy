@@ -7,7 +7,7 @@ import { relativeTime } from '@/lib/log'
 import { Icons } from './EmptyState'
 import type { NotificationRow } from '@/lib/types'
 
-const C = { bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
+const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 
 export default function NotificationBell({ userId }: { userId: string }) {
   const supabase = createClient()
@@ -60,11 +60,11 @@ export default function NotificationBell({ userId }: { userId: string }) {
     <div ref={ref} style={{ position:'relative' }}>
       <button onClick={() => setOpen(v => !v)} aria-label="Notifications" style={{ position:'relative', width:30, height:28, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:6, color:C.sub, display:'inline-flex', alignItems:'center', justifyContent:'center' }}>
         <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 8a4 4 0 018 0c0 4 1.5 5 1.5 5h-11S6 12 6 8z"/><path d="M8.5 16a1.5 1.5 0 003 0"/></svg>
-        {unread > 0 && <span style={{ position:'absolute', top:-5, right:-5, minWidth:15, height:15, padding:'0 3px', borderRadius:8, background:'#4D7FFF', color:'#FFFFFF', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #12141A' }}>{unread > 9 ? '9+' : unread}</span>}
+        {unread > 0 && <span style={{ position:'absolute', top:-5, right:-5, minWidth:15, height:15, padding:'0 3px', borderRadius:8, background:'#CC785C', color:'#FFFFFF', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #FFFFFF' }}>{unread > 9 ? '9+' : unread}</span>}
       </button>
 
       {open && (
-        <div style={{ position:'absolute', top:36, right:0, width:340, maxWidth:'90vw', background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, boxShadow:'0 12px 32px rgba(0,0,0,0.5)', zIndex:70, overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:36, right:0, width:340, maxWidth:'90vw', background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, boxShadow:'0 12px 32px rgba(60,50,40,0.16)', zIndex:70, overflow:'hidden' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', borderBottom:`1px solid ${C.borderSubtle}` }}>
             <span style={{ fontSize:13, fontWeight:700 }}>Notifications</span>
             {unread > 0 && <button onClick={markAllRead} style={{ background:'none', border:'none', color:C.sub, fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Mark all as read</button>}
@@ -77,7 +77,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
                 <div style={{ fontSize:12, color:C.muted, marginTop:3 }}>New activity will show up here.</div>
               </div>
             ) : items.map((n, i) => (
-              <button key={n.id} onClick={() => openItem(n)} style={{ width:'100%', textAlign:'left', display:'flex', gap:10, padding:'12px 16px', background: n.read ? 'transparent' : 'rgba(77,127,255,0.03)', border:'none', borderBottom: i < items.length - 1 ? `1px solid ${C.borderSubtle}` : 'none', cursor:'pointer', fontFamily:'inherit' }}>
+              <button key={n.id} onClick={() => openItem(n)} style={{ width:'100%', textAlign:'left', display:'flex', gap:10, padding:'12px 16px', background: n.read ? 'transparent' : 'rgba(204,120,92,0.03)', border:'none', borderBottom: i < items.length - 1 ? `1px solid ${C.borderSubtle}` : 'none', cursor:'pointer', fontFamily:'inherit' }}>
                 <span style={{ width:7, height:7, borderRadius:'50%', background: n.read ? 'transparent' : C.text, marginTop:5, flexShrink:0 }} />
                 <span style={{ flex:1, minWidth:0 }}>
                   <span style={{ display:'block', fontSize:13, fontWeight:600, color:C.text }}>{n.title}</span>

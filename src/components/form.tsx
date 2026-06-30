@@ -1,10 +1,10 @@
 'use client'
 import React from 'react'
 
-const C = { text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', border:'#262A35', elevated:'#181B22', err:'#f87171', focus:'#9CA3AF' }
+const C = { text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', border:'#DEDBD2', elevated:'#F0EEE6', err:'#C2574A', focus:'#5C5A52' }
 
 function inputStyle(error?: boolean): React.CSSProperties {
-  return { width:'100%', background:C.elevated, border:`1px solid ${error ? C.err : C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit', colorScheme:'dark' }
+  return { width:'100%', background:'#FFFFFF', border:`1px solid ${error ? C.err : C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit', colorScheme:'light' }
 }
 function focusHandlers(error?: boolean) {
   return {
@@ -41,15 +41,16 @@ export function Select({ value, onChange, options, error }: { value: string; onC
   )
 }
 
+// Dusty, muted project colors consistent with the warm light palette.
 const PRESET_COLORS: [string, string][] = [
-  ['Amber', '#F5A623'], ['Blue', '#60a5fa'], ['Red', '#f87171'],
-  ['Green', '#4ade80'], ['Purple', '#a78bfa'], ['Teal', '#2dd4bf'],
+  ['Terracotta', '#CC785C'], ['Blue', '#6B8CAE'], ['Green', '#7A9B76'],
+  ['Purple', '#9B7EA8'], ['Ochre', '#C99A5B'], ['Teal', '#6BA39B'],
 ]
 export function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ display:'flex', gap:10 }}>
       {PRESET_COLORS.map(([name, hex]) => (
-        <button type="button" key={hex} title={name} onClick={() => onChange(hex)} style={{ width:28, height:28, borderRadius:'50%', background:hex, border: value === hex ? '2px solid #F5F6F7' : '2px solid transparent', boxShadow: value === hex ? '0 0 0 2px #12141A' : 'none', cursor:'pointer', padding:0 }} />
+        <button type="button" key={hex} title={name} onClick={() => onChange(hex)} style={{ width:28, height:28, borderRadius:'50%', background:hex, border: value === hex ? '2px solid #1F1E1C' : '2px solid transparent', boxShadow: value === hex ? '0 0 0 2px #FFFFFF' : 'none', cursor:'pointer', padding:0 }} />
       ))}
     </div>
   )
@@ -58,7 +59,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (v: 
 export function Slider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#F5F6F7' }} />
+      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#1F1E1C' }} />
       <div style={{ fontSize:12, color:C.sub, marginTop:4 }}>{value}%</div>
     </div>
   )
@@ -66,7 +67,10 @@ export function Slider({ value, onChange }: { value: number; onChange: (v: numbe
 
 export function SubmitButton({ loading, children }: { loading?: boolean; children: React.ReactNode }) {
   return (
-    <button type="submit" disabled={loading} style={{ width:'100%', background:'#4D7FFF', color:'#FFFFFF', border:'none', borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', marginTop:6, cursor:'pointer', opacity: loading ? 0.6 : 1 }}>
+    <button type="submit" disabled={loading}
+      onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#B86A4E' }}
+      onMouseLeave={e => { e.currentTarget.style.background = '#CC785C' }}
+      style={{ width:'100%', background:'#CC785C', color:'#FFFFFF', border:'none', borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', marginTop:6, cursor:'pointer', opacity: loading ? 0.6 : 1, transition:'background 0.12s' }}>
       {loading ? 'Saving…' : children}
     </button>
   )

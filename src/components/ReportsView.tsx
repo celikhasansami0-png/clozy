@@ -5,7 +5,7 @@ import { Skeleton } from './Skeleton'
 import { riskAlerts, flaggedDocuments } from '@/lib/insights'
 import type { Job, Task, Doc } from '@/lib/types'
 
-const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', highBg:'rgba(77,127,255,0.07)', highBorder:'rgba(77,127,255,0.18)' }
+const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', highBg:'rgba(204,120,92,0.07)', highBorder:'rgba(204,120,92,0.18)' }
 const DAY = 24 * 60 * 60 * 1000
 
 export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], tasks:Task[], documents:Doc[] }) {
@@ -78,7 +78,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
     const a = document.createElement('a')
-    a.href = url; a.download = `scout-report-${new Date().toISOString().slice(0,10)}.csv`
+    a.href = url; a.download = `doppio-report-${new Date().toISOString().slice(0,10)}.csv`
     a.click(); URL.revokeObjectURL(url)
   }
 
@@ -146,7 +146,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
       <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'18px 20px' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:12 }}>
           <div style={{ fontSize:13, fontWeight:600 }}>AI Project Health Summary</div>
-          <button onClick={generateSummary} disabled={loading} style={{ background:'#4D7FFF', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', opacity:loading?0.6:1 }}>
+          <button onClick={generateSummary} disabled={loading} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', opacity:loading?0.6:1 }}>
             {loading ? 'Generating…' : '✦ Generate AI Summary'}
           </button>
         </div>
@@ -154,7 +154,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
           <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>{flagged.length} document(s) flagged · {risks.length} task(s) at risk</div>
         )}
         {loading && <div style={{ display:'flex', flexDirection:'column', gap:8 }}><Skeleton width="90%" /><Skeleton width="96%" /><Skeleton width="70%" /></div>}
-        {error && <div style={{ fontSize:13, color:'#f87171' }}>{error}</div>}
+        {error && <div style={{ fontSize:13, color:'#C2574A' }}>{error}</div>}
         {summary && <pre style={{ fontSize:13, color:C.text, whiteSpace:'pre-wrap', fontFamily:'inherit', lineHeight:1.6, margin:0 }}>{summary}</pre>}
         {!summary && !loading && !error && <div style={{ fontSize:13, color:C.muted }}>Generate a grounded health summary across all projects, risks and documents.</div>}
       </div>

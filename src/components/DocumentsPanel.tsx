@@ -7,7 +7,7 @@ import Pager, { PAGE_SIZE } from './Pager'
 import { LIMITS } from '@/config/limits'
 import type { Doc } from '@/lib/types'
 
-const C = { bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', err:'#f87171' }
+const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', err:'#C2574A' }
 
 const MAX_BYTES = LIMITS.fileSizeBytes      // 50 MB per file
 const MAX_DOCS = LIMITS.documentsPerProject // 300 documents per project
@@ -113,7 +113,7 @@ export default function DocumentsPanel({ projectId, ownerId, uploaderName }: { p
               </div>
               {d.file_path && <button onClick={() => download(d)} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.sub, borderRadius:6, padding:'5px 10px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Download</button>}
               {confirmId === d.id ? (
-                <button onClick={() => remove(d)} style={{ background:'rgba(248,113,113,0.12)', border:'1px solid rgba(248,113,113,0.4)', color:C.err, borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm?</button>
+                <button onClick={() => remove(d)} style={{ background:'rgba(194,87,74,0.12)', border:'1px solid rgba(194,87,74,0.4)', color:C.err, borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm?</button>
               ) : (
                 <button onClick={() => setConfirmId(d.id)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:6, padding:'5px 10px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Delete</button>
               )}

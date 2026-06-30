@@ -1,4 +1,4 @@
--- Scout Day 2 — profiles, auth trigger, niche columns, per-niche seed data.
+-- Doppio Day 2 — profiles, auth trigger, niche columns, per-niche seed data.
 -- Safe to re-run.
 
 -- ── PROFILES ────────────────────────────────────────────────────────────────

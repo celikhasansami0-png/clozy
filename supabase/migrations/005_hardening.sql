@@ -1,4 +1,4 @@
--- Scout Day 4 audit — storage limit + performance indexes. Safe to re-run.
+-- Doppio Day 4 audit — storage limit + performance indexes. Safe to re-run.
 
 -- ── Storage: cap document uploads at 25 MB ──────────────────────────────────
 update storage.buckets set file_size_limit = 26214400 where id = 'project-documents';

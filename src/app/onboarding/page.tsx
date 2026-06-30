@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-const C = { bg:'#0A0B0D', card:'#12141A', elevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', accent:'#4D7FFF' }
+const C = { bg:'#FAF9F5', card:'#FFFFFF', elevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', accent:'#CC785C' }
 const FONT = "'Inter', system-ui, sans-serif"
 const TEAM_SIZES = ['1-10', '10-50', '50-200', '200+']
 
@@ -39,10 +39,10 @@ export default function OnboardingPage() {
   return (
     <div style={{ minHeight:'100vh', background:C.bg, color:C.text, fontFamily:FONT, display:'flex', flexDirection:'column' }}>
       <div style={{ padding:'20px 28px', display:'flex', alignItems:'center', gap:10, borderBottom:`1px solid ${C.borderSubtle}` }}>
-        {/* Logo — place your logo file at public/logo.png */}
+        {/* Logo — place a dark/black logo at public/logo.png (suits the light background) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" width={28} height={28} alt="Scout" style={{ borderRadius:6, objectFit:'contain' }} />
-        <span style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em' }}>Scout</span>
+        <img src="/logo.png" width={28} height={28} alt="Doppio" style={{ borderRadius:6, objectFit:'contain' }} />
+        <span style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em' }}>Doppio</span>
         <span style={{ marginLeft:'auto', fontSize:12, color:C.muted }}>Welcome</span>
       </div>
 
@@ -54,9 +54,9 @@ export default function OnboardingPage() {
           <div style={{ marginBottom:18 }}>
             <label style={{ fontSize:11, fontWeight:600, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6, display:'block' }}>Company name *</label>
             <input value={company} onChange={e => { setCompany(e.target.value); setCompanyErr(false) }} placeholder="Acme Inc."
-              style={{ width:'100%', background:C.elevated, border:`1px solid ${companyErr ? '#f87171' : C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit' }}
+              style={{ width:'100%', background:C.elevated, border:`1px solid ${companyErr ? '#C2574A' : C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit' }}
               onFocus={e => { if (!companyErr) e.target.style.borderColor = C.accent }} onBlur={e => { if (!companyErr) e.target.style.borderColor = C.border }} />
-            {companyErr && <div style={{ fontSize:11, color:'#f87171', marginTop:5 }}>Company name is required</div>}
+            {companyErr && <div style={{ fontSize:11, color:'#C2574A', marginTop:5 }}>Company name is required</div>}
           </div>
 
           <div style={{ marginBottom:18 }}>
@@ -64,7 +64,7 @@ export default function OnboardingPage() {
             <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Construction, Consulting, Real Estate, Professional Services"
               style={{ width:'100%', background:C.elevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit' }}
               onFocus={e => { e.target.style.borderColor = C.accent }} onBlur={e => { e.target.style.borderColor = C.border }} />
-            <div style={{ fontSize:11, color:C.dim, marginTop:5 }}>Optional — shown on your profile. It doesn&apos;t change how Scout works.</div>
+            <div style={{ fontSize:11, color:C.dim, marginTop:5 }}>Optional — shown on your profile. It doesn&apos;t change how Doppio works.</div>
           </div>
 
           <div style={{ marginBottom:24 }}>
@@ -76,9 +76,9 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {error && <div style={{ fontSize:12, color:'#f87171', marginBottom:12 }}>{error}</div>}
+          {error && <div style={{ fontSize:12, color:'#C2574A', marginBottom:12 }}>{error}</div>}
 
-          <button onClick={finish} disabled={saving} style={{ width:'100%', background:C.accent, color:'#FFFFFF', border:'none', borderRadius:8, padding:'12px 24px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor:'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Setting up your workspace…' : 'Enter Scout'}</button>
+          <button onClick={finish} disabled={saving} style={{ width:'100%', background:C.accent, color:'#FFFFFF', border:'none', borderRadius:8, padding:'12px 24px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor:'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Setting up your workspace…' : 'Enter Doppio'}</button>
         </div>
       </div>
     </div>

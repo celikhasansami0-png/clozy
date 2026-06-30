@@ -94,8 +94,8 @@ export default function DocumentForm({ userId, onClose, jobId }: { userId: strin
         <Field label="Notes"><TextArea value={notes} onChange={setNotes} placeholder="Any context for this document" /></Field>
         <Field label="Attachment (optional)" error={fileErr || undefined}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <button type="button" onClick={() => fileRef.current?.click()} style={{ background:'#181B22', border:'1px solid #262A35', color:'#9CA3AF', borderRadius:7, padding:'7px 12px', fontSize:13, fontFamily:'inherit', cursor:'pointer' }}>{file ? 'Change file' : 'Choose file'}</button>
-            <span style={{ fontSize:12, color:'#5C6470', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{file ? file.name : 'No file · up to 50 MB'}</span>
+            <button type="button" onClick={() => fileRef.current?.click()} style={{ background:'#F0EEE6', border:'1px solid #DEDBD2', color:'#5C5A52', borderRadius:7, padding:'7px 12px', fontSize:13, fontFamily:'inherit', cursor:'pointer' }}>{file ? 'Change file' : 'Choose file'}</button>
+            <span style={{ fontSize:12, color:'#8C8980', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{file ? file.name : 'No file · up to 50 MB'}</span>
             <input ref={fileRef} type="file" style={{ display:'none' }} onChange={e => pickFile(e.target.files?.[0] || null)} />
           </div>
         </Field>

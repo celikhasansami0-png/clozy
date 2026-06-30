@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Icons } from './EmptyState'
 
-const C = { bg:'rgba(0,0,0,0.7)', bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
+const C = { bg:'rgba(31,30,28,0.35)', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 const RECENT_KEY = 'bn:recent-searches'
 
 type Result = { id: string; label: string; sub?: string; type: 'project' | 'task' | 'document'; href: string }
@@ -14,7 +14,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   const i = text.toLowerCase().indexOf(q.toLowerCase())
   if (i < 0) return <>{text}</>
   return (
-    <>{text.slice(0, i)}<span style={{ background:'rgba(77,127,255,0.16)', color:'#fff', borderRadius:2 }}>{text.slice(i, i + q.length)}</span>{text.slice(i + q.length)}</>
+    <>{text.slice(0, i)}<span style={{ background:'rgba(204,120,92,0.16)', color:'#fff', borderRadius:2 }}>{text.slice(i, i + q.length)}</span>{text.slice(i + q.length)}</>
   )
 }
 
@@ -88,7 +88,7 @@ export default function SearchOverlay({ userId, open, onClose }: { userId: strin
   if (!open) return null
   return (
     <div onMouseDown={onClose} style={{ position:'fixed', inset:0, zIndex:80, background:C.bg, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'80px 20px' }}>
-      <div onMouseDown={e => e.stopPropagation()} style={{ width:600, maxWidth:'100%', background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:14, overflow:'hidden', boxShadow:'0 24px 60px rgba(0,0,0,0.6)' }}>
+      <div onMouseDown={e => e.stopPropagation()} style={{ width:600, maxWidth:'100%', background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:14, overflow:'hidden', boxShadow:'0 24px 60px rgba(60,50,40,0.20)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10, padding:'14px 16px', borderBottom:`1px solid ${C.borderSubtle}` }}>
           <span style={{ color:C.muted, display:'flex' }}>{Icons.search}</span>
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Search projects, tasks, documents…" style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:15, color:C.text, fontFamily:'inherit' }} />

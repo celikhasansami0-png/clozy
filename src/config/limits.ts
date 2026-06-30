@@ -1,4 +1,4 @@
-// Central resource limits for Scout. Sized for larger enterprise customers
+// Central resource limits for Doppio. Sized for larger enterprise customers
 // with bigger teams and more data.
 //
 // Server-side enforcement: per-file size is enforced by the Supabase Storage

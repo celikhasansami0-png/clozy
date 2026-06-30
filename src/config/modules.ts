@@ -1,7 +1,7 @@
-// Scout configuration — fully industry-agnostic.
+// Doppio configuration — fully industry-agnostic.
 //
 // The previous per-niche industry configuration map has been removed entirely.
-// Scout makes no industry-specific assumptions: every account uses the single
+// Doppio makes no industry-specific assumptions: every account uses the single
 // GENERIC_MODULE below, and no UI label, stage, metric, or widget is ever
 // swapped based on industry. The optional free-text "industry" a user enters at
 // onboarding is stored for display only and never drives behaviour.
@@ -29,7 +29,7 @@ export const GENERIC_MODULE: ModuleConfig = {
 // Generic document types (no industry assumptions).
 export const DOCUMENT_TYPES = ['Agreement', 'Certificate', 'Report', 'Invoice', 'Contract', 'Other']
 
-// Kept for API compatibility — Scout has no niche-specific project fields.
+// Kept for API compatibility — Doppio has no niche-specific project fields.
 export interface ProjectField { key: string; label: string; type: 'number' | 'text' }
 export function getProjectFields(): ProjectField[] {
   return []

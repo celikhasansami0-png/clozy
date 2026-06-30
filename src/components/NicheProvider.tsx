@@ -2,7 +2,7 @@
 import { createContext, useContext } from 'react'
 import { GENERIC_MODULE, plural, type ModuleConfig } from '@/config/modules'
 
-// Scout is industry-agnostic: terminology is fixed and generic for every user.
+// Doppio is industry-agnostic: terminology is fixed and generic for every user.
 // This provider is kept (rather than ripping out every useNiche() call site) but
 // it now always returns the single GENERIC_MODULE — no niche switching.
 type NicheCtx = { niche: string; module: ModuleConfig; term: ModuleConfig['terminology']; plural: typeof plural }

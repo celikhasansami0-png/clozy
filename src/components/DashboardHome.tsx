@@ -6,11 +6,11 @@ import { useCreate } from './CreateProvider'
 import EmptyState, { Icons } from './EmptyState'
 import { useRouter } from 'next/navigation'
 
-const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', accent:'#4D7FFF', highBg:'rgba(77,127,255,0.10)', highBorder:'rgba(77,127,255,0.25)' }
+const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', accent:'#CC785C', highBg:'rgba(204,120,92,0.10)', highBorder:'rgba(204,120,92,0.25)' }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
+    <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0, boxShadow:'0 1px 3px rgba(60,50,40,0.05)' }}>
       <div style={{ padding:'14px 18px', borderBottom:`1px solid ${C.borderSubtle}`, fontSize:13, fontWeight:600, color:C.text }}>{title}</div>
       <div style={{ overflowY:'auto', flex:1 }}>{children}</div>
     </div>

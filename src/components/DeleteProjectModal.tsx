@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Modal from './Modal'
 import type { Job } from '@/lib/types'
 
-const C = { elevated:'#181B22', border:'#262A35', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', err:'#f87171' }
+const C = { elevated:'#F0EEE6', border:'#DEDBD2', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', err:'#C2574A' }
 
 export default function DeleteProjectModal({ job, label, onClose, onConfirm }: { job: Job; label: string; onClose: () => void; onConfirm: () => void }) {
   const [value, setValue] = useState('')
@@ -19,7 +19,7 @@ export default function DeleteProjectModal({ job, label, onClose, onConfirm }: {
         style={{ width:'100%', background:C.elevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit', marginBottom:16 }} />
       <div style={{ display:'flex', gap:10 }}>
         <button onClick={onClose} style={{ flex:1, background:C.elevated, color:C.text, border:`1px solid ${C.border}`, borderRadius:8, padding:'11px', fontSize:14, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Cancel</button>
-        <button onClick={onConfirm} disabled={!match} style={{ flex:1, background: match ? 'rgba(248,113,113,0.14)' : C.elevated, color: match ? C.err : C.muted, border:`1px solid ${match ? 'rgba(248,113,113,0.5)' : C.border}`, borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor: match ? 'pointer' : 'not-allowed' }}>Delete</button>
+        <button onClick={onConfirm} disabled={!match} style={{ flex:1, background: match ? 'rgba(194,87,74,0.14)' : C.elevated, color: match ? C.err : C.muted, border:`1px solid ${match ? 'rgba(194,87,74,0.5)' : C.border}`, borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor: match ? 'pointer' : 'not-allowed' }}>Delete</button>
       </div>
     </Modal>
   )

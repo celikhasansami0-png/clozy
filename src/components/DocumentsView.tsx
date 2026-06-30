@@ -9,7 +9,7 @@ import EmptyState, { Icons } from './EmptyState'
 import Pager, { PAGE_SIZE } from './Pager'
 import type { Doc } from '@/lib/types'
 
-const C = { bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', muted:'#5C6470', dim:'#2E3340', warnBg:'rgba(248,113,113,0.10)', warnBorder:'rgba(248,113,113,0.35)', warn:'#F87171' }
+const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', muted:'#8C8980', dim:'#C2BFB5', warnBg:'rgba(194,87,74,0.10)', warnBorder:'rgba(194,87,74,0.35)', warn:'#C2574A' }
 
 export default function DocumentsView({ documents: initial }: { documents: Doc[] }) {
   const create = useCreate()
@@ -42,7 +42,7 @@ export default function DocumentsView({ documents: initial }: { documents: Doc[]
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Documents</div>
           <div style={{ fontSize:14, color:C.muted }}>Track document numbers, types and approval status — and attach files in one place.</div>
         </div>
-        <button onClick={()=>create.newDocument()} style={{ background:'#4D7FFF', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New document</button>
+        <button onClick={()=>create.newDocument()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New document</button>
       </div>
 
       {flagged.length > 0 && (

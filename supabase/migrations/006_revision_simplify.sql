@@ -1,4 +1,4 @@
--- Scout revision — simplification: tighter storage + comprehensive indexes. Re-runnable.
+-- Doppio revision — simplification: tighter storage + comprehensive indexes. Re-runnable.
 
 -- Storage: cap document uploads at 10 MB.
 update storage.buckets set file_size_limit = 10485760 where id = 'project-documents';

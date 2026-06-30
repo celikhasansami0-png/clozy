@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { INTEGRATIONS, type IntegrationId } from '@/config/integrations'
 
-const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', accent:'#4D7FFF', green:'#22C55E', red:'#F87171' }
+const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', accent:'#CC785C', green:'#7A9B76', red:'#C2574A' }
 
 export type IntegrationStatus = { id: IntegrationId; connected: boolean; healthy: boolean }
 
@@ -46,17 +46,17 @@ export default function IntegrationsView({ statuses, companyName, industry }: { 
 
       {/* Flash messages */}
       {connectedFlash && <div style={{ background:'rgba(34,197,94,0.10)', border:`1px solid rgba(34,197,94,0.35)`, color:C.text, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:13 }}>Connected {connectedFlash.replace(/_/g,' ')} successfully.</div>}
-      {errorFlash && <div style={{ background:'rgba(248,113,113,0.10)', border:`1px solid rgba(248,113,113,0.35)`, color:C.text, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:13 }}>{errorFlash.endsWith('not_configured') ? 'That integration needs provider credentials configured by an admin before it can connect.' : `Could not complete: ${errorFlash.replace(/_/g,' ')}.`}</div>}
+      {errorFlash && <div style={{ background:'rgba(194,87,74,0.10)', border:`1px solid rgba(194,87,74,0.35)`, color:C.text, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:13 }}>{errorFlash.endsWith('not_configured') ? 'That integration needs provider credentials configured by an admin before it can connect.' : `Could not complete: ${errorFlash.replace(/_/g,' ')}.`}</div>}
 
       <div style={{ fontSize:13, fontWeight:600, marginBottom:4 }}>Integrations</div>
-      <div style={{ fontSize:12.5, color:C.muted, marginBottom:16 }}>Connect Scout to the tools your team already uses. Every integration is rate-limited and fails safely without affecting the app.</div>
+      <div style={{ fontSize:12.5, color:C.muted, marginBottom:16 }}>Connect Doppio to the tools your team already uses. Every integration is rate-limited and fails safely without affecting the app.</div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:14 }}>
         {INTEGRATIONS.map(meta => {
           const st = statusMap.get(meta.id)
           const connected = st?.connected
           return (
-            <div key={meta.id} style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'18px', display:'flex', flexDirection:'column', gap:12 }}>
+            <div key={meta.id} style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'18px', display:'flex', flexDirection:'column', gap:12, boxShadow:'0 1px 3px rgba(60,50,40,0.05)' }}>
               <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                 <div style={{ width:38, height:38, borderRadius:9, background:meta.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:700, color:'#fff', flexShrink:0 }}>{meta.logo}</div>
                 <div style={{ flex:1, minWidth:0 }}>

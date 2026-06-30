@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 
-const C = { bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470' }
+const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980' }
 
 export default function EmptyState({ icon, title, description, cta, compact }: { icon?: React.ReactNode; title: string; description?: string; cta?: { label: string; onClick: () => void }; compact?: boolean }) {
   return (
@@ -14,7 +14,7 @@ export default function EmptyState({ icon, title, description, cta, compact }: {
       <div style={{ fontSize:15, fontWeight:600, color:C.text }}>{title}</div>
       {description && <div style={{ fontSize:13, color:C.muted, maxWidth:340 }}>{description}</div>}
       {cta && (
-        <button onClick={cta.onClick} style={{ marginTop:6, background:'#4D7FFF', color:'#FFFFFF', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>{cta.label}</button>
+        <button onClick={cta.onClick} style={{ marginTop:6, background:'#CC785C', color:'#FFFFFF', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>{cta.label}</button>
       )}
     </div>
   )

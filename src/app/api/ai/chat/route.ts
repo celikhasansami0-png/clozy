@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { scoutChat, type ChatMessage } from '@/lib/ai'
+import { doppioChat, type ChatMessage } from '@/lib/ai'
 
 export async function POST(req: Request) {
   const supabase = createServerSupabaseClient()
@@ -27,10 +27,10 @@ export async function POST(req: Request) {
   ].join('\n')
 
   try {
-    const reply = await scoutChat(messages, context)
+    const reply = await doppioChat(messages, context)
     return NextResponse.json({ reply })
   } catch (err) {
-    console.error('scoutChat failed', err)
+    console.error('doppioChat failed', err)
     return NextResponse.json({ error: 'AI request failed' }, { status: 502 })
   }
 }

@@ -7,9 +7,9 @@ import { accent } from './ui'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import type { Job } from '@/lib/types'
 
-const C = { bg:'#12141A', elevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', muted:'#5C6470', dim:'#2E3340' }
+const C = { bg:'#FFFFFF', elevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', muted:'#8C8980', dim:'#C2BFB5' }
 
-// Fixed, generic navigation — Scout is industry-agnostic (no niche relabeling).
+// Fixed, generic navigation — Doppio is industry-agnostic (no niche relabeling).
 const navItems: { label:string; href:string; icon:React.ReactNode }[] = [
   { label:'Dashboard', href:'/dashboard',          icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
   { label:'Projects',  href:'/dashboard/jobs',      icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg> },
@@ -38,11 +38,11 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
 
   return (
     <div className={`bn-sidebar ${className}`} style={{ width:220, flexShrink:0, background:C.bg, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
-      {/* Logo — place your logo file at public/logo.png */}
+      {/* Logo — place a dark/black logo at public/logo.png (suits the light background) */}
       <div className="bn-logo-row" style={{ padding:'15px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:10 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" width={28} height={28} alt="Scout" style={{ borderRadius:6, flexShrink:0, objectFit:'contain' }} />
-        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Scout</span>
+        <img src="/logo.png" width={28} height={28} alt="Doppio" style={{ borderRadius:6, flexShrink:0, objectFit:'contain' }} />
+        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Doppio</span>
         <span className="bn-label" style={{ marginLeft:'auto', fontSize:10, color:C.muted, background:C.elevated, padding:'2px 6px', borderRadius:4, border:`1px solid ${C.border}` }}>Beta</span>
       </div>
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { emailContent, renderEmail, type EmailType } from '@/lib/emailTemplate'
 
-const FROM = process.env.EMAIL_FROM || 'Scout <onboarding@resend.dev>'
+const FROM = process.env.EMAIL_FROM || 'Doppio <onboarding@resend.dev>'
 
 // Transactional email sender (replaces the Supabase Edge Function).
 export async function POST(req: Request) {

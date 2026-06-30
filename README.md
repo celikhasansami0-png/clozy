@@ -1,9 +1,9 @@
-# Scout — Setup Guide
+# Doppio — Setup Guide
 
 **The operating system for renewable energy companies.** One product, eight
 niches (Solar EPC, BESS, EV Charging, Wind, Hydro, Biogas, O&M, Consulting) —
 the module config in `src/config/modules.ts` drives all UI labels, stages,
-permit types and demo data per niche. With **@Scout AI** built in.
+permit types and demo data per niche. With **@Doppio AI** built in.
 
 > **Setup notes**
 > 1. Run the SQL files **in order** in the Supabase SQL Editor:
@@ -52,8 +52,8 @@ select seed_demo_data('YOUR-USER-UUID-HERE');
 For live cross-session task updates, add the `tasks` table to the realtime
 publication: Supabase → **Database → Replication → supabase_realtime** → enable `tasks`.
 
-## AI features (@Scout)
-- **@Scout chat** (`/dashboard/assistant`) — Anthropic-backed, grounded in your workspace
+## AI features (@Doppio)
+- **@Doppio chat** (`/dashboard/assistant`) — Anthropic-backed, grounded in your workspace
 - **Risk alerts** — tasks due within 3 days surface on the dashboard
 - **Auto-assign** — new tasks are routed to the lightest-workload team member
 - **Permit agent** — permits "Under Review" > 14 days are flagged

@@ -1,4 +1,4 @@
--- Scout integrations — connectable third-party services with strict, per-account
+-- Doppio integrations — connectable third-party services with strict, per-account
 -- rate limits and shared error logging. All tables are owner-scoped via RLS and
 -- indexed on owner_id. Tokens are stored per account; never exposed to the client.
 

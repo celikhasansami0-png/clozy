@@ -7,7 +7,7 @@ import EmptyState, { Icons } from './EmptyState'
 import Pager, { PAGE_SIZE } from './Pager'
 import type { Task, Job } from '@/lib/types'
 
-const C = { bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
+const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 
 type StatusFilter = 'all' | 'todo' | 'in_progress' | 'done'
 
@@ -43,7 +43,7 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Tasks</div>
           <div style={{ fontSize:14, color:C.muted }}>{open} open across {jobs.length} project{jobs.length === 1 ? '' : 's'}.</div>
         </div>
-        <button onClick={()=>create.newTask()} style={{ background:'#4D7FFF', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New task</button>
+        <button onClick={()=>create.newTask()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New task</button>
       </div>
 
       <div style={{ display:'flex', gap:14, marginBottom:16, flexWrap:'wrap', alignItems:'center' }}>

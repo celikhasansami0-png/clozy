@@ -1,17 +1,17 @@
 import React from 'react'
 
-// Blue accent — Scout design system. Primary accent is blue (#4D7FFF);
-// only project-specific colors stay independently colored.
+// Clay terracotta accent — Doppio design system (Claude-inspired light theme).
+// Primary accent is clay (#CC785C); only project-specific colors stay distinct.
 export const accent = {
-  base:   '#4D7FFF',                    // primary blue
-  bright: '#7FA0FF',                    // bright blue (highlights / tall bars)
-  deep:   '#3A66E0',                    // deep blue (secondary)
-  dark:   '#16203A',                    // muted blue (short bars / fills)
-  soft:   'rgba(77,127,255,0.12)',
-  border: 'rgba(77,127,255,0.32)',
+  base:   '#CC785C',                    // primary clay terracotta
+  bright: '#E0A088',                    // light clay (highlights / tall bars)
+  deep:   '#B86A4E',                    // darker clay (hover / secondary)
+  dark:   '#F2E2D8',                    // soft accent tint (short bars / fills)
+  soft:   'rgba(204,120,92,0.12)',
+  border: 'rgba(204,120,92,0.32)',
 }
 
-const C = { text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', border:'#262A35', elevated:'#181B22', highBg:'rgba(77,127,255,0.07)', highBorder:'rgba(77,127,255,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }
+const C = { text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', border:'#DEDBD2', elevated:'#F0EEE6', highBg:'rgba(204,120,92,0.07)', highBorder:'rgba(204,120,92,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }
 
 export const statusCfg: Record<string,{label:string,color:string,bg:string,border:string}> = {
   todo:        { label:'To Do',       color:C.muted,       bg:'transparent', border:C.dim },

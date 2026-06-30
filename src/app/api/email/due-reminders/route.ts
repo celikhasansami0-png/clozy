@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { emailContent, renderEmail } from '@/lib/emailTemplate'
 
-const FROM = process.env.EMAIL_FROM || 'Scout <onboarding@resend.dev>'
+const FROM = process.env.EMAIL_FROM || 'Doppio <onboarding@resend.dev>'
 const DAY = 86400000
 
 // Cron-callable: tasks due within 24h. POST with `Authorization: Bearer <CRON_SECRET>`.

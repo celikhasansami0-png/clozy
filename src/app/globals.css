@@ -5,16 +5,16 @@
 }
 
 :root {
-  --bg:            #0A0B0D;
-  --bg-card:       #12141A;
-  --bg-elevated:   #181B22;
-  --bg-hover:      #1E222B;
-  --border:        #262A35;
-  --border-subtle: #1A1D24;
-  --text:          #F5F6F7;
-  --text-sub:      #9CA3AF;
-  --text-muted:    #5C6470;
-  --text-dim:      #2E3340;
+  --bg:            #FAF9F5;
+  --bg-card:       #FFFFFF;
+  --bg-elevated:   #F0EEE6;
+  --bg-hover:      #E8E5DC;
+  --border:        #DEDBD2;
+  --border-subtle: #ECE9E0;
+  --text:          #1F1E1C;
+  --text-sub:      #5C5A52;
+  --text-muted:    #8C8980;
+  --text-dim:      #C2BFB5;
 }
 
 html, body {
@@ -37,14 +37,14 @@ input, textarea { font-family: inherit; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-/* Loading skeleton shimmer — pulses #181B22 ↔ #1E222B */
+/* Loading skeleton shimmer — pulses #F0EEE6 ↔ #E8E5DC */
 .bn-skeleton {
-  background-color: #181B22;
+  background-color: #F0EEE6;
   animation: bn-shimmer 1.3s ease-in-out infinite;
 }
 @keyframes bn-shimmer {
-  0%, 100% { background-color: #181B22; }
-  50%      { background-color: #1E222B; }
+  0%, 100% { background-color: #F0EEE6; }
+  50%      { background-color: #E8E5DC; }
 }
 
 /* ── Responsive sidebar (3 states) ──────────────────────────────────────────
@@ -80,7 +80,7 @@ input, textarea { font-family: inherit; }
     z-index: 40;
     transform: translateX(-100%);
     transition: transform 0.2s ease;
-    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 8px 0 24px rgba(60, 50, 40, 0.14);
   }
   .bn-sidebar.bn-open { transform: translateX(0); }
   .bn-sidebar-backdrop.bn-open {
@@ -88,7 +88,7 @@ input, textarea { font-family: inherit; }
     position: fixed;
     inset: 0;
     z-index: 30;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(31, 30, 28, 0.35);
   }
 }
 

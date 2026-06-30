@@ -1,4 +1,4 @@
--- Scout restructure — unify Documents (permits + file uploads), free-text
+-- Doppio restructure — unify Documents (permits + file uploads), free-text
 -- industry, larger storage limit, and industry-neutral demo seed.
 -- Intended to run once, after migrations 001–007.
 
@@ -76,13 +76,13 @@ begin
 
   -- Four generic projects (project colors stay distinct for differentiation).
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Q3 Product Launch','#4D7FFF','In Progress','In Progress',45) returning id into j1;
+    (p_owner_id,'general','Q3 Product Launch','#CC785C','In Progress','In Progress',45) returning id into j1;
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Office Relocation','#22C55E','On Track','Planning',25) returning id into j2;
+    (p_owner_id,'general','Office Relocation','#7A9B76','On Track','Planning',25) returning id into j2;
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Client Onboarding Revamp','#F59E0B','In Progress','Review',60) returning id into j3;
+    (p_owner_id,'general','Client Onboarding Revamp','#C99A5B','In Progress','Review',60) returning id into j3;
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Annual Budget Planning','#A855F7','Delayed','Planning',15) returning id into j4;
+    (p_owner_id,'general','Annual Budget Planning','#9B7EA8','Delayed','Planning',15) returning id into j4;
 
   -- Generic tasks across the projects.
   insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values

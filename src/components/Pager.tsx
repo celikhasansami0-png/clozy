@@ -1,7 +1,7 @@
 'use client'
 import { LIMITS } from '@/config/limits'
 
-const C = { bgElevated:'#181B22', border:'#262A35', text:'#F5F6F7', muted:'#5C6470' }
+const C = { bgElevated:'#F0EEE6', border:'#DEDBD2', text:'#1F1E1C', muted:'#8C8980' }
 
 export const PAGE_SIZE = LIMITS.pageSize
 
