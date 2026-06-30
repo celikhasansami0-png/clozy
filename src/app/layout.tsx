@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Orbit — The operating system for project-driven teams',
+  title: 'Scout — The operating system for project-driven teams',
   description: 'Projects, tasks, documents and decision support for modern teams.',
 }
 

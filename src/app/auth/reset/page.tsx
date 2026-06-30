@@ -53,8 +53,8 @@ export default function ResetPasswordPage() {
         <div style={A.logo}>
           {/* Logo — place your logo file at public/logo.png */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" width={32} height={32} alt="Orbit" style={{ borderRadius:7, objectFit:'contain' }} />
-          <span style={A.logoText}>Orbit</span>
+          <img src="/logo.png" width={32} height={32} alt="Scout" style={{ borderRadius:7, objectFit:'contain' }} />
+          <span style={A.logoText}>Scout</span>
         </div>
         <div style={A.title}>Set a new password</div>
         <div style={A.sub}>Choose a password with at least 8 characters.</div>

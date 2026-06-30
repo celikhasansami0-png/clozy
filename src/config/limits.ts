@@ -1,5 +1,5 @@
-// Central resource limits for Orbit. Bumped for larger enterprise customers
-// (e.g. companies operating 13–15 MW-scale facilities with bigger teams).
+// Central resource limits for Scout. Sized for larger enterprise customers
+// with bigger teams and more data.
 //
 // Server-side enforcement: per-file size is enforced by the Supabase Storage
 // bucket (see migrations); per-project document count is enforced in

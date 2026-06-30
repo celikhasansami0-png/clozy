@@ -1,4 +1,4 @@
--- Bionova revision — Company Brain foundation (schema only, no functionality yet).
+-- Scout revision — Company Brain foundation (schema only, no functionality yet).
 
 create extension if not exists vector;
 

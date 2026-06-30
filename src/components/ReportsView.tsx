@@ -78,7 +78,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
     const a = document.createElement('a')
-    a.href = url; a.download = `orbit-report-${new Date().toISOString().slice(0,10)}.csv`
+    a.href = url; a.download = `scout-report-${new Date().toISOString().slice(0,10)}.csv`
     a.click(); URL.revokeObjectURL(url)
   }
 

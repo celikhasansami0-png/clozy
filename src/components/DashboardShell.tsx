@@ -21,6 +21,7 @@ function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: st
   if (path.startsWith('/dashboard/crew')) return { crumb: term.team, action: { label: 'Add Member', kind: 'member' } }
   if (path.startsWith('/dashboard/schedule')) return { crumb: term.schedule, action: { label: `New ${term.task}`, kind: 'task' } }
   if (path.startsWith('/dashboard/reports')) return { crumb: 'Reports' }
+  if (path.startsWith('/dashboard/settings')) return { crumb: 'Settings' }
   if (path.startsWith('/dashboard/assistant')) return { crumb: 'Assistant' }
   return { crumb: 'Dashboard' }
 }
@@ -44,7 +45,7 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12V12H2z"/></svg>
         </button>
         <div style={{ fontSize:13, display:'flex', alignItems:'center', gap:7, overflow:'hidden' }}>
-          <span style={{ color:C.muted }}>Orbit</span>
+          <span style={{ color:C.muted }}>Scout</span>
           <span style={{ color:C.muted }}>/</span>
           <span style={{ color:C.text, fontWeight:600, whiteSpace:'nowrap' }}>{meta.crumb}</span>
         </div>

@@ -6,8 +6,8 @@ import { Field, TextInput, TextArea, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
 import { sendEmail } from '@/lib/email'
-import { useNiche } from '../NicheProvider'
 import { LIMITS } from '@/config/limits'
+import { DOCUMENT_TYPES } from '@/config/modules'
 import type { Job, Doc, DocStatus } from '@/lib/types'
 
 const STATUS: DocStatus[] = ['Pending', 'Under Review', 'Approved', 'Rejected']
@@ -17,8 +17,7 @@ function extOf(name: string) { return (name.split('.').pop() || 'FILE').toUpperC
 
 export default function DocumentForm({ userId, onClose, jobId }: { userId: string; onClose: () => void; jobId?: string }) {
   const supabase = createClient()
-  const { module: mod } = useNiche()
-  const TYPES = mod.permitTypes
+  const TYPES = DOCUMENT_TYPES
   const [jobs, setJobs] = useState<Pick<Job, 'id' | 'name'>[]>([])
   const [number, setNumber] = useState('')
   const [numberErr, setNumberErr] = useState(false)

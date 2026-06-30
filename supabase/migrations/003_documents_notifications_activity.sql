@@ -1,4 +1,4 @@
--- Bionova Day 3 — documents, notifications, activity logs + storage bucket.
+-- Scout Day 3 — documents, notifications, activity logs + storage bucket.
 -- Safe to re-run.
 
 -- ── DOCUMENTS ───────────────────────────────────────────────────────────────

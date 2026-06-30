@@ -5,7 +5,6 @@ import Modal from '../Modal'
 import { Field, TextInput, Select, ColorPicker, Slider, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
-import { getProjectFields } from '@/config/modules'
 import { useNiche } from '../NicheProvider'
 import type { Job, JobStatus } from '@/lib/types'
 
@@ -13,38 +12,25 @@ const STATUS: JobStatus[] = ['In Progress', 'On Track', 'Delayed', 'Complete']
 
 export default function ProjectForm({ userId, onClose }: { userId: string; onClose: () => void }) {
   const supabase = createClient()
-  const { niche, module: mod, term } = useNiche()
+  const { module: mod, term } = useNiche()
   const PHASE = mod.stages
-  const fields = getProjectFields(niche)
   const [name, setName] = useState('')
   const [nameErr, setNameErr] = useState(false)
-  const [color, setColor] = useState('#F5A623')
+  const [color, setColor] = useState('#4D7FFF')
   const [status, setStatus] = useState<JobStatus>('In Progress')
   const [phase, setPhase] = useState(PHASE[0])
   const [completion, setCompletion] = useState(0)
-  const [meta, setMeta] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
-
-  function buildMetadata(): Record<string, string | number> {
-    const out: Record<string, string | number> = {}
-    for (const f of fields) {
-      const v = meta[f.key]
-      if (v === undefined || v === '') continue
-      out[f.key] = f.type === 'number' ? Number(v) : v
-    }
-    return out
-  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) { setNameErr(true); return }
     setLoading(true)
-    const metadata = buildMetadata()
     const tempId = 'temp-' + crypto.randomUUID()
-    const optimistic: Job = { id: tempId, owner_id: userId, name: name.trim(), color, status, phase, completion, created_at: new Date().toISOString(), niche, metadata }
+    const optimistic: Job = { id: tempId, owner_id: userId, name: name.trim(), color, status, phase, completion, created_at: new Date().toISOString(), niche: 'general', metadata: {} }
     emit(evt.add('project'), optimistic)
     onClose()
-    const { data, error } = await supabase.from('jobs').insert({ owner_id: userId, niche, name: name.trim(), color, status, phase, completion, metadata }).select('*').single()
+    const { data, error } = await supabase.from('jobs').insert({ owner_id: userId, niche: 'general', name: name.trim(), color, status, phase, completion, metadata: {} }).select('*').single()
     if (error || !data) emit(evt.remove('project'), tempId)
     else {
       const row = data as Job
@@ -66,15 +52,6 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
           <Field label="Phase"><Select value={phase} onChange={setPhase} options={PHASE.map(s => ({ value: s, label: s }))} /></Field>
         </div>
         <Field label="Completion"><Slider value={completion} onChange={setCompletion} /></Field>
-        {fields.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: fields.length > 1 ? '1fr 1fr' : '1fr', gap: 12 }}>
-            {fields.map(f => (
-              <Field key={f.key} label={f.label}>
-                <TextInput type={f.type === 'number' ? 'number' : 'text'} value={meta[f.key] || ''} onChange={v => setMeta(m => ({ ...m, [f.key]: v }))} placeholder={f.label} />
-              </Field>
-            ))}
-          </div>
-        )}
         <SubmitButton loading={loading}>Create {term.project.toLowerCase()}</SubmitButton>
       </form>
     </Modal>

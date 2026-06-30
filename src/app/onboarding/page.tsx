@@ -41,8 +41,8 @@ export default function OnboardingPage() {
       <div style={{ padding:'20px 28px', display:'flex', alignItems:'center', gap:10, borderBottom:`1px solid ${C.borderSubtle}` }}>
         {/* Logo — place your logo file at public/logo.png */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" width={28} height={28} alt="Orbit" style={{ borderRadius:6, objectFit:'contain' }} />
-        <span style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em' }}>Orbit</span>
+        <img src="/logo.png" width={28} height={28} alt="Scout" style={{ borderRadius:6, objectFit:'contain' }} />
+        <span style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em' }}>Scout</span>
         <span style={{ marginLeft:'auto', fontSize:12, color:C.muted }}>Welcome</span>
       </div>
 
@@ -61,10 +61,10 @@ export default function OnboardingPage() {
 
           <div style={{ marginBottom:18 }}>
             <label style={{ fontSize:11, fontWeight:600, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6, display:'block' }}>What industry are you in?</label>
-            <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Solar EPC, Construction, Legal Services, Consulting, Real Estate"
+            <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Construction, Consulting, Real Estate, Professional Services"
               style={{ width:'100%', background:C.elevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit' }}
               onFocus={e => { e.target.style.borderColor = C.accent }} onBlur={e => { e.target.style.borderColor = C.border }} />
-            <div style={{ fontSize:11, color:C.dim, marginTop:5 }}>Optional — shown on your profile. It doesn&apos;t change how Orbit works.</div>
+            <div style={{ fontSize:11, color:C.dim, marginTop:5 }}>Optional — shown on your profile. It doesn&apos;t change how Scout works.</div>
           </div>
 
           <div style={{ marginBottom:24 }}>
@@ -78,7 +78,7 @@ export default function OnboardingPage() {
 
           {error && <div style={{ fontSize:12, color:'#f87171', marginBottom:12 }}>{error}</div>}
 
-          <button onClick={finish} disabled={saving} style={{ width:'100%', background:C.accent, color:'#FFFFFF', border:'none', borderRadius:8, padding:'12px 24px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor:'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Setting up your workspace…' : 'Enter Orbit'}</button>
+          <button onClick={finish} disabled={saving} style={{ width:'100%', background:C.accent, color:'#FFFFFF', border:'none', borderRadius:8, padding:'12px 24px', fontSize:14, fontWeight:700, fontFamily:'inherit', cursor:'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Setting up your workspace…' : 'Enter Scout'}</button>
         </div>
       </div>
     </div>

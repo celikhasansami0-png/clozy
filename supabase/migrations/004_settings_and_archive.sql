@@ -1,4 +1,4 @@
--- Bionova Day 4 — notification settings, project archive flag, email-prefs trigger.
+-- Scout Day 4 — notification settings, project archive flag, email-prefs trigger.
 -- Safe to re-run.
 
 -- ── NOTIFICATION SETTINGS ───────────────────────────────────────────────────

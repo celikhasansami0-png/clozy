@@ -1,6 +1,6 @@
 import React from 'react'
 
-// Blue accent — Orbit design system. Primary accent is blue (#4D7FFF);
+// Blue accent — Scout design system. Primary accent is blue (#4D7FFF);
 // only project-specific colors stay independently colored.
 export const accent = {
   base:   '#4D7FFF',                    // primary blue

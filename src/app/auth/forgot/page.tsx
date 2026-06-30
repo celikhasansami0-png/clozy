@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
         <div style={A.logo}>
           {/* Logo — place your logo file at public/logo.png */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" width={32} height={32} alt="Orbit" style={{ borderRadius:7, objectFit:'contain' }} />
-          <span style={A.logoText}>Orbit</span>
+          <img src="/logo.png" width={32} height={32} alt="Scout" style={{ borderRadius:7, objectFit:'contain' }} />
+          <span style={A.logoText}>Scout</span>
         </div>
         <div style={A.title}>Reset your password</div>
         <div style={A.sub}>We&apos;ll email you a secure link to set a new password.</div>

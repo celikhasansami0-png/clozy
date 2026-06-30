@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase'
 import { suggestAssignee } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
 import { useNiche } from './NicheProvider'
-import { getProjectFields } from '@/config/modules'
 import { logActivity, notify } from '@/lib/log'
 import { useBus, emit, evt, type ReplacePayload } from '@/lib/bus'
 import DocumentsPanel from './DocumentsPanel'
@@ -23,7 +22,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const router = useRouter()
   const supabase = createClient()
   const create = useCreate()
-  const { term, plural, niche } = useNiche()
+  const { term, plural } = useNiche()
 
   const [jobs, setJobs] = useState(initialJobs)
   const [tasks, setTasks] = useState(initialTasks)
@@ -109,7 +108,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   // ── Project actions (duplicate / archive / delete) ──
   async function duplicateProject(j: Job) {
     setMenuJobId(null)
-    const { data: np } = await supabase.from('jobs').insert({ owner_id: ownerId, niche: j.niche || niche, name: `${j.name} copy`, color: j.color, status: 'In Progress', phase: j.phase, completion: 0, metadata: j.metadata || {} }).select('*').single()
+    const { data: np } = await supabase.from('jobs').insert({ owner_id: ownerId, niche: j.niche || 'general', name: `${j.name} copy`, color: j.color, status: 'In Progress', phase: j.phase, completion: 0, metadata: j.metadata || {} }).select('*').single()
     if (!np) return
     const newJob = np as Job
     setJobs(prev => prev.some(x => x.id === newJob.id) ? prev : [...prev, newJob])
@@ -220,23 +219,6 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
           </div>
           <div style={{ fontSize:12, color:C.muted, marginBottom:10 }}>Phase: {job.phase} · {job.completion}% complete</div>
           <ProgressBar value={job.completion} />
-          {(() => {
-            const fields = getProjectFields(job.niche || niche).filter(f => job.metadata && job.metadata[f.key] !== undefined && job.metadata[f.key] !== '')
-            if (fields.length === 0) return null
-            return (
-              <div style={{ marginTop:12, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px' }}>
-                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:8 }}>{term.project} Details</div>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px 22px' }}>
-                  {fields.map(f => (
-                    <div key={f.key}>
-                      <div style={{ fontSize:11, color:C.muted }}>{f.label}</div>
-                      <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{String(job.metadata![f.key])}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })()}
         </div>
 
         {/* Project-level tabs */}
@@ -321,7 +303,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
           {aiNote && <div style={{ fontSize:11, color:C.sub, marginBottom:8 }}>✦ {aiNote}</div>}
           <div style={{ display:'flex', alignItems:'center', gap:10, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'8px 12px' }}>
-            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Orbit</span>
+            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Scout</span>
             <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Torque module clamps — row 12" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
             <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:'#4D7FFF', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
               <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#0A0B0D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>

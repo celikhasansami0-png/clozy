@@ -1,4 +1,4 @@
--- Orbit restructure — unify Documents (permits + file uploads), free-text
+-- Scout restructure — unify Documents (permits + file uploads), free-text
 -- industry, larger storage limit, and industry-neutral demo seed.
 -- Intended to run once, after migrations 001–007.
 
@@ -62,34 +62,44 @@ drop function if exists public.seed_demo_data(uuid, text);
 drop function if exists public.seed_demo_data(uuid);
 create or replace function public.seed_demo_data(p_owner_id uuid)
 returns void language plpgsql security definer as $$
-declare j1 uuid; j2 uuid; j3 uuid; m1 uuid; m2 uuid; m3 uuid;
+declare j1 uuid; j2 uuid; j3 uuid; j4 uuid; m1 uuid; m2 uuid; m3 uuid; m4 uuid;
 begin
+  -- Generic team (industry-neutral roles).
   insert into public.crew_members(owner_id,name,initials,role) values
     (p_owner_id,'Alex Morgan','AM','Project Manager') returning id into m1;
   insert into public.crew_members(owner_id,name,initials,role) values
-    (p_owner_id,'Sam Rivera','SR','Specialist') returning id into m2;
+    (p_owner_id,'Sam Rivera','SR','Coordinator') returning id into m2;
   insert into public.crew_members(owner_id,name,initials,role) values
-    (p_owner_id,'Jordan Lee','JL','Coordinator') returning id into m3;
+    (p_owner_id,'Jordan Lee','JL','Analyst') returning id into m3;
+  insert into public.crew_members(owner_id,name,initials,role) values
+    (p_owner_id,'Taylor Kim','TK','Specialist') returning id into m4;
 
+  -- Four generic projects (project colors stay distinct for differentiation).
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Downtown Office Renovation','#4D7FFF','In Progress','Execution',55) returning id into j1;
+    (p_owner_id,'general','Q3 Product Launch','#4D7FFF','In Progress','In Progress',45) returning id into j1;
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Q3 Product Launch','#22C55E','On Track','Planning',30) returning id into j2;
+    (p_owner_id,'general','Office Relocation','#22C55E','On Track','Planning',25) returning id into j2;
   insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-    (p_owner_id,'general','Warehouse Expansion Project','#F59E0B','Delayed','Execution',45) returning id into j3;
+    (p_owner_id,'general','Client Onboarding Revamp','#F59E0B','In Progress','Review',60) returning id into j3;
+  insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
+    (p_owner_id,'general','Annual Budget Planning','#A855F7','Delayed','Planning',15) returning id into j4;
 
+  -- Generic tasks across the projects.
   insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
-    (j1,p_owner_id,'Finalize floor plan','done','high',m1,now()-interval '3 day','Planning'),
-    (j1,p_owner_id,'Order materials','in_progress','urgent',m2,now()+interval '2 day','In Progress'),
-    (j1,p_owner_id,'Schedule inspection','todo','normal',m3,now()+interval '7 day','Review'),
-    (j2,p_owner_id,'Draft launch plan','in_progress','high',m1,now()+interval '5 day','Planning'),
-    (j2,p_owner_id,'Prepare marketing assets','todo','normal',m2,now()+interval '10 day','In Progress'),
-    (j3,p_owner_id,'Site survey','done','normal',m3,now()-interval '1 day','Planning'),
-    (j3,p_owner_id,'Permit application','in_progress','urgent',m1,now()+interval '1 day','Review');
+    (j1,p_owner_id,'Finalize requirements','done','high',m1,now()-interval '4 day','Planning'),
+    (j1,p_owner_id,'Review draft with stakeholders','in_progress','urgent',m2,now()+interval '2 day','Review'),
+    (j1,p_owner_id,'Prepare status report','todo','normal',m3,now()+interval '6 day','In Progress'),
+    (j2,p_owner_id,'Schedule kickoff meeting','in_progress','high',m1,now()+interval '3 day','Planning'),
+    (j2,p_owner_id,'Finalize requirements','todo','normal',m4,now()+interval '9 day','Planning'),
+    (j3,p_owner_id,'Review draft with stakeholders','done','normal',m2,now()-interval '1 day','Review'),
+    (j3,p_owner_id,'Get sign off from leadership','in_progress','urgent',m1,now()+interval '1 day','Review'),
+    (j4,p_owner_id,'Prepare status report','todo','high',m3,now()+interval '5 day','In Progress'),
+    (j4,p_owner_id,'Get sign off from leadership','todo','normal',m1,now()+interval '12 day','Review');
 
+  -- Generic documents.
   insert into public.documents(project_id,owner_id,doc_number,type,status,submitted_date,notes) values
-    (j1,p_owner_id,'DOC-2026-001','Agreement','Approved',(now()-interval '20 day')::date,'Vendor Agreement'),
-    (j1,p_owner_id,'DOC-2026-002','Certificate','Under Review',(now()-interval '16 day')::date,'Compliance Certificate'),
-    (j2,p_owner_id,'DOC-2026-003','Report','Pending',(now()-interval '4 day')::date,'Inspection Report'),
-    (j3,p_owner_id,'DOC-2026-004','Permit','Under Review',(now()-interval '18 day')::date,'Building permit application');
+    (j1,p_owner_id,'DOC-2026-001','Contract','Approved',(now()-interval '20 day')::date,'Project Charter'),
+    (j2,p_owner_id,'DOC-2026-002','Agreement','Under Review',(now()-interval '12 day')::date,'Vendor Agreement'),
+    (j3,p_owner_id,'DOC-2026-003','Report','Pending',(now()-interval '4 day')::date,'Status Report'),
+    (j4,p_owner_id,'DOC-2026-004','Invoice','Rejected',(now()-interval '8 day')::date,'Budget Approval');
 end $$;

@@ -9,7 +9,7 @@ import type { Job } from '@/lib/types'
 
 const C = { bg:'#12141A', elevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', muted:'#5C6470', dim:'#2E3340' }
 
-// Fixed, generic navigation — Orbit is industry-agnostic (no niche relabeling).
+// Fixed, generic navigation — Scout is industry-agnostic (no niche relabeling).
 const navItems: { label:string; href:string; icon:React.ReactNode }[] = [
   { label:'Dashboard', href:'/dashboard',          icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
   { label:'Projects',  href:'/dashboard/jobs',      icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg> },
@@ -18,7 +18,6 @@ const navItems: { label:string; href:string; icon:React.ReactNode }[] = [
   { label:'Team',      href:'/dashboard/crew',       icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/><circle cx="12" cy="5" r="2"/><path d="M10.5 13c0-1.66.9-3.12 2.25-3.9"/></svg> },
   { label:'Schedule',  href:'/dashboard/schedule',   icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h1v1h8V2h1v1h1a1 1 0 011 1v9a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1h1V2zm-1 4v7h12V6H2zm2 2h2v2H4V8z"/></svg> },
   { label:'Reports',   href:'/dashboard/reports',    icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 14h12v1H2zM3 8h2v5H3zm4-4h2v9H7zm4 2h2v7h-2z"/></svg> },
-  { label:'Assistant', href:'/dashboard/assistant',  icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v6A1.5 1.5 0 0112.5 11H6l-3 3v-3H3.5A1.5 1.5 0 012 9.5v-6z"/></svg> },
 ]
 
 export default function Sidebar({ userId, className = '', onNavigate }: { userId: string; className?: string; onNavigate?: () => void }) {
@@ -42,8 +41,8 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
       {/* Logo — place your logo file at public/logo.png */}
       <div className="bn-logo-row" style={{ padding:'15px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:10 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" width={28} height={28} alt="Orbit" style={{ borderRadius:6, flexShrink:0, objectFit:'contain' }} />
-        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Orbit</span>
+        <img src="/logo.png" width={28} height={28} alt="Scout" style={{ borderRadius:6, flexShrink:0, objectFit:'contain' }} />
+        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Scout</span>
         <span className="bn-label" style={{ marginLeft:'auto', fontSize:10, color:C.muted, background:C.elevated, padding:'2px 6px', borderRadius:4, border:`1px solid ${C.border}` }}>Beta</span>
       </div>
 
@@ -86,16 +85,17 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
         {jobs.length === 0 && <div className="bn-label" style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No projects yet</div>}
       </div>
 
-      {/* User */}
-      <div className="bn-user-row" style={{ padding:'12px 14px', borderTop:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:9 }}>
+      {/* User → Settings */}
+      <Link href="/dashboard/settings" onClick={onNavigate} title="Settings" className="bn-user-row" style={{ padding:'12px 14px', borderTop:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:9, color:'inherit' }}
+        onMouseEnter={e=>(e.currentTarget.style.background=C.elevated)} onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>
         <div style={{ width:28, height:28, borderRadius:'50%', background:C.elevated, border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:C.text, flexShrink:0 }}>
           {userId.slice(0,2).toUpperCase()}
         </div>
         <div className="bn-label" style={{ flex:1, overflow:'hidden' }}>
           <div style={{ fontSize:12, fontWeight:600, color:C.text, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>My Account</div>
-          <div style={{ fontSize:10, color:C.muted }}>Owner</div>
+          <div style={{ fontSize:10, color:C.muted }}>Settings & integrations</div>
         </div>
-      </div>
+      </Link>
     </div>
   )
 }

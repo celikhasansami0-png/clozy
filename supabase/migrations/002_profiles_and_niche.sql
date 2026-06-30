@@ -1,4 +1,4 @@
--- Bionova Day 2 — profiles, auth trigger, niche columns, per-niche seed data.
+-- Scout Day 2 — profiles, auth trigger, niche columns, per-niche seed data.
 -- Safe to re-run.
 
 -- ── PROFILES ────────────────────────────────────────────────────────────────
