@@ -7,12 +7,14 @@ import { suggestAssignee } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
 import { useNiche } from './NicheProvider'
 import { logActivity, notify } from '@/lib/log'
+import { syncCalendar } from '@/lib/integrationClient'
 import { useBus, emit, evt, type ReplacePayload } from '@/lib/bus'
 import DocumentsPanel from './DocumentsPanel'
 import ActivityFeed from './ActivityFeed'
 import EmptyState, { Icons } from './EmptyState'
 import DeleteProjectModal from './DeleteProjectModal'
 import Pager, { PAGE_SIZE } from './Pager'
+import ExportButton from './ExportButton'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
@@ -77,6 +79,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
     const t = tasks.find(x => x.id === taskId)
     setTasks(prev => prev.map(x => x.id === taskId ? { ...x, status: status as Task['status'] } : x))
     await supabase.from('tasks').update({ status }).eq('id', taskId)
+    syncCalendar(taskId, status === 'done' ? 'delete' : 'upsert')
     if (t) {
       logActivity(supabase, { projectId: t.job_id, ownerId, action: 'task_status', entityType: 'task', entityId: taskId, metadata: { name: `"${t.title}" → ${status.replace('_', ' ')}`, actor: 'You' } })
       if (status === 'done') {
@@ -181,9 +184,12 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
       {/* Project list */}
       <div style={{ width:255, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
         <div style={{ padding:'16px 14px', flex:1, overflowY:'auto' }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, gap:6 }}>
             <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em' }}>{showArchived ? 'Archived' : 'All'} {plural(term.project)}</div>
-            <button onClick={()=>setShowArchived(v=>!v)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:5, padding:'2px 8px', fontSize:10, fontFamily:'inherit', cursor:'pointer' }}>{showArchived ? 'Active' : 'Archived'}</button>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <ExportButton filename="doppio-projects" headers={['Project','Status','Phase','Completion %','Open Tasks']} rows={pagedJobs.map(j => [j.name, j.status, j.phase, j.completion, tasks.filter(t=>t.job_id===j.id&&t.status!=='done').length])} />
+              <button onClick={()=>setShowArchived(v=>!v)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:5, padding:'2px 8px', fontSize:10, fontFamily:'inherit', cursor:'pointer' }}>{showArchived ? 'Active' : 'Archived'}</button>
+            </div>
           </div>
           {pagedJobs.map(j => (
             <div key={j.id} onClick={()=>{ setActiveJobId(j.id); setActiveTaskId(null); router.replace(`/dashboard/jobs?job=${j.id}`) }}

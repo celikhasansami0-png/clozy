@@ -5,6 +5,7 @@ import Modal from '../Modal'
 import { Field, TextInput, Select, ColorPicker, Slider, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
+import { notifySlack } from '@/lib/integrationClient'
 import { useNiche } from '../NicheProvider'
 import type { Job, JobStatus } from '@/lib/types'
 
@@ -36,7 +37,10 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
       const row = data as Job
       emit<ReplacePayload<Job>>(evt.replace('project'), { tempId, row })
       logActivity(supabase, { projectId: row.id, ownerId: userId, action: 'project_created', entityType: 'project', entityId: row.id, metadata: { name: row.name, actor: 'You' } })
-      if (completion === 100) notify(supabase, userId, { title: `${term.project} complete`, body: `${row.name} is at 100%`, type: 'project', link: `/dashboard/jobs?job=${row.id}` })
+      if (completion === 100) {
+        notify(supabase, userId, { title: `${term.project} complete`, body: `${row.name} is at 100%`, type: 'project', link: `/dashboard/jobs?job=${row.id}` })
+        notifySlack('project_completed', `✅ Project "${row.name}" reached 100% completion`)
+      }
     }
   }
 

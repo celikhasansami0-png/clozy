@@ -9,22 +9,32 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('company_name, industry')
+    .select('company_name, client_count')
     .eq('id', user!.id)
     .single()
 
-  // Connection + health status for each integration.
+  // Health = connected AND no integration error logged in the last 24h. Errors are
+  // written to integration_errors whenever an external call fails.
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { data: recentErrors } = await supabase
+    .from('integration_errors')
+    .select('integration_type')
+    .eq('owner_id', user!.id)
+    .gte('created_at', since)
+    .limit(200)
+  const erroredTypes = new Set((recentErrors || []).map(e => e.integration_type))
+
   const statuses: IntegrationStatus[] = await Promise.all(
     INTEGRATIONS.map(async (meta): Promise<IntegrationStatus> => {
       const { data } = await supabase
         .from(INTEGRATION_TABLES[meta.id])
-        .select('last_status')
+        .select('id')
         .eq('owner_id', user!.id)
         .limit(1)
-      const row = data?.[0] as { last_status?: string } | undefined
-      return { id: meta.id, connected: !!row, healthy: row ? row.last_status !== 'error' : true }
+      const connected = !!data?.[0]
+      return { id: meta.id, connected, healthy: connected ? !erroredTypes.has(meta.id) : true }
     })
   )
 
-  return <IntegrationsView statuses={statuses} companyName={profile?.company_name || ''} industry={profile?.industry || ''} />
+  return <IntegrationsView statuses={statuses} companyName={profile?.company_name || ''} clientCount={profile?.client_count || ''} />
 }

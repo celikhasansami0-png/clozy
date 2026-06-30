@@ -4,6 +4,7 @@ import { Tag, StatusDot, Avatar } from './ui'
 import { useCreate } from './CreateProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
+import ExportButton from './ExportButton'
 import type { CrewMember, Task, Job } from '@/lib/types'
 
 const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
@@ -16,6 +17,9 @@ export default function CrewView({ crew: initialCrew, tasks, jobs }: { crew:Crew
   useBus<ReplacePayload<CrewMember>>(evt.replace('member'), ({ tempId, row }) => setCrew(prev => prev.map(x => x.id === tempId ? row : x)))
   useBus<string>(evt.remove('member'), id => setCrew(prev => prev.filter(x => x.id !== id)))
 
+  const exportHeaders = ['Name', 'Role', 'Initials', 'Open Tasks']
+  const exportRows = crew.map(c => [c.name, c.role, c.initials, tasks.filter(t => t.assignee_id === c.id && t.status !== 'done').length])
+
   return (
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:24, flexWrap:'wrap' }}>
@@ -23,11 +27,14 @@ export default function CrewView({ crew: initialCrew, tasks, jobs }: { crew:Crew
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Team</div>
           <div style={{ fontSize:14, color:C.muted }}>Who&apos;s working what, and what&apos;s next.</div>
         </div>
-        <button onClick={()=>create.newMember()} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit' }}>+ Add member</button>
+        <div style={{ display:'flex', gap:8 }}>
+          <ExportButton filename="doppio-team" headers={exportHeaders} rows={exportRows} />
+          <button onClick={()=>create.newMember()} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>+ Add member</button>
+        </div>
       </div>
 
       {crew.length === 0 ? (
-        <EmptyState icon={Icons.team} title="Invite your first team member" description="Add installers, engineers and consultants so you can assign work." cta={{ label: 'Add Member', onClick: () => create.newMember() }} />
+        <EmptyState icon={Icons.team} title="Invite your first team member" description="Add project managers, designers, developers and account managers so you can assign work." cta={{ label: 'Add Member', onClick: () => create.newMember() }} />
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12 }}>
           {crew.map(c => {

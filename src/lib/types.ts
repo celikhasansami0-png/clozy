@@ -1,7 +1,7 @@
 export type JobStatus = 'In Progress' | 'On Track' | 'Delayed' | 'Complete'
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
 export type TaskPriority = 'urgent' | 'high' | 'normal'
-export type DocStatus = 'Approved' | 'Under Review' | 'Pending' | 'Rejected'
+export type DocStatus = 'Approved' | 'Under Review' | 'Pending' | 'Rejected' | 'Sent'
 
 export interface Job {
   id: string

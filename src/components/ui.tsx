@@ -28,6 +28,7 @@ export const docStatusCfg: Record<string,{color:string,bg:string,border:string}>
   'Under Review': { color:C.sub,   bg:C.midBg,  border:C.midBorder },
   'Pending':      { color:C.muted, bg:C.lowBg,  border:C.lowBorder },
   'Rejected':     { color:C.muted, bg:C.lowBg,  border:C.lowBorder },
+  'Sent':         { color:accent.deep, bg:accent.soft, border:accent.border },
 }
 export const jobStatusColor: Record<string,string> = {
   'In Progress': accent.base,

@@ -6,11 +6,12 @@ import { Field, TextInput, TextArea, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
 import { sendEmail } from '@/lib/email'
+import { notifySlack } from '@/lib/integrationClient'
 import { LIMITS } from '@/config/limits'
 import { DOCUMENT_TYPES } from '@/config/modules'
 import type { Job, Doc, DocStatus } from '@/lib/types'
 
-const STATUS: DocStatus[] = ['Pending', 'Under Review', 'Approved', 'Rejected']
+const STATUS: DocStatus[] = ['Pending', 'Under Review', 'Approved', 'Sent', 'Rejected']
 const MAX_BYTES = LIMITS.fileSizeBytes // 50 MB
 
 function extOf(name: string) { return (name.split('.').pop() || 'FILE').toUpperCase().slice(0, 4) }
@@ -73,8 +74,11 @@ export default function DocumentForm({ userId, onClose, jobId }: { userId: strin
       emit<ReplacePayload<Doc>>(evt.replace('document'), { tempId, row })
       logActivity(supabase, { projectId: project, ownerId: userId, action: 'document_added', entityType: 'document', entityId: row.id, metadata: { name: `${row.doc_number} (${row.status})`, actor: 'You' } })
       notify(supabase, userId, { title: 'Document added', body: `${row.doc_number} — ${row.type} (${row.status})`, type: 'document', link: '/dashboard/documents' })
-      if (row.status === 'Approved' || row.status === 'Rejected') {
+      if (row.status === 'Approved' || row.status === 'Sent' || row.status === 'Rejected') {
         sendEmail(supabase, userId, 'document_status', { docNumber: row.doc_number, projectName: job?.name || '', status: row.status, link: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard/documents` })
+      }
+      if (row.status === 'Approved' || row.status === 'Sent') {
+        notifySlack('document_status', `📄 Document ${row.doc_number} (${job?.name || ''}) is now ${row.status}`)
       }
     }
   }

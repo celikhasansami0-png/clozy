@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import { Tag, ProgressBar, jobStatusColor, accent } from './ui'
 import { Skeleton } from './Skeleton'
 import { riskAlerts, flaggedDocuments } from '@/lib/insights'
+import ExportButton from './ExportButton'
+import GmailSendModal from './GmailSendModal'
 import type { Job, Task, Doc } from '@/lib/types'
 
 const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', highBg:'rgba(204,120,92,0.07)', highBorder:'rgba(204,120,92,0.18)' }
@@ -12,6 +14,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
   const [summary, setSummary] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [gmailOpen, setGmailOpen] = useState(false)
 
   const done = tasks.filter(t => t.status === 'done').length
   const open = tasks.length - done
@@ -64,23 +67,8 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
     }
   }
 
-  function exportCsv() {
-    const rows = [
-      ['Project', 'Status', 'Phase', 'Completion %', 'Open Tasks'],
-      ...jobs.map(j => [
-        j.name,
-        j.status,
-        j.phase,
-        String(j.completion),
-        String(tasks.filter(t => t.job_id === j.id && t.status !== 'done').length),
-      ]),
-    ]
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
-    const a = document.createElement('a')
-    a.href = url; a.download = `doppio-report-${new Date().toISOString().slice(0,10)}.csv`
-    a.click(); URL.revokeObjectURL(url)
-  }
+  const exportHeaders = ['Project', 'Status', 'Phase', 'Completion %', 'Open Tasks']
+  const exportRows = jobs.map(j => [j.name, j.status, j.phase, j.completion, tasks.filter(t => t.job_id === j.id && t.status !== 'done').length])
 
   return (
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
@@ -89,10 +77,12 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Reports</div>
           <div style={{ fontSize:14, color:C.muted }}>Portfolio health across all your projects.</div>
         </div>
-        <button onClick={exportCsv} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit' }}>
-          ↓ Export CSV
-        </button>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={()=>setGmailOpen(true)} style={{ background:'#FFFFFF', border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Send via Gmail</button>
+          <ExportButton filename="doppio-report" headers={exportHeaders} rows={exportRows} />
+        </div>
       </div>
+      {gmailOpen && <GmailSendModal defaultSubject="Project report from Doppio" defaultBody={summary || 'Hi,\n\nPlease find the latest project report shared from Doppio.\n\nThanks'} onClose={()=>setGmailOpen(false)} />}
 
       {/* Summary cards */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:24 }}>

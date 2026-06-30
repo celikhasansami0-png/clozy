@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
 import Pager, { PAGE_SIZE } from './Pager'
+import ExportButton from './ExportButton'
+import GmailSendModal from './GmailSendModal'
 import type { Doc } from '@/lib/types'
 
 const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', muted:'#8C8980', dim:'#C2BFB5', warnBg:'rgba(194,87,74,0.10)', warnBorder:'rgba(194,87,74,0.35)', warn:'#C2574A' }
@@ -16,6 +18,7 @@ export default function DocumentsView({ documents: initial }: { documents: Doc[]
   const supabase = createClient()
   const [docs, setDocs] = useState(initial)
   const [page, setPage] = useState(0)
+  const [gmailOpen, setGmailOpen] = useState(false)
 
   useBus<Doc>(evt.add('document'), d => setDocs(prev => prev.some(x => x.id === d.id) ? prev : [d, ...prev]))
   useBus<ReplacePayload<Doc>>(evt.replace('document'), ({ tempId, row }) => setDocs(prev => prev.map(x => x.id === tempId ? row : x)))
@@ -29,6 +32,9 @@ export default function DocumentsView({ documents: initial }: { documents: Doc[]
 
   const flagged = flaggedDocuments(docs)
   const flaggedDays = new Map(flagged.map(f => [f.doc.id, f.daysInReview]))
+  const paged = docs.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+  const exportHeaders = ['Document', 'Type', 'Status', 'Submitted', 'Project', 'Notes']
+  const exportRows = paged.map(d => [d.doc_number, d.type, d.status, d.submitted_date || '', d.job?.name || '', d.notes || ''])
   const stats = [
     { label:'Total',            value:docs.length,                                  dim:false },
     { label:'Approved',         value:docs.filter(d=>d.status==='Approved').length,  dim:false },
@@ -42,8 +48,13 @@ export default function DocumentsView({ documents: initial }: { documents: Doc[]
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Documents</div>
           <div style={{ fontSize:14, color:C.muted }}>Track document numbers, types and approval status — and attach files in one place.</div>
         </div>
-        <button onClick={()=>create.newDocument()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New document</button>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={()=>setGmailOpen(true)} style={{ background:'#FFFFFF', border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Send via Gmail</button>
+          <ExportButton filename="doppio-documents" headers={exportHeaders} rows={exportRows} />
+          <button onClick={()=>create.newDocument()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New document</button>
+        </div>
       </div>
+      {gmailOpen && <GmailSendModal defaultSubject="Documents from Doppio" defaultBody="Hi,\n\nPlease find the document details shared from Doppio.\n\nThanks" onClose={()=>setGmailOpen(false)} />}
 
       {flagged.length > 0 && (
         <div style={{ background:C.warnBg, border:`1px solid ${C.warnBorder}`, borderRadius:10, padding:'12px 16px', marginBottom:16, fontSize:13, color:C.text }}>
@@ -67,7 +78,7 @@ export default function DocumentsView({ documents: initial }: { documents: Doc[]
           <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 110px 110px 90px', padding:'10px 18px', borderBottom:`1px solid ${C.border}`, fontSize:10, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:C.dim, fontWeight:600 }}>
             <span>Document</span><span>Type</span><span>Submitted</span><span>Status</span><span>File</span>
           </div>
-          {docs.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((d, i, arr) => {
+          {paged.map((d, i, arr) => {
             const sc = docStatusCfg[d.status] || { color:C.muted, bg:'transparent', border:C.dim }
             return (
               <div key={d.id} style={{ display:'grid', gridTemplateColumns:'1fr 120px 110px 110px 90px', padding:'13px 18px', borderBottom:i<arr.length-1?`1px solid ${C.borderSubtle}`:'none', alignItems:'center' }}>

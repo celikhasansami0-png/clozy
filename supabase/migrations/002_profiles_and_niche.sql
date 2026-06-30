@@ -62,20 +62,20 @@ begin
   if p_niche = 'solar_epc' then
     insert into public.crew_members(owner_id,name,initials,role) values
       (p_owner_id,'Marcus T.','MT','Project Manager'),
-      (p_owner_id,'Jake R.','JR','Solar Installer'),
+      (p_owner_id,'Jake R.','JR','Specialist'),
       (p_owner_id,'Sarah K.','SK','PV Engineer'),
       (p_owner_id,'Devon L.','DL','Apprentice');
     select id into c1 from public.crew_members where owner_id=p_owner_id and initials='MT';
     select id into c2 from public.crew_members where owner_id=p_owner_id and initials='JR';
     select id into c3 from public.crew_members where owner_id=p_owner_id and initials='SK';
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Cedar Ridge Solar Farm — 12 MW','#F5A623','In Progress','Construction',58) returning id into j1;
+      (p_owner_id,p_niche,'Website Redesign for TechCorp','#F5A623','In Progress','Construction',58) returning id into j1;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Harbor Logistics Rooftop — 2.4 MW','#60a5fa','On Track','Commissioning',82) returning id into j2;
+      (p_owner_id,p_niche,'Harbor Logistics Rooftop — 2.4','#60a5fa','On Track','Commissioning',82) returning id into j2;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Mesa Verde Community Solar — 5 MW','#f87171','Delayed','Design',21) returning id into j3;
+      (p_owner_id,p_niche,'Brand Identity Project','#f87171','Delayed','Design',21) returning id into j3;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Westfield Distribution Center — 1.8 MW','#4ade80','On Track','Permitting',35) returning id into j4;
+      (p_owner_id,p_niche,'Westfield Distribution Center — 1.8','#4ade80','On Track','Permitting',35) returning id into j4;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Pile driving — rows 18–32','in_progress','high',c1,'2026-06-14','Construction'),
       (j1,p_owner_id,'DC string inspection sign-off','todo','normal',null,'2026-06-18','Commissioning'),
@@ -89,16 +89,16 @@ begin
 
   elsif p_niche = 'bess' then
     insert into public.crew_members(owner_id,name,initials,role) values
-      (p_owner_id,'Elena R.','ER','Project Manager'),(p_owner_id,'Tom B.','TB','BESS Technician'),
+      (p_owner_id,'Elena R.','ER','Project Manager'),(p_owner_id,'Tom B.','TB','Developer'),
       (p_owner_id,'Priya N.','PN','Electrical Engineer'),(p_owner_id,'Carl M.','CM','Site Tech');
     select id into c1 from public.crew_members where owner_id=p_owner_id and initials='ER';
     select id into c2 from public.crew_members where owner_id=p_owner_id and initials='TB';
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Gridpoint BESS — 40 MWh','#60a5fa','In Progress','Installation',55) returning id into j1;
+      (p_owner_id,p_niche,'Q4 Social Media Campaign','#60a5fa','In Progress','Installation',55) returning id into j1;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Northgate Storage — 20 MWh','#4ade80','On Track','Testing',80) returning id into j2;
+      (p_owner_id,p_niche,'Northgate Storage — 20 ','#4ade80','On Track','Testing',80) returning id into j2;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Harbor Peaker BESS — 60 MWh','#a78bfa','Delayed','Procurement',24) returning id into j3;
+      (p_owner_id,p_niche,'Mobile App Development','#a78bfa','Delayed','Procurement',24) returning id into j3;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Battery rack assembly — string A','in_progress','high',c2,'2026-06-15','Installation'),
       (j1,p_owner_id,'DC bus bar torque check','todo','normal',null,'2026-06-19','Installation'),
@@ -127,11 +127,11 @@ begin
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Mount charger units — row 1','in_progress','high',c2,'2026-06-15','Installation'),
       (j2,p_owner_id,'Pour equipment pads','in_progress','normal',c1,'2026-06-18','Civil Work'),
-      (j3,p_owner_id,'Utility interconnection paperwork','todo','urgent',null,'2026-06-12','Permitting'),
+      (j3,p_owner_id,'Utility coordination paperwork','todo','urgent',null,'2026-06-12','Permitting'),
       (j4,p_owner_id,'Network activation & test session','todo','normal',c2,'2026-06-16','Commissioning');
     insert into public.permits(job_id,owner_id,permit_number,type,status,submitted_date,notes) values
       (j1,p_owner_id,'E-26-7711','Electrical','Approved','2026-05-22',''),
-      (j3,p_owner_id,'E-26-7790','Utility Interconnection','Under Review','2026-05-30','Awaiting utility study');
+      (j3,p_owner_id,'E-26-7790','Utility coordination','Under Review','2026-05-30','Awaiting utility study');
 
   elsif p_niche = 'om' then
     insert into public.crew_members(owner_id,name,initials,role) values
@@ -146,7 +146,7 @@ begin
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
       (p_owner_id,p_niche,'Mesa Verde Inverters','#f87171','Delayed','Repair',30) returning id into j3;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Northgate BESS Bank','#a78bfa','On Track','Reporting',75) returning id into j4;
+      (p_owner_id,p_niche,'Office Relocation','#a78bfa','On Track','Reporting',75) returning id into j4;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
       (p_owner_id,p_niche,'Highway 9 Chargers','#4ade80','On Track','Optimization',90) returning id into j5;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
@@ -175,7 +175,7 @@ begin
       (p_owner_id,p_niche,'GreenGrid Implementation','#4ade80','Delayed','Implementation',40) returning id into j4;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Draft emissions baseline report','in_progress','high',c2,'2026-06-15','Analysis'),
-      (j2,p_owner_id,'Site energy audit walkthrough','todo','normal',c1,'2026-06-19','Assessment'),
+      (j2,p_owner_id,'Site budget review walkthrough','todo','normal',c1,'2026-06-19','Assessment'),
       (j3,p_owner_id,'Present recommendations deck','todo','urgent',c1,'2026-06-13','Recommendation'),
       (j4,p_owner_id,'Vendor RFP coordination','in_progress','normal',c2,'2026-06-17','Implementation');
 
@@ -186,11 +186,11 @@ begin
     select id into c1 from public.crew_members where owner_id=p_owner_id and initials='EN';
     select id into c2 from public.crew_members where owner_id=p_owner_id and initials='LV';
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Ridgeline Wind — 80 MW','#60a5fa','In Progress','Construction',52) returning id into j1;
+      (p_owner_id,p_niche,'Ridgeline Wind — 80','#60a5fa','In Progress','Construction',52) returning id into j1;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Coastal Breeze — 45 MW','#F5A623','On Track','Permitting',28) returning id into j2;
+      (p_owner_id,p_niche,'Coastal Breeze — 45','#F5A623','On Track','Permitting',28) returning id into j2;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Highland Turbines — 30 MW','#a78bfa','Delayed','Wind Assessment',12) returning id into j3;
+      (p_owner_id,p_niche,'Highland Turbines — 30','#a78bfa','Delayed','Wind Assessment',12) returning id into j3;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Turbine 4 nacelle install','in_progress','high',c2,'2026-06-15','Construction'),
       (j1,p_owner_id,'Crane mobilization plan','todo','normal',c1,'2026-06-18','Construction'),
@@ -207,11 +207,11 @@ begin
     select id into c1 from public.crew_members where owner_id=p_owner_id and initials='MD';
     select id into c2 from public.crew_members where owner_id=p_owner_id and initials='NK';
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Riverbend Hydro — 25 MW','#60a5fa','In Progress','Construction',48) returning id into j1;
+      (p_owner_id,p_niche,'Riverbend Hydro — 25','#60a5fa','In Progress','Construction',48) returning id into j1;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Falls Creek Micro — 5 MW','#4ade80','On Track','Design',33) returning id into j2;
+      (p_owner_id,p_niche,'Falls Creek Micro','#4ade80','On Track','Design',33) returning id into j2;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Canyon Run — 18 MW','#a78bfa','Delayed','Environmental Study',16) returning id into j3;
+      (p_owner_id,p_niche,'Canyon Run — 18','#a78bfa','Delayed','Environmental Study',16) returning id into j3;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Penstock weld inspection','in_progress','high',c2,'2026-06-15','Construction'),
       (j2,p_owner_id,'Turbine sizing calculations','todo','normal',c2,'2026-06-19','Design'),
@@ -227,11 +227,11 @@ begin
     select id into c1 from public.crew_members where owner_id=p_owner_id and initials='OP';
     select id into c2 from public.crew_members where owner_id=p_owner_id and initials='HS';
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Greenvalley Digester — 6 MW','#4ade80','In Progress','Construction',50) returning id into j1;
+      (p_owner_id,p_niche,'Greenvalley Digester — 6','#4ade80','In Progress','Construction',50) returning id into j1;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Farmstead Biogas — 3 MW','#F5A623','On Track','Permitting',26) returning id into j2;
+      (p_owner_id,p_niche,'Farmstead Biogas — 3','#F5A623','On Track','Permitting',26) returning id into j2;
     insert into public.jobs(owner_id,niche,name,color,status,phase,completion) values
-      (p_owner_id,p_niche,'Citywide Biomass — 9 MW','#a78bfa','Delayed','Feedstock Analysis',14) returning id into j3;
+      (p_owner_id,p_niche,'Citywide Biomass — 9','#a78bfa','Delayed','Feedstock Analysis',14) returning id into j3;
     insert into public.tasks(job_id,owner_id,title,status,priority,assignee_id,due_date,tag) values
       (j1,p_owner_id,'Digester membrane install','in_progress','high',c2,'2026-06-15','Construction'),
       (j2,p_owner_id,'Air quality permit submittal','todo','urgent',null,'2026-06-12','Permitting'),

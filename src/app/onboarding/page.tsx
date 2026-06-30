@@ -6,13 +6,14 @@ import { createClient } from '@/lib/supabase'
 const C = { bg:'#FAF9F5', card:'#FFFFFF', elevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', accent:'#CC785C' }
 const FONT = "'Inter', system-ui, sans-serif"
 const TEAM_SIZES = ['1-10', '10-50', '50-200', '200+']
+const CLIENT_COUNTS = ['1 to 5', '5 to 20', '20+']
 
 export default function OnboardingPage() {
   const router = useRouter()
   const supabase = createClient()
   const [company, setCompany] = useState('')
   const [companyErr, setCompanyErr] = useState(false)
-  const [industry, setIndustry] = useState('')
+  const [clientCount, setClientCount] = useState('')
   const [teamSize, setTeamSize] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -28,10 +29,10 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/auth'); return }
     const { error: upErr } = await supabase.from('profiles').update({
-      company_name: company.trim(), industry: industry.trim() || null, team_size: teamSize || null, onboarded: true,
+      company_name: company.trim(), client_count: clientCount || null, team_size: teamSize || null, onboarded: true,
     }).eq('id', user.id)
     if (upErr) { setError(upErr.message); setSaving(false); return }
-    // Seed industry-neutral demo data (best-effort).
+    // Seed agency demo data (best-effort).
     await supabase.rpc('seed_demo_data', { p_owner_id: user.id })
     router.replace('/dashboard')
   }
@@ -60,11 +61,13 @@ export default function OnboardingPage() {
           </div>
 
           <div style={{ marginBottom:18 }}>
-            <label style={{ fontSize:11, fontWeight:600, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6, display:'block' }}>What industry are you in?</label>
-            <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Construction, Consulting, Real Estate, Professional Services"
-              style={{ width:'100%', background:C.elevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit' }}
-              onFocus={e => { e.target.style.borderColor = C.accent }} onBlur={e => { e.target.style.borderColor = C.border }} />
-            <div style={{ fontSize:11, color:C.dim, marginTop:5 }}>Optional — shown on your profile. It doesn&apos;t change how Doppio works.</div>
+            <label style={{ fontSize:11, fontWeight:600, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:8, display:'block' }}>How many clients are you currently managing?</label>
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+              {CLIENT_COUNTS.map(c => (
+                <button key={c} type="button" onClick={() => setClientCount(c)} style={{ background: clientCount === c ? C.accent : C.elevated, color: clientCount === c ? '#FFFFFF' : C.sub, border:`1px solid ${clientCount === c ? C.accent : C.border}`, borderRadius:8, padding:'8px 16px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>{c}</button>
+              ))}
+            </div>
+            <div style={{ fontSize:11, color:C.dim, marginTop:6 }}>Optional — shown on your profile. It doesn&apos;t change how Doppio works.</div>
           </div>
 
           <div style={{ marginBottom:24 }}>

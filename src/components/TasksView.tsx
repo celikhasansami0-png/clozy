@@ -5,6 +5,7 @@ import { useCreate } from './CreateProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
 import Pager, { PAGE_SIZE } from './Pager'
+import ExportButton from './ExportButton'
 import type { Task, Job } from '@/lib/types'
 
 const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
@@ -28,7 +29,15 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
     (status === 'all' || t.status === status) &&
     (project === 'all' || t.job_id === project)
   )
+  const paged = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
   const open = tasks.filter(t => t.status !== 'done').length
+
+  // Export only the currently visible (filtered + paginated) rows.
+  const exportHeaders = ['Title', 'Project', 'Status', 'Priority', 'Tag', 'Assignee', 'Due']
+  const exportRows = paged.map(t => [
+    t.title, jobMap.get(t.job_id)?.name || '', statusCfg[t.status]?.label || t.status,
+    priorityCfg[t.priority]?.label || t.priority, t.tag || '', t.assignee?.name || '', t.due_date || '',
+  ])
 
   const pill = (active: boolean): React.CSSProperties => ({
     background: active ? C.bgElevated : 'transparent', color: active ? C.text : C.muted,
@@ -43,7 +52,10 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Tasks</div>
           <div style={{ fontSize:14, color:C.muted }}>{open} open across {jobs.length} project{jobs.length === 1 ? '' : 's'}.</div>
         </div>
-        <button onClick={()=>create.newTask()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New task</button>
+        <div style={{ display:'flex', gap:8 }}>
+          <ExportButton filename="doppio-tasks" headers={exportHeaders} rows={exportRows} />
+          <button onClick={()=>create.newTask()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New task</button>
+        </div>
       </div>
 
       <div style={{ display:'flex', gap:14, marginBottom:16, flexWrap:'wrap', alignItems:'center' }}>
@@ -62,7 +74,7 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
         <EmptyState icon={Icons.task} title="No tasks here" description="Create a task or adjust the filters above." cta={{ label: 'New task', onClick: () => create.newTask() }} />
       ) : (
         <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, overflow:'hidden' }}>
-          {filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((t, i, arr) => {
+          {paged.map((t, i, arr) => {
             const job = jobMap.get(t.job_id)
             const pr = priorityCfg[t.priority] || priorityCfg.normal
             return (

@@ -6,6 +6,7 @@ import { Field, TextInput, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
 import { sendEmail } from '@/lib/email'
+import { notifySlack, syncCalendar } from '@/lib/integrationClient'
 import { useNiche } from '../NicheProvider'
 import type { Job, Task, TaskStatus, TaskPriority, CrewMember } from '@/lib/types'
 
@@ -59,7 +60,9 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
       if (assignee && assignee !== task!.assignee_id) {
         notify(supabase, userId, { title: `${term.task} assigned`, body: `"${payload.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
         sendEmail(supabase, userId, 'task_assigned', emailData)
+        notifySlack('task_assigned', `📌 Task "${payload.title}" assigned to ${assigneeName} (${projectName})`)
       }
+      syncCalendar(task!.id, status === 'done' ? 'delete' : 'upsert')
     } else {
       const tempId = 'temp-' + crypto.randomUUID()
       const optimistic: Task = { id: tempId, ...payload, created_at: new Date().toISOString(), assignee: crew.find(c => c.id === assignee) }
@@ -73,8 +76,10 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
       if (assignee) {
         notify(supabase, userId, { title: `${term.task} assigned`, body: `"${row.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
         sendEmail(supabase, userId, 'task_assigned', emailData)
+        notifySlack('task_assigned', `📌 Task "${row.title}" assigned to ${assigneeName} (${projectName})`)
       }
       if (due && dueSoon(due)) notify(supabase, userId, { title: `${term.task} due soon`, body: `"${row.title}" is due ${due}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
+      syncCalendar(row.id, 'upsert')
     }
   }
 

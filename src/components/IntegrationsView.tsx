@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { INTEGRATIONS, type IntegrationId } from '@/config/integrations'
 
@@ -7,7 +7,35 @@ const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5
 
 export type IntegrationStatus = { id: IntegrationId; connected: boolean; healthy: boolean }
 
-export default function IntegrationsView({ statuses, companyName, industry }: { statuses: IntegrationStatus[]; companyName: string; industry: string }) {
+// Channel picker shown once Slack is connected. Populated by calling the Slack
+// API (server-side, wrapped) and saved back to the integration row.
+function SlackChannelPicker() {
+  const [channels, setChannels] = useState<{ id: string; name: string }[]>([])
+  const [selected, setSelected] = useState<string>('')
+  const [saved, setSaved] = useState(false)
+  useEffect(() => {
+    fetch('/api/integrations/slack/channels').then(r => r.json()).then(j => {
+      setChannels(j.channels || [])
+      if (j.selected) setSelected(j.selected)
+    }).catch(() => {})
+  }, [])
+  async function save(id: string) {
+    setSelected(id); setSaved(false)
+    try { await fetch('/api/integrations/slack/channel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: id }) }); setSaved(true) } catch { /* ignore */ }
+  }
+  return (
+    <div style={{ marginTop:4 }}>
+      <div style={{ fontSize:11, color:C.muted, marginBottom:5 }}>Notification channel</div>
+      <select value={selected} onChange={e => save(e.target.value)} style={{ width:'100%', background:'#FFFFFF', color:C.text, border:`1px solid ${C.border}`, borderRadius:7, padding:'7px 9px', fontSize:12.5, fontFamily:'inherit', cursor:'pointer', outline:'none' }}>
+        <option value="">{channels.length ? 'Select a channel…' : 'No channels available'}</option>
+        {channels.map(ch => <option key={ch.id} value={ch.id}>#{ch.name}</option>)}
+      </select>
+      {saved && <div style={{ fontSize:11, color:C.green, marginTop:4 }}>Saved.</div>}
+    </div>
+  )
+}
+
+export default function IntegrationsView({ statuses, companyName, clientCount }: { statuses: IntegrationStatus[]; companyName: string; clientCount: string }) {
   const router = useRouter()
   const params = useSearchParams()
   const [busy, setBusy] = useState<string | null>(null)
@@ -40,7 +68,7 @@ export default function IntegrationsView({ statuses, companyName, industry }: { 
           <span style={{ fontSize:12, color:C.muted }}>Company</span><span style={{ fontSize:13, color:C.text }}>{companyName || '—'}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', padding:'7px 0' }}>
-          <span style={{ fontSize:12, color:C.muted }}>Industry</span><span style={{ fontSize:13, color:C.text }}>{industry || '—'}</span>
+          <span style={{ fontSize:12, color:C.muted }}>Clients managed</span><span style={{ fontSize:13, color:C.text }}>{clientCount || '—'}</span>
         </div>
       </div>
 
@@ -68,6 +96,7 @@ export default function IntegrationsView({ statuses, companyName, industry }: { 
                 </div>
               </div>
               <div style={{ fontSize:12.5, color:C.sub, lineHeight:1.5, flex:1 }}>{meta.description}</div>
+              {connected && meta.id === 'slack' && <SlackChannelPicker />}
               {connected ? (
                 <button onClick={() => disconnect(meta.id)} disabled={busy === meta.id} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer', alignSelf:'flex-start', opacity: busy === meta.id ? 0.6 : 1 }}>{busy === meta.id ? 'Disconnecting…' : 'Disconnect'}</button>
               ) : (
