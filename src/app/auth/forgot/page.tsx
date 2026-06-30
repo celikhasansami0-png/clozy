@@ -28,14 +28,16 @@ export default function ForgotPasswordPage() {
     <div style={A.page}>
       <div style={A.card}>
         <div style={A.logo}>
-          <div style={A.logoBox}>LOGO</div>
-          <span style={A.logoText}>Bionova</span>
+          {/* Logo — place your logo file at public/logo.png */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" width={32} height={32} alt="Orbit" style={{ borderRadius:7, objectFit:'contain' }} />
+          <span style={A.logoText}>Orbit</span>
         </div>
         <div style={A.title}>Reset your password</div>
         <div style={A.sub}>We&apos;ll email you a secure link to set a new password.</div>
 
         {sent ? (
-          <p style={A.success}>If an account exists for <strong style={{ color:'#F2F2F2' }}>{email}</strong>, a reset link is on its way. Check your inbox.</p>
+          <p style={A.success}>If an account exists for <strong style={{ color:'#F5F6F7' }}>{email}</strong>, a reset link is on its way. Check your inbox.</p>
         ) : (
           <form onSubmit={submit} noValidate>
             <div style={{ marginBottom:6 }}>
@@ -48,7 +50,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        <p style={{ textAlign:'center', fontSize:12, color:'#303030', marginTop:20 }}>
+        <p style={{ textAlign:'center', fontSize:12, color:'#2E3340', marginTop:20 }}>
           <Link href="/auth" style={A.link}>← Back to log in</Link>
         </p>
       </div>

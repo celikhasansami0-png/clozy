@@ -2,21 +2,21 @@
 import { createContext, useContext, useState } from 'react'
 import ProjectForm from './forms/ProjectForm'
 import TaskForm from './forms/TaskForm'
-import PermitForm from './forms/PermitForm'
+import DocumentForm from './forms/DocumentForm'
 import MemberForm from './forms/MemberForm'
 import type { Task } from '@/lib/types'
 
 type Modal =
   | { type: 'project' }
   | { type: 'task'; jobId?: string; task?: Task }
-  | { type: 'permit' }
+  | { type: 'document'; jobId?: string }
   | { type: 'member' }
 
 type Ctx = {
   newProject: () => void
   newTask: (jobId?: string) => void
   editTask: (task: Task) => void
-  newPermit: () => void
+  newDocument: (jobId?: string) => void
   newMember: () => void
 }
 
@@ -35,7 +35,7 @@ export default function CreateProvider({ userId, children }: { userId: string; c
     newProject: () => setModal({ type: 'project' }),
     newTask: (jobId?: string) => setModal({ type: 'task', jobId }),
     editTask: (task: Task) => setModal({ type: 'task', task }),
-    newPermit: () => setModal({ type: 'permit' }),
+    newDocument: (jobId?: string) => setModal({ type: 'document', jobId }),
     newMember: () => setModal({ type: 'member' }),
   }
 
@@ -44,7 +44,7 @@ export default function CreateProvider({ userId, children }: { userId: string; c
       {children}
       {modal?.type === 'project' && <ProjectForm userId={userId} onClose={close} />}
       {modal?.type === 'task' && <TaskForm userId={userId} onClose={close} jobId={modal.jobId} task={modal.task} />}
-      {modal?.type === 'permit' && <PermitForm userId={userId} onClose={close} />}
+      {modal?.type === 'document' && <DocumentForm userId={userId} onClose={close} jobId={modal.jobId} />}
       {modal?.type === 'member' && <MemberForm userId={userId} onClose={close} />}
     </CreateContext.Provider>
   )

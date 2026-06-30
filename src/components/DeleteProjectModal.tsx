@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Modal from './Modal'
 import type { Job } from '@/lib/types'
 
-const C = { elevated:'#161616', border:'#262626', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', err:'#f87171' }
+const C = { elevated:'#181B22', border:'#262A35', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', err:'#f87171' }
 
 export default function DeleteProjectModal({ job, label, onClose, onConfirm }: { job: Job; label: string; onClose: () => void; onConfirm: () => void }) {
   const [value, setValue] = useState('')
@@ -12,7 +12,7 @@ export default function DeleteProjectModal({ job, label, onClose, onConfirm }: {
   return (
     <Modal title={`Delete ${label.toLowerCase()}`} onClose={onClose}>
       <p style={{ fontSize:13, color:C.sub, lineHeight:1.6, margin:'0 0 16px' }}>
-        This permanently deletes <strong style={{ color:C.text }}>{job.name}</strong> and all of its tasks, permits and documents. This cannot be undone.
+        This permanently deletes <strong style={{ color:C.text }}>{job.name}</strong> and all of its tasks and documents. This cannot be undone.
       </p>
       <label style={{ fontSize:11, fontWeight:600, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6, display:'block' }}>Type the {label.toLowerCase()} name to confirm</label>
       <input value={value} onChange={e => setValue(e.target.value)} placeholder={job.name}

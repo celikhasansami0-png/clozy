@@ -1,17 +1,17 @@
 import React from 'react'
 
-// Monochrome accent — Bionova design system is strictly black & white
-// (only project colors stay colored). All "accent" usages render white/grey.
+// Blue accent — Orbit design system. Primary accent is blue (#4D7FFF);
+// only project-specific colors stay independently colored.
 export const accent = {
-  base:   '#F2F2F2',                    // primary white
-  bright: '#FFFFFF',                    // pure white (highlights / tall bars)
-  deep:   '#A0A0A0',                    // secondary grey
-  dark:   '#606060',                    // muted/short bars
-  soft:   'rgba(242,242,242,0.08)',
-  border: 'rgba(242,242,242,0.20)',
+  base:   '#4D7FFF',                    // primary blue
+  bright: '#7FA0FF',                    // bright blue (highlights / tall bars)
+  deep:   '#3A66E0',                    // deep blue (secondary)
+  dark:   '#16203A',                    // muted blue (short bars / fills)
+  soft:   'rgba(77,127,255,0.12)',
+  border: 'rgba(77,127,255,0.32)',
 }
 
-const C = { text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', border:'#262626', elevated:'#161616', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }
+const C = { text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', border:'#262A35', elevated:'#181B22', highBg:'rgba(77,127,255,0.07)', highBorder:'rgba(77,127,255,0.18)', midBg:'rgba(160,160,160,0.07)', midBorder:'rgba(160,160,160,0.15)', lowBg:'rgba(96,96,96,0.06)', lowBorder:'rgba(96,96,96,0.12)' }
 
 export const statusCfg: Record<string,{label:string,color:string,bg:string,border:string}> = {
   todo:        { label:'To Do',       color:C.muted,       bg:'transparent', border:C.dim },
@@ -23,7 +23,7 @@ export const priorityCfg: Record<string,{label:string,color:string}> = {
   high:   { label:'High',   color:C.sub },
   normal: { label:'Normal', color:C.muted },
 }
-export const permitCfg: Record<string,{color:string,bg:string,border:string}> = {
+export const docStatusCfg: Record<string,{color:string,bg:string,border:string}> = {
   'Approved':     { color:C.text,  bg:C.highBg, border:C.highBorder },
   'Under Review': { color:C.sub,   bg:C.midBg,  border:C.midBorder },
   'Pending':      { color:C.muted, bg:C.lowBg,  border:C.lowBorder },

@@ -2,13 +2,13 @@
 import { useMemo, useState } from 'react'
 import { Tag, ProgressBar, jobStatusColor, accent } from './ui'
 import { Skeleton } from './Skeleton'
-import { riskAlerts, flaggedPermits } from '@/lib/insights'
-import type { Job, Task, Permit } from '@/lib/types'
+import { riskAlerts, flaggedDocuments } from '@/lib/insights'
+import type { Job, Task, Doc } from '@/lib/types'
 
-const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', highBg:'rgba(242,242,242,0.07)', highBorder:'rgba(242,242,242,0.18)' }
+const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', highBg:'rgba(77,127,255,0.07)', highBorder:'rgba(77,127,255,0.18)' }
 const DAY = 24 * 60 * 60 * 1000
 
-export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], tasks:Task[], permits:Permit[] }) {
+export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], tasks:Task[], documents:Doc[] }) {
   const [summary, setSummary] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +17,7 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
   const open = tasks.length - done
   const avgCompletion = jobs.length ? Math.round(jobs.reduce((s, j) => s + j.completion, 0) / jobs.length) : 0
   const risks = useMemo(() => riskAlerts(tasks), [tasks])
-  const flagged = useMemo(() => flaggedPermits(permits), [permits])
+  const flagged = useMemo(() => flaggedDocuments(documents), [documents])
 
   // Activity chart filtered by a selectable date range (default: last 30 days).
   const [range, setRange] = useState(30)
@@ -78,7 +78,7 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
     const a = document.createElement('a')
-    a.href = url; a.download = `bionova-report-${new Date().toISOString().slice(0,10)}.csv`
+    a.href = url; a.download = `orbit-report-${new Date().toISOString().slice(0,10)}.csv`
     a.click(); URL.revokeObjectURL(url)
   }
 
@@ -87,7 +87,7 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:24, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Reports</div>
-          <div style={{ fontSize:14, color:C.muted }}>Portfolio health across your solar EPC projects.</div>
+          <div style={{ fontSize:14, color:C.muted }}>Portfolio health across all your projects.</div>
         </div>
         <button onClick={exportCsv} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit' }}>
           ↓ Export CSV
@@ -146,17 +146,17 @@ export default function ReportsView({ jobs, tasks, permits }: { jobs:Job[], task
       <div style={{ background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:12, padding:'18px 20px' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:12 }}>
           <div style={{ fontSize:13, fontWeight:600 }}>AI Project Health Summary</div>
-          <button onClick={generateSummary} disabled={loading} style={{ background:C.text, border:'none', color:'#080808', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', opacity:loading?0.6:1 }}>
+          <button onClick={generateSummary} disabled={loading} style={{ background:'#4D7FFF', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', opacity:loading?0.6:1 }}>
             {loading ? 'Generating…' : '✦ Generate AI Summary'}
           </button>
         </div>
         {flagged.length > 0 && (
-          <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>{flagged.length} permit(s) flagged by the permit agent · {risks.length} task(s) at risk</div>
+          <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>{flagged.length} document(s) flagged · {risks.length} task(s) at risk</div>
         )}
         {loading && <div style={{ display:'flex', flexDirection:'column', gap:8 }}><Skeleton width="90%" /><Skeleton width="96%" /><Skeleton width="70%" /></div>}
         {error && <div style={{ fontSize:13, color:'#f87171' }}>{error}</div>}
         {summary && <pre style={{ fontSize:13, color:C.text, whiteSpace:'pre-wrap', fontFamily:'inherit', lineHeight:1.6, margin:0 }}>{summary}</pre>}
-        {!summary && !loading && !error && <div style={{ fontSize:13, color:C.muted }}>Generate a grounded health summary across all projects, risks and permits.</div>}
+        {!summary && !loading && !error && <div style={{ fontSize:13, color:C.muted }}>Generate a grounded health summary across all projects, risks and documents.</div>}
       </div>
     </div>
   )

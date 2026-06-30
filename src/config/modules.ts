@@ -1,4 +1,9 @@
-// Bionova niche module configuration — drives all dynamic UI labels & demo data.
+// Orbit module configuration.
+//
+// NOTE: As of the Orbit rebrand the application is industry-agnostic. The
+// MODULES map below is kept intact for possible future use, but it no longer
+// drives terminology, dashboard widgets, or onboarding. Every user gets the
+// single fixed GENERIC_MODULE and generic labels (see NicheProvider).
 
 export interface ModuleConfig {
   name: string
@@ -84,6 +89,19 @@ export const MODULES = {
     permitTypes: ['N/A'],
   },
 } satisfies Record<string, ModuleConfig>
+
+// The single fixed module used everywhere now that Orbit is industry-agnostic.
+// `permitTypes` here serve as generic Document types; `stages` serve as generic
+// project phases and task tags.
+export const GENERIC_MODULE: ModuleConfig = {
+  name: 'General',
+  icon: '🛰️',
+  stages: ['Planning', 'In Progress', 'Review', 'On Hold', 'Complete'],
+  metrics: [],
+  terminology: { project: 'Project', task: 'Task', team: 'Team', schedule: 'Schedule' },
+  dashboardWidgets: ['activeProjects', 'urgentTasks', 'documentStatus', 'teamAvailability'],
+  permitTypes: ['Agreement', 'Certificate', 'Report', 'Invoice', 'Permit', 'Other'],
+}
 
 export type NicheKey = keyof typeof MODULES
 

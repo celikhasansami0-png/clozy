@@ -1,13 +1,16 @@
 'use client'
 import { createContext, useContext } from 'react'
-import { getModule, plural, type ModuleConfig } from '@/config/modules'
+import { GENERIC_MODULE, plural, type ModuleConfig } from '@/config/modules'
 
+// Orbit is industry-agnostic: terminology is fixed and generic for every user.
+// This provider is kept (rather than ripping out every useNiche() call site) but
+// it now always returns the single GENERIC_MODULE — no niche switching.
 type NicheCtx = { niche: string; module: ModuleConfig; term: ModuleConfig['terminology']; plural: typeof plural }
-const Ctx = createContext<NicheCtx>({ niche: 'solar_epc', module: getModule('solar_epc'), term: getModule('solar_epc').terminology, plural })
+const VALUE: NicheCtx = { niche: '', module: GENERIC_MODULE, term: GENERIC_MODULE.terminology, plural }
+const Ctx = createContext<NicheCtx>(VALUE)
 
-export function NicheProvider({ niche, children }: { niche: string; children: React.ReactNode }) {
-  const mod = getModule(niche)
-  return <Ctx.Provider value={{ niche, module: mod, term: mod.terminology, plural }}>{children}</Ctx.Provider>
+export function NicheProvider({ children }: { children: React.ReactNode }) {
+  return <Ctx.Provider value={VALUE}>{children}</Ctx.Provider>
 }
 
 export function useNiche() { return useContext(Ctx) }

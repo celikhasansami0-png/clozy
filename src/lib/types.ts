@@ -1,7 +1,7 @@
 export type JobStatus = 'In Progress' | 'On Track' | 'Delayed' | 'Complete'
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
 export type TaskPriority = 'urgent' | 'high' | 'normal'
-export type PermitStatus = 'Approved' | 'Under Review' | 'Pending' | 'Rejected'
+export type DocStatus = 'Approved' | 'Under Review' | 'Pending' | 'Rejected'
 
 export interface Job {
   id: string
@@ -30,14 +30,23 @@ export interface Task {
   assignee?: CrewMember
 }
 
-export interface Permit {
+// Unified Document record. Merges the old `permits` tracking (number/type/status/
+// submitted_date/notes) with the file-upload feature (file_* fields). A document
+// may be metadata-only, file-only, or both.
+export interface Doc {
   id: string
-  job_id: string
-  permit_number: string
+  project_id: string
+  owner_id: string
+  doc_number: string
   type: string
-  status: PermitStatus
-  submitted_date: string
+  status: DocStatus
+  submitted_date: string | null
   notes: string
+  file_name: string | null
+  file_path: string | null
+  file_size: number | null
+  file_type: string | null
+  uploaded_by: string | null
   created_at: string
   job?: Job
 }
@@ -48,18 +57,6 @@ export interface CrewMember {
   initials: string
   role: string
   owner_id: string
-  created_at: string
-}
-
-export interface DocumentRow {
-  id: string
-  project_id: string
-  owner_id: string
-  file_name: string
-  file_path: string
-  file_size: number
-  file_type: string
-  uploaded_by: string | null
   created_at: string
 }
 

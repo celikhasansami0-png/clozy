@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Bionova — The operating system for renewable energy companies',
-  description: 'Operations, knowledge base and decision support for renewable energy teams.',
+  title: 'Orbit — The operating system for project-driven teams',
+  description: 'Projects, tasks, documents and decision support for modern teams.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

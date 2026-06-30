@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 
-const C = { text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', border:'#262626', elevated:'#161616', err:'#f87171', focus:'#A0A0A0' }
+const C = { text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', border:'#262A35', elevated:'#181B22', err:'#f87171', focus:'#9CA3AF' }
 
 function inputStyle(error?: boolean): React.CSSProperties {
   return { width:'100%', background:C.elevated, border:`1px solid ${error ? C.err : C.border}`, borderRadius:8, padding:'10px 12px', fontSize:13, color:C.text, outline:'none', fontFamily:'inherit', colorScheme:'dark' }
@@ -49,7 +49,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (v: 
   return (
     <div style={{ display:'flex', gap:10 }}>
       {PRESET_COLORS.map(([name, hex]) => (
-        <button type="button" key={hex} title={name} onClick={() => onChange(hex)} style={{ width:28, height:28, borderRadius:'50%', background:hex, border: value === hex ? '2px solid #F2F2F2' : '2px solid transparent', boxShadow: value === hex ? '0 0 0 2px #0F0F0F' : 'none', cursor:'pointer', padding:0 }} />
+        <button type="button" key={hex} title={name} onClick={() => onChange(hex)} style={{ width:28, height:28, borderRadius:'50%', background:hex, border: value === hex ? '2px solid #F5F6F7' : '2px solid transparent', boxShadow: value === hex ? '0 0 0 2px #12141A' : 'none', cursor:'pointer', padding:0 }} />
       ))}
     </div>
   )
@@ -58,7 +58,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (v: 
 export function Slider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#F2F2F2' }} />
+      <input type="range" min={0} max={100} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width:'100%', accentColor:'#F5F6F7' }} />
       <div style={{ fontSize:12, color:C.sub, marginTop:4 }}>{value}%</div>
     </div>
   )
@@ -66,7 +66,7 @@ export function Slider({ value, onChange }: { value: number; onChange: (v: numbe
 
 export function SubmitButton({ loading, children }: { loading?: boolean; children: React.ReactNode }) {
   return (
-    <button type="submit" disabled={loading} style={{ width:'100%', background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', marginTop:6, cursor:'pointer', opacity: loading ? 0.6 : 1 }}>
+    <button type="submit" disabled={loading} style={{ width:'100%', background:'#4D7FFF', color:'#FFFFFF', border:'none', borderRadius:8, padding:'11px', fontSize:14, fontWeight:700, fontFamily:'inherit', marginTop:6, cursor:'pointer', opacity: loading ? 0.6 : 1 }}>
       {loading ? 'Saving…' : children}
     </button>
   )

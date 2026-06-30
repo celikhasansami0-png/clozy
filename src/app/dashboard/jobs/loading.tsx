@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/Skeleton'
 export default function Loading() {
   return (
     <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
-      <div style={{ width:255, borderRight:'1px solid #262626', padding:16, display:'flex', flexDirection:'column', gap:8 }}>
+      <div style={{ width:255, borderRight:'1px solid #262A35', padding:16, display:'flex', flexDirection:'column', gap:8 }}>
         {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={40} radius={7} />)}
       </div>
       <div style={{ flex:1, padding:'20px', display:'flex', flexDirection:'column', gap:12 }}>

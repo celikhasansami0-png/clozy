@@ -5,7 +5,7 @@ import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
 import type { Task, Job } from '@/lib/types'
 
-const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030', accent:'#F2F2F2', accentBorder:'rgba(242,242,242,0.20)' }
+const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340', accent:'#F5F6F7', accentBorder:'rgba(77,127,255,0.20)' }
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 function startOfWeek(d: Date) { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setDate(x.getDate() - day); x.setHours(0, 0, 0, 0); return x }
@@ -51,7 +51,7 @@ export default function ScheduleView({ tasks: initialTasks, jobs }: { tasks: Tas
               const isToday = key(d) === today
               const dayTasks = tasksOn(d)
               return (
-                <div key={i} style={{ minHeight:96, padding:'8px', borderRight:(i % 7 !== 6) ? `1px solid ${C.borderSubtle}` : 'none', borderBottom: i < 21 ? `1px solid ${C.borderSubtle}` : 'none', background: isToday ? 'rgba(242,242,242,0.04)' : 'transparent' }}>
+                <div key={i} style={{ minHeight:96, padding:'8px', borderRight:(i % 7 !== 6) ? `1px solid ${C.borderSubtle}` : 'none', borderBottom: i < 21 ? `1px solid ${C.borderSubtle}` : 'none', background: isToday ? 'rgba(77,127,255,0.04)' : 'transparent' }}>
                   <div style={{ fontSize:11, fontWeight:600, color: isToday ? C.accent : C.muted, marginBottom:6, display:'flex', justifyContent:'space-between' }}>
                     <span>{d.getDate()}</span>
                     {d.getDate() === 1 && <span style={{ color:C.dim }}>{d.toLocaleString('en', { month:'short' })}</span>}

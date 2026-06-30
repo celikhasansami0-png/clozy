@@ -13,9 +13,10 @@ import DocumentsPanel from './DocumentsPanel'
 import ActivityFeed from './ActivityFeed'
 import EmptyState, { Icons } from './EmptyState'
 import DeleteProjectModal from './DeleteProjectModal'
+import Pager, { PAGE_SIZE } from './Pager'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
-const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
+const C = { bg:'#0A0B0D', bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
 
 export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew, ownerId, uploaderName }: { jobs:Job[], tasks:Task[], crew:CrewMember[], ownerId:string, uploaderName:string }) {
   const searchParams = useSearchParams()
@@ -35,29 +36,23 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const [aiNote, setAiNote] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
-  const [focusIdx, setFocusIdx] = useState(-1)
   const [showArchived, setShowArchived] = useState(false)
   const [menuJobId, setMenuJobId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Job | null>(null)
+  const [taskPage, setTaskPage] = useState(0)
+  const [projPage, setProjPage] = useState(0)
 
-  // Realtime: keep tasks in sync across sessions (requires the `tasks` table in
-  // the Supabase realtime publication).
+  // Keep tasks fresh by refetching when the window regains focus (realtime is
+  // reserved for the notification bell only).
   useEffect(() => {
-    const channel = supabase
-      .channel('rt-tasks')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks' }, ({ new: row }) => {
-        setTasks(prev => prev.some(t => t.id === (row as Task).id) ? prev : [...prev, row as Task])
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tasks' }, ({ new: row }) => {
-        setTasks(prev => prev.map(t => t.id === (row as Task).id ? { ...t, ...(row as Task) } : t))
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tasks' }, ({ old: row }) => {
-        setTasks(prev => prev.filter(t => t.id !== (row as { id: string }).id))
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    function refetch() {
+      supabase.from('tasks').select('*, assignee:crew_members(*)').eq('owner_id', ownerId).order('created_at').limit(500)
+        .then(({ data }) => { if (data) setTasks(data as Task[]) })
+    }
+    window.addEventListener('focus', refetch)
+    return () => window.removeEventListener('focus', refetch)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [ownerId])
 
   // Optimistic updates via the in-app event bus.
   useBus<Task>(evt.add('task'), t => setTasks(prev => prev.some(x => x.id === t.id) ? prev : [...prev, t]))
@@ -71,21 +66,13 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const job = jobs.find(j => j.id === activeJobId) || jobs[0]
   const jobTasks = tasks.filter(t => t.job_id === job?.id)
   const filtered = jobTasks.filter(t => filter === 'all' || t.status === filter)
+  const pagedTasks = filtered.slice(taskPage * PAGE_SIZE, taskPage * PAGE_SIZE + PAGE_SIZE)
+  const visibleJobs = jobs.filter(j => showArchived ? j.is_archived : !j.is_archived)
+  const pagedJobs = visibleJobs.slice(projPage * PAGE_SIZE, projPage * PAGE_SIZE + PAGE_SIZE)
   const activeTask = activeTaskId ? jobTasks.find(t => t.id === activeTaskId) : null
 
-  // J/K to move through the task list, Enter to open detail (Linear-style).
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (activeTab !== 'tasks') return
-      const el = e.target as HTMLElement
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
-      if (e.key === 'j' || e.key === 'J') { e.preventDefault(); setFocusIdx(i => Math.min(filtered.length - 1, i + 1)) }
-      else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); setFocusIdx(i => Math.max(0, (i < 0 ? 0 : i - 1))) }
-      else if (e.key === 'Enter') { const t = filtered[focusIdx]; if (t) setActiveTaskId(t.id) }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [activeTab, filtered, focusIdx])
+  useEffect(() => { setTaskPage(0) }, [filter, activeJobId, activeTab])
+  useEffect(() => { setProjPage(0) }, [showArchived])
 
   async function updateTaskStatus(taskId: string, status: string) {
     const t = tasks.find(x => x.id === taskId)
@@ -185,8 +172,8 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
 
   if (!job) return (
     <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:C.muted, fontSize:14, padding:24, textAlign:'center' }}>
-      <div>No projects yet. Create your first solar project to get started.</div>
-      <button onClick={()=>create.newProject()} style={{ background:C.text, color:'#080808', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New project</button>
+      <div>No projects yet. Create your first project to get started.</div>
+      <button onClick={()=>create.newProject()} style={{ background:'#4D7FFF', color:'#FFFFFF', border:'none', borderRadius:8, padding:'10px 18px', fontSize:13, fontWeight:700, fontFamily:'inherit' }}>+ New project</button>
     </div>
   )
 
@@ -199,7 +186,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
             <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em' }}>{showArchived ? 'Archived' : 'All'} {plural(term.project)}</div>
             <button onClick={()=>setShowArchived(v=>!v)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:5, padding:'2px 8px', fontSize:10, fontFamily:'inherit', cursor:'pointer' }}>{showArchived ? 'Active' : 'Archived'}</button>
           </div>
-          {jobs.filter(j => showArchived ? j.is_archived : !j.is_archived).map(j => (
+          {pagedJobs.map(j => (
             <div key={j.id} onClick={()=>{ setActiveJobId(j.id); setActiveTaskId(null); router.replace(`/dashboard/jobs?job=${j.id}`) }}
               style={{ position:'relative', display:'flex', alignItems:'center', gap:6, padding:'8px 10px', borderRadius:7, cursor:'pointer', marginBottom:2, background:activeJobId===j.id?C.bgElevated:'transparent', border:`1px solid ${activeJobId===j.id?C.border:'transparent'}`, transition:'all 0.1s' }}>
               <div style={{ flex:1, overflow:'hidden' }}>
@@ -216,9 +203,10 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               )}
             </div>
           ))}
-          {jobs.filter(j => showArchived ? j.is_archived : !j.is_archived).length === 0 && (
+          {visibleJobs.length === 0 && (
             <div style={{ fontSize:12, color:C.dim, padding:'8px 10px' }}>No {showArchived ? 'archived' : 'active'} {plural(term.project.toLowerCase())}.</div>
           )}
+          <Pager page={projPage} total={visibleJobs.length} onPage={setProjPage} />
         </div>
       </div>
       {menuJobId && <div onClick={()=>setMenuJobId(null)} style={{ position:'fixed', inset:0, zIndex:5 }} />}
@@ -273,22 +261,21 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
 
         {filtered.length > 0 && (
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 20px', borderBottom:`1px solid ${C.borderSubtle}` }}>
-            <input type="checkbox" checked={selected.size > 0 && filtered.every(t => selected.has(t.id))} onChange={e => setSelected(e.target.checked ? new Set(filtered.map(t => t.id)) : new Set())} style={{ accentColor:'#F2F2F2', cursor:'pointer' }} />
+            <input type="checkbox" checked={selected.size > 0 && filtered.every(t => selected.has(t.id))} onChange={e => setSelected(e.target.checked ? new Set(filtered.map(t => t.id)) : new Set())} style={{ accentColor:'#F5F6F7', cursor:'pointer' }} />
             <span style={{ fontSize:11, color:C.muted }}>{selected.size > 0 ? `${selected.size} selected` : 'Select all'}</span>
           </div>
         )}
         <div style={{ flex:1, overflowY:'auto', padding:'6px 0' }}>
-          {filtered.map((t, idx) => {
+          {pagedTasks.map(t => {
             const assignee = crew.find(c => c.id === t.assignee_id)
-            const focused = idx === focusIdx
             const checked = selected.has(t.id)
             return (
               <div key={t.id} onClick={()=>setActiveTaskId(activeTaskId===t.id?null:t.id)}
-                style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'10px 20px', cursor:'pointer', transition:'background 0.1s', background: checked||activeTaskId===t.id?C.bgElevated: focused?C.bgHover:'transparent', borderBottom:`1px solid ${C.borderSubtle}`, boxShadow: focused?`inset 2px 0 0 ${C.sub}`:'none' }}
+                style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'10px 20px', cursor:'pointer', transition:'background 0.1s', background: checked||activeTaskId===t.id?C.bgElevated:'transparent', borderBottom:`1px solid ${C.borderSubtle}` }}
                 onMouseEnter={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background=C.bgHover }}
-                onMouseLeave={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background= focused?C.bgHover:'transparent' }}
+                onMouseLeave={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background='transparent' }}
               >
-                <input type="checkbox" checked={checked} onClick={e=>e.stopPropagation()} onChange={()=>toggleSel(t.id)} style={{ marginTop:3, accentColor:'#F2F2F2', cursor:'pointer', flexShrink:0 }} />
+                <input type="checkbox" checked={checked} onClick={e=>e.stopPropagation()} onChange={()=>toggleSel(t.id)} style={{ marginTop:3, accentColor:'#F5F6F7', cursor:'pointer', flexShrink:0 }} />
                 <div onClick={e=>{ e.stopPropagation(); const next = t.status==='todo'?'in_progress':t.status==='in_progress'?'done':'todo'; updateTaskStatus(t.id,next) }}>
                   <StatusDot status={t.status} />
                 </div>
@@ -311,6 +298,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               <EmptyState icon={Icons.task} title={`Add your first ${term.task.toLowerCase()}`} description={`No ${plural(term.task.toLowerCase())} here yet.`} cta={{ label: `New ${term.task}`, onClick: () => create.newTask(job.id) }} compact />
             </div>
           )}
+          <Pager page={taskPage} total={filtered.length} onPage={setTaskPage} />
         </div>
 
         {/* Bulk action bar */}
@@ -319,12 +307,6 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
             <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{selected.size} selected</span>
             <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ status:v as Task['status'] }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
               <option value="__ph" disabled>Status…</option><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="done">Done</option>
-            </select>
-            <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ priority:v as Task['priority'] }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
-              <option value="__ph" disabled>Priority…</option><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option>
-            </select>
-            <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ assignee_id: v==='__none'?null:v }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
-              <option value="__ph" disabled>Assign…</option><option value="__none">Unassigned</option>{crew.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             {bulkDeleteConfirm ? (
               <button onClick={bulkDelete} style={{ background:'rgba(248,113,113,0.12)', border:'1px solid rgba(248,113,113,0.4)', color:'#f87171', borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm delete</button>
@@ -339,10 +321,10 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
           {aiNote && <div style={{ fontSize:11, color:C.sub, marginBottom:8 }}>✦ {aiNote}</div>}
           <div style={{ display:'flex', alignItems:'center', gap:10, background:C.bgElevated, border:`1px solid ${C.border}`, borderRadius:8, padding:'8px 12px' }}>
-            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Bionova</span>
+            <span style={{ background:C.bgHover, color:C.sub, fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0, border:`1px solid ${C.border}` }}>@Orbit</span>
             <input value={aiInput} onChange={e=>setAiInput(e.target.value)} placeholder='add task "Torque module clamps — row 12" urgent…' style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:13, color:C.text, fontFamily:'inherit' }} />
-            <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:C.text, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
-              <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#080808" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <button type="submit" disabled={aiLoading} style={{ width:26, height:26, background:'#4D7FFF', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, border:'none', opacity:aiLoading?0.5:1 }}>
+              <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 6h10M6 1l5 5-5 5" stroke="#0A0B0D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
           </div>
         </form>
@@ -372,8 +354,8 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               </div>
             ))}
             <div style={{ marginTop:20 }}>
-              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:10 }}>PV QA Checklist</div>
-              {['Module torque to spec (mfr)','Rapid shutdown verified (690.12)','String voltage within inverter window','Grounding & bonding checked (690.43)'].map((item,i) => (
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:10 }}>QA Checklist</div>
+              {['Requirements confirmed with owner','Dependencies identified','Work reviewed against spec','Sign-off recorded'].map((item,i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 0', borderBottom:`1px solid ${C.borderSubtle}`, fontSize:12, color:i<2?C.muted:C.text }}>
                   <div style={{ width:14, height:14, borderRadius:3, border:`1.5px solid ${i<2?C.sub:C.border}`, background:i<2?C.bgElevated:'transparent', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, color:C.sub, flexShrink:0 }}>{i<2?'✓':''}</div>
                   <span style={{ textDecoration:i<2?'line-through':'none' }}>{item}</span>

@@ -5,16 +5,16 @@
 }
 
 :root {
-  --bg:            #080808;
-  --bg-card:       #0F0F0F;
-  --bg-elevated:   #161616;
-  --bg-hover:      #1C1C1C;
-  --border:        #262626;
-  --border-subtle: #181818;
-  --text:          #F2F2F2;
-  --text-sub:      #A0A0A0;
-  --text-muted:    #606060;
-  --text-dim:      #303030;
+  --bg:            #0A0B0D;
+  --bg-card:       #12141A;
+  --bg-elevated:   #181B22;
+  --bg-hover:      #1E222B;
+  --border:        #262A35;
+  --border-subtle: #1A1D24;
+  --text:          #F5F6F7;
+  --text-sub:      #9CA3AF;
+  --text-muted:    #5C6470;
+  --text-dim:      #2E3340;
 }
 
 html, body {
@@ -37,14 +37,14 @@ input, textarea { font-family: inherit; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-/* Loading skeleton shimmer — pulses #161616 ↔ #1C1C1C */
+/* Loading skeleton shimmer — pulses #181B22 ↔ #1E222B */
 .bn-skeleton {
-  background-color: #161616;
+  background-color: #181B22;
   animation: bn-shimmer 1.3s ease-in-out infinite;
 }
 @keyframes bn-shimmer {
-  0%, 100% { background-color: #161616; }
-  50%      { background-color: #1C1C1C; }
+  0%, 100% { background-color: #181B22; }
+  50%      { background-color: #1E222B; }
 }
 
 /* ── Responsive sidebar (3 states) ──────────────────────────────────────────

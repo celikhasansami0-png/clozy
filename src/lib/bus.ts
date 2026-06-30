@@ -17,7 +17,7 @@ export function useBus<T>(name: string, handler: (detail: T) => void) {
 }
 
 // Event name helpers — keep payloads consistent across emitters/listeners.
-export type Entity = 'project' | 'task' | 'permit' | 'member'
+export type Entity = 'project' | 'task' | 'document' | 'member'
 export const evt = {
   add: (e: Entity) => `bn:${e}:add`,
   replace: (e: Entity) => `bn:${e}:replace`,

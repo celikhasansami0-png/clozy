@@ -58,7 +58,7 @@ export default function ProjectForm({ userId, onClose }: { userId: string; onClo
     <Modal title={`New ${term.project.toLowerCase()}`} subtitle={`Added to your ${term.project.toLowerCase()}s`} onClose={onClose}>
       <form onSubmit={submit}>
         <Field label={`${term.project} name`} required error={nameErr ? `${term.project} name is required` : undefined}>
-          <TextInput value={name} error={nameErr} onChange={v => { setName(v); setNameErr(false) }} placeholder="Cedar Ridge Solar Farm — 12 MW" />
+          <TextInput value={name} error={nameErr} onChange={v => { setName(v); setNameErr(false) }} placeholder="Downtown Office Renovation" />
         </Field>
         <Field label="Color"><ColorPicker value={color} onChange={setColor} /></Field>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

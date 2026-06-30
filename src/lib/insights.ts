@@ -1,5 +1,5 @@
 // Rule-based AI helpers (no API key required) — shared, pure, client-safe.
-import type { Task, Permit, CrewMember } from './types'
+import type { Task, Doc, CrewMember } from './types'
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -30,15 +30,15 @@ export function suggestAssignee(crew: CrewMember[], tasks: Task[]): CrewMember |
   return [...crew].sort((a, b) => (load.get(a.id) || 0) - (load.get(b.id) || 0))[0]
 }
 
-/** Permit agent: flag permits in "Under Review" longer than `days` days. */
-export function flaggedPermits(permits: Permit[], days = 14, now: Date = new Date()) {
+/** Document agent: flag documents in "Under Review" longer than `days` days. */
+export function flaggedDocuments(docs: Doc[], days = 14, now: Date = new Date()) {
   const cutoff = now.getTime() - days * DAY
-  return permits
-    .filter((p) => p.status === 'Under Review' && p.submitted_date)
-    .map((p) => {
-      const submitted = new Date(p.submitted_date as string).getTime()
-      return { permit: p, daysInReview: Math.round((now.getTime() - submitted) / DAY) }
+  return docs
+    .filter((d) => d.status === 'Under Review' && d.submitted_date)
+    .map((d) => {
+      const submitted = new Date(d.submitted_date as string).getTime()
+      return { doc: d, daysInReview: Math.round((now.getTime() - submitted) / DAY) }
     })
-    .filter((r) => new Date(r.permit.submitted_date as string).getTime() <= cutoff)
+    .filter((r) => new Date(r.doc.submitted_date as string).getTime() <= cutoff)
     .sort((a, b) => b.daysInReview - a.daysInReview)
 }

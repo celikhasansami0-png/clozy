@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 
-const C = { bgCard:'#0F0F0F', border:'#262626', text:'#F2F2F2', muted:'#606060' }
+const C = { bgCard:'#12141A', border:'#262A35', text:'#F5F6F7', muted:'#5C6470' }
 
 export default function Modal({ title, subtitle, onClose, children, width = 440 }: { title: string; subtitle?: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   useEffect(() => {

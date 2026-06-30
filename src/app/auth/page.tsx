@@ -56,14 +56,15 @@ export default function AuthPage() {
     <div style={A.page}>
       <div style={A.card}>
         <div style={A.logo}>
-          {/* Replace this div with your logo: <img src="/logo.svg" width="32" height="32" alt="Bionova" /> */}
-          <div style={A.logoBox}>LOGO</div>
-          <span style={A.logoText}>Bionova</span>
+          {/* Logo — place your logo file at public/logo.png */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" width={32} height={32} alt="Orbit" style={{ borderRadius:7, objectFit:'contain' }} />
+          <span style={A.logoText}>Orbit</span>
         </div>
 
-        <div style={{ display:'flex', marginBottom:24, borderBottom:'1px solid #181818' }}>
+        <div style={{ display:'flex', marginBottom:24, borderBottom:'1px solid #1A1D24' }}>
           {(['login', 'signup'] as const).map(m => (
-            <button key={m} onClick={() => switchMode(m)} style={{ background:'none', border:'none', padding:'8px 16px', fontSize:13, fontWeight:500, color: mode === m ? '#F2F2F2' : '#606060', borderBottom: mode === m ? '2px solid #F2F2F2' : '2px solid transparent', marginBottom:-1, cursor:'pointer', fontFamily:'inherit' }}>
+            <button key={m} onClick={() => switchMode(m)} style={{ background:'none', border:'none', padding:'8px 16px', fontSize:13, fontWeight:500, color: mode === m ? '#F5F6F7' : '#5C6470', borderBottom: mode === m ? '2px solid #F5F6F7' : '2px solid transparent', marginBottom:-1, cursor:'pointer', fontFamily:'inherit' }}>
               {m === 'login' ? 'Log in' : 'Sign up'}
             </button>
           ))}
@@ -102,7 +103,7 @@ export default function AuthPage() {
         {formError && <p style={A.formError}>{formError}</p>}
         {success && <p style={A.success}>{success}</p>}
 
-        <p style={{ textAlign:'center', fontSize:12, color:'#303030', marginTop:20 }}>
+        <p style={{ textAlign:'center', fontSize:12, color:'#2E3340', marginTop:20 }}>
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
           <span style={A.link} onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}>
             {mode === 'login' ? 'Sign up' : 'Log in'}

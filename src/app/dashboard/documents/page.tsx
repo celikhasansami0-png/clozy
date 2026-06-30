@@ -1,16 +1,16 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import PermitsView from '@/components/PermitsView'
+import DocumentsView from '@/components/DocumentsView'
 
-export default async function PermitsPage() {
+export default async function DocumentsPage() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: permits } = await supabase
-    .from('permits')
+  const { data: documents } = await supabase
+    .from('documents')
     .select('*, job:jobs(*)')
     .eq('owner_id', user!.id)
     .order('created_at', { ascending: false })
-    .limit(200)
+    .limit(2000)
 
-  return <PermitsView permits={permits||[]} />
+  return <DocumentsView documents={documents||[]} />
 }

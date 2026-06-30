@@ -4,16 +4,17 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { accent } from './ui'
-import { useNiche } from './NicheProvider'
 import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import type { Job } from '@/lib/types'
 
-const C = { bg:'#0F0F0F', elevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', muted:'#606060', dim:'#303030' }
+const C = { bg:'#12141A', elevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', muted:'#5C6470', dim:'#2E3340' }
 
-const navItems = [
+// Fixed, generic navigation — Orbit is industry-agnostic (no niche relabeling).
+const navItems: { label:string; href:string; icon:React.ReactNode }[] = [
   { label:'Dashboard', href:'/dashboard',          icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg> },
   { label:'Projects',  href:'/dashboard/jobs',      icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg> },
-  { label:'Permits',   href:'/dashboard/permits',   icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h8a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm1 3v1.5h6V4H5zm0 3v1.5h6V7H5zm0 3v1.5h4V10H5z"/></svg> },
+  { label:'Tasks',     href:'/dashboard/tasks',     icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h2v2H2zm4 0h8v2H6zM2 7h2v2H2zm4 0h8v2H6zM2 11h2v2H2zm4 0h8v2H6z"/></svg> },
+  { label:'Documents', href:'/dashboard/documents', icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h6l3 3v10a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm5 1v3h3M5 8h6v1.2H5zm0 3h6v1.2H5z"/></svg> },
   { label:'Team',      href:'/dashboard/crew',       icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/><circle cx="12" cy="5" r="2"/><path d="M10.5 13c0-1.66.9-3.12 2.25-3.9"/></svg> },
   { label:'Schedule',  href:'/dashboard/schedule',   icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h1v1h8V2h1v1h1a1 1 0 011 1v9a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1h1V2zm-1 4v7h12V6H2zm2 2h2v2H4V8z"/></svg> },
   { label:'Reports',   href:'/dashboard/reports',    icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 14h12v1H2zM3 8h2v5H3zm4-4h2v9H7zm4 2h2v7h-2z"/></svg> },
@@ -22,15 +23,8 @@ const navItems = [
 
 export default function Sidebar({ userId, className = '', onNavigate }: { userId: string; className?: string; onNavigate?: () => void }) {
   const pathname = usePathname()
-  const { term, plural } = useNiche()
   const [jobs, setJobs] = useState<Job[]>([])
   const supabase = createClient()
-
-  const labelFor: Record<string, string> = {
-    '/dashboard/jobs': plural(term.project),
-    '/dashboard/crew': term.team,
-    '/dashboard/schedule': term.schedule,
-  }
 
   useEffect(() => {
     supabase.from('jobs').select('id,name,color').eq('owner_id', userId).eq('is_archived', false).order('created_at').limit(100).then(({ data }) => { if (data) setJobs(data as Job[]) })
@@ -45,11 +39,11 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
 
   return (
     <div className={`bn-sidebar ${className}`} style={{ width:220, flexShrink:0, background:C.bg, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
-      {/* Logo */}
+      {/* Logo — place your logo file at public/logo.png */}
       <div className="bn-logo-row" style={{ padding:'15px 18px', borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', gap:10 }}>
-        {/* Replace this div with your logo: <img src="/logo.svg" width="28" height="28" alt="Bionova" /> */}
-        <div style={{ width:28, height:28, borderRadius:6, background:C.elevated, border:`1px dashed ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, color:C.dim, fontWeight:600, letterSpacing:'0.04em', flexShrink:0 }}>LOGO</div>
-        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Bionova</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" width={28} height={28} alt="Orbit" style={{ borderRadius:6, flexShrink:0, objectFit:'contain' }} />
+        <span className="bn-label" style={{ fontWeight:700, fontSize:15, letterSpacing:'-0.02em', color:C.text }}>Orbit</span>
         <span className="bn-label" style={{ marginLeft:'auto', fontSize:10, color:C.muted, background:C.elevated, padding:'2px 6px', borderRadius:4, border:`1px solid ${C.border}` }}>Beta</span>
       </div>
 
@@ -58,16 +52,15 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
         <div className="bn-label" style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Workspace</div>
         {navItems.map(item => {
           const active = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)
-          const label = labelFor[item.href] || item.label
           return (
-            <Link key={item.href} href={item.href} onClick={onNavigate} title={label} className="bn-nav-item" style={{
+            <Link key={item.href} href={item.href} onClick={onNavigate} title={item.label} className="bn-nav-item" style={{
               display:'flex', alignItems:'center', gap:9, padding:'6px 8px', borderRadius:6,
               fontSize:13, fontWeight:500, marginBottom:1, transition:'all 0.1s',
               color: active ? C.text : C.muted,
               background: active ? C.elevated : 'transparent',
             }}>
               <span style={{ display:'flex', color: active ? accent.base : C.muted }}>{item.icon}</span>
-              <span className="bn-label">{label}</span>
+              <span className="bn-label">{item.label}</span>
               {active && <span className="bn-active-dot" style={{ marginLeft:'auto', width:6, height:6, borderRadius:'50%', background:accent.base, flexShrink:0 }} />}
             </Link>
           )
@@ -76,7 +69,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
 
       {/* Active projects */}
       <div style={{ padding:'8px 10px', flex:1, overflowY:'auto' }}>
-        <div className="bn-label" style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active {plural(term.project)}</div>
+        <div className="bn-label" style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'0 8px', marginBottom:6 }}>Active Projects</div>
         {jobs.map(j => (
           <Link key={j.id} href={`/dashboard/jobs?job=${j.id}`} onClick={onNavigate} title={j.name} className="bn-nav-item" style={{
             display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:6,
@@ -90,7 +83,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
             <span className="bn-label" style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{j.name}</span>
           </Link>
         ))}
-        {jobs.length === 0 && <div className="bn-label" style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No {plural(term.project.toLowerCase())} yet</div>}
+        {jobs.length === 0 && <div className="bn-label" style={{ fontSize:11, color:C.dim, padding:'4px 8px' }}>No projects yet</div>}
       </div>
 
       {/* User */}

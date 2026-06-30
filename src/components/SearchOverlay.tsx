@@ -4,24 +4,23 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Icons } from './EmptyState'
 
-const C = { bg:'rgba(0,0,0,0.7)', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
+const C = { bg:'rgba(0,0,0,0.7)', bgCard:'#12141A', bgElevated:'#181B22', bgHover:'#1E222B', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
 const RECENT_KEY = 'bn:recent-searches'
 
-type Result = { id: string; label: string; sub?: string; type: 'project' | 'task' | 'permit' | 'document'; href: string }
+type Result = { id: string; label: string; sub?: string; type: 'project' | 'task' | 'document'; href: string }
 
 function Highlight({ text, q }: { text: string; q: string }) {
   if (!q) return <>{text}</>
   const i = text.toLowerCase().indexOf(q.toLowerCase())
   if (i < 0) return <>{text}</>
   return (
-    <>{text.slice(0, i)}<span style={{ background:'rgba(242,242,242,0.16)', color:'#fff', borderRadius:2 }}>{text.slice(i, i + q.length)}</span>{text.slice(i + q.length)}</>
+    <>{text.slice(0, i)}<span style={{ background:'rgba(77,127,255,0.16)', color:'#fff', borderRadius:2 }}>{text.slice(i, i + q.length)}</span>{text.slice(i + q.length)}</>
   )
 }
 
 const TYPE_META: Record<Result['type'], { icon: ReactNode; label: string }> = {
   project: { icon: Icons.project, label: 'Projects' },
   task: { icon: Icons.task, label: 'Tasks' },
-  permit: { icon: Icons.permit, label: 'Permits' },
   document: { icon: Icons.doc, label: 'Documents' },
 }
 
@@ -59,15 +58,13 @@ export default function SearchOverlay({ userId, open, onClose }: { userId: strin
     Promise.all([
       supabase.from('jobs').select('id,name').eq('owner_id', userId).ilike('name', like).limit(6),
       supabase.from('tasks').select('id,title,job_id').eq('owner_id', userId).ilike('title', like).limit(6),
-      supabase.from('permits').select('id,permit_number,type').eq('owner_id', userId).ilike('permit_number', like).limit(6),
-      supabase.from('documents').select('id,file_name,project_id').eq('owner_id', userId).ilike('file_name', like).limit(6),
-    ]).then(([jobs, tasks, permits, docs]) => {
+      supabase.from('documents').select('id,doc_number,type').eq('owner_id', userId).ilike('doc_number', like).limit(8),
+    ]).then(([jobs, tasks, docs]) => {
       if (cancelled) return
       const out: Result[] = []
       ;(jobs.data || []).forEach((j: { id: string; name: string }) => out.push({ id: j.id, label: j.name, type: 'project', href: `/dashboard/jobs?job=${j.id}` }))
       ;(tasks.data || []).forEach((t: { id: string; title: string; job_id: string }) => out.push({ id: t.id, label: t.title, type: 'task', href: `/dashboard/jobs?job=${t.job_id}` }))
-      ;(permits.data || []).forEach((p: { id: string; permit_number: string; type: string }) => out.push({ id: p.id, label: p.permit_number, sub: p.type, type: 'permit', href: `/dashboard/permits` }))
-      ;(docs.data || []).forEach((d: { id: string; file_name: string; project_id: string }) => out.push({ id: d.id, label: d.file_name, type: 'document', href: `/dashboard/jobs?job=${d.project_id}&tab=documents` }))
+      ;(docs.data || []).forEach((d: { id: string; doc_number: string; type: string }) => out.push({ id: d.id, label: d.doc_number, sub: d.type, type: 'document', href: `/dashboard/documents` }))
       setResults(out)
       setLoading(false)
     })
@@ -94,7 +91,7 @@ export default function SearchOverlay({ userId, open, onClose }: { userId: strin
       <div onMouseDown={e => e.stopPropagation()} style={{ width:600, maxWidth:'100%', background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:14, overflow:'hidden', boxShadow:'0 24px 60px rgba(0,0,0,0.6)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10, padding:'14px 16px', borderBottom:`1px solid ${C.borderSubtle}` }}>
           <span style={{ color:C.muted, display:'flex' }}>{Icons.search}</span>
-          <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Search projects, tasks, permits, documents…" style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:15, color:C.text, fontFamily:'inherit' }} />
+          <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Search projects, tasks, documents…" style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:15, color:C.text, fontFamily:'inherit' }} />
           <kbd style={{ fontSize:11, color:C.muted, border:`1px solid ${C.border}`, borderRadius:5, padding:'2px 6px' }}>Esc</kbd>
         </div>
 
@@ -116,7 +113,7 @@ export default function SearchOverlay({ userId, open, onClose }: { userId: strin
               <div style={{ fontSize:12, color:C.muted, marginTop:3 }}>Try a different name or number.</div>
             </div>
           ) : (
-            (['project', 'task', 'permit', 'document'] as const).filter(t => grouped[t]?.length).map(type => (
+            (['project', 'task', 'document'] as const).filter(t => grouped[t]?.length).map(type => (
               <div key={type}>
                 <div style={{ display:'flex', alignItems:'center', gap:7, fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, padding:'10px 18px 4px' }}>
                   <span style={{ display:'flex', width:13, height:13 }}>{TYPE_META[type].icon}</span>{TYPE_META[type].label}

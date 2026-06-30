@@ -6,18 +6,18 @@ import CreateProvider, { useCreate } from './CreateProvider'
 import { NicheProvider, useNiche } from './NicheProvider'
 import NotificationBell from './NotificationBell'
 import SearchOverlay from './SearchOverlay'
-import ShortcutsHelp from './ShortcutsHelp'
 import { accent } from './ui'
 import type { ModuleConfig } from '@/config/modules'
 import { plural } from '@/config/modules'
 
-const C = { bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
+const C = { bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
 
-type Action = { label: string; kind: 'project' | 'task' | 'permit' | 'member' }
+type Action = { label: string; kind: 'project' | 'task' | 'document' | 'member' }
 function routeMeta(path: string, term: ModuleConfig['terminology']): { crumb: string; action?: Action } {
   if (path === '/dashboard') return { crumb: 'Dashboard', action: { label: `New ${term.project}`, kind: 'project' } }
   if (path.startsWith('/dashboard/jobs')) return { crumb: plural(term.project), action: { label: `New ${term.task}`, kind: 'task' } }
-  if (path.startsWith('/dashboard/permits')) return { crumb: 'Permits', action: { label: 'New Permit', kind: 'permit' } }
+  if (path.startsWith('/dashboard/tasks')) return { crumb: plural(term.task), action: { label: `New ${term.task}`, kind: 'task' } }
+  if (path.startsWith('/dashboard/documents')) return { crumb: 'Documents', action: { label: 'New Document', kind: 'document' } }
   if (path.startsWith('/dashboard/crew')) return { crumb: term.team, action: { label: 'Add Member', kind: 'member' } }
   if (path.startsWith('/dashboard/schedule')) return { crumb: term.schedule, action: { label: `New ${term.task}`, kind: 'task' } }
   if (path.startsWith('/dashboard/reports')) return { crumb: 'Reports' }
@@ -33,18 +33,18 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
   function runAction(kind: Action['kind']) {
     if (kind === 'project') create.newProject()
     else if (kind === 'task') create.newTask()
-    else if (kind === 'permit') create.newPermit()
+    else if (kind === 'document') create.newDocument()
     else if (kind === 'member') create.newMember()
   }
 
   return (
-    <div style={{ height:46, borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', padding:'0 16px', background:'#0F0F0F', flexShrink:0, justifyContent:'space-between', gap:10 }}>
+    <div style={{ height:46, borderBottom:`1px solid ${C.borderSubtle}`, display:'flex', alignItems:'center', padding:'0 16px', background:'#12141A', flexShrink:0, justifyContent:'space-between', gap:10 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
         <button className="bn-menu-btn" aria-label="Toggle menu" onClick={onMenu} style={{ background:C.bgElevated, border:`1px solid ${C.border}`, color:C.sub, borderRadius:6, width:30, height:26, padding:0 }}>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12V12H2z"/></svg>
         </button>
         <div style={{ fontSize:13, display:'flex', alignItems:'center', gap:7, overflow:'hidden' }}>
-          <span style={{ color:C.muted }}>BioNova</span>
+          <span style={{ color:C.muted }}>Orbit</span>
           <span style={{ color:C.muted }}>/</span>
           <span style={{ color:C.text, fontWeight:600, whiteSpace:'nowrap' }}>{meta.crumb}</span>
         </div>
@@ -74,9 +74,7 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
 function Chrome({ userId, children }: { userId: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [helpOpen, setHelpOpen] = useState(false)
   const create = useCreate()
-  const pathname = usePathname() || ''
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -84,16 +82,14 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
       const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(v => !v); return }
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.key === '?') { e.preventDefault(); setHelpOpen(v => !v); return }
-      if (e.key === 'n' || e.key === 'N') { if (pathname.startsWith('/dashboard/jobs')) { e.preventDefault(); create.newTask() } }
-      if (e.key === 'p' || e.key === 'P') { if (pathname === '/dashboard' || pathname.startsWith('/dashboard/jobs')) { e.preventDefault(); create.newProject() } }
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); create.newTask() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [pathname, create])
+  }, [create])
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#080808' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0A0B0D' }}>
       <Topbar userId={userId} onMenu={() => setOpen(v => !v)} onOpenSearch={() => setSearchOpen(true)} />
       <div style={{ flex:1, display:'flex', overflow:'hidden', position:'relative' }}>
         <div className={`bn-sidebar-backdrop ${open ? 'bn-open' : ''}`} onClick={() => setOpen(false)} />
@@ -101,14 +97,13 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
         <main style={{ flex:1, display:'flex', overflow:'hidden' }}>{children}</main>
       </div>
       <SearchOverlay userId={userId} open={searchOpen} onClose={() => setSearchOpen(false)} />
-      {helpOpen && <ShortcutsHelp onClose={() => setHelpOpen(false)} />}
     </div>
   )
 }
 
-export default function DashboardShell({ userId, niche, children }: { userId: string; niche: string; children: React.ReactNode }) {
+export default function DashboardShell({ userId, children }: { userId: string; children: React.ReactNode }) {
   return (
-    <NicheProvider niche={niche}>
+    <NicheProvider>
       <CreateProvider userId={userId}>
         <Chrome userId={userId}>{children}</Chrome>
       </CreateProvider>

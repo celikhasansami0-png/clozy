@@ -6,7 +6,7 @@ import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
 import type { CrewMember, Task, Job } from '@/lib/types'
 
-const C = { bgCard:'#0F0F0F', bgElevated:'#161616', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
+const C = { bgCard:'#12141A', bgElevated:'#181B22', border:'#262A35', borderSubtle:'#1A1D24', text:'#F5F6F7', sub:'#9CA3AF', muted:'#5C6470', dim:'#2E3340' }
 
 export default function CrewView({ crew: initialCrew, tasks, jobs }: { crew:CrewMember[], tasks:Task[], jobs:Job[] }) {
   const create = useCreate()
