@@ -5,6 +5,7 @@ import Modal from '../Modal'
 import { Field, TextInput, TextArea, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
+import { sendEmail } from '@/lib/email'
 import { useNiche } from '../NicheProvider'
 import type { Job, Permit, PermitStatus } from '@/lib/types'
 
@@ -12,8 +13,8 @@ const STATUS: PermitStatus[] = ['Pending', 'Under Review', 'Approved', 'Rejected
 
 export default function PermitForm({ userId, onClose }: { userId: string; onClose: () => void }) {
   const supabase = createClient()
-  const { module } = useNiche()
-  const TYPES = module.permitTypes
+  const { module: mod } = useNiche()
+  const TYPES = mod.permitTypes
   const [jobs, setJobs] = useState<Pick<Job, 'id' | 'name'>[]>([])
   const [number, setNumber] = useState('')
   const [numberErr, setNumberErr] = useState(false)
@@ -49,6 +50,9 @@ export default function PermitForm({ userId, onClose }: { userId: string; onClos
       emit<ReplacePayload<Permit>>(evt.replace('permit'), { tempId, row })
       logActivity(supabase, { projectId: project, ownerId: userId, action: 'permit_added', entityType: 'permit', entityId: row.id, metadata: { name: `${row.permit_number} (${row.status})`, actor: 'You' } })
       notify(supabase, userId, { title: 'Permit added', body: `${row.permit_number} — ${row.type} (${row.status})`, type: 'permit', link: '/dashboard/permits' })
+      if (row.status === 'Approved' || row.status === 'Rejected') {
+        sendEmail(supabase, userId, 'permit_status', { permitNumber: row.permit_number, projectName: job?.name || '', status: row.status, link: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard/permits` })
+      }
     }
   }
 

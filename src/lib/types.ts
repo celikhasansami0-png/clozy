@@ -12,6 +12,9 @@ export interface Job {
   completion: number
   owner_id: string
   created_at: string
+  niche?: string
+  metadata?: Record<string, string | number>
+  is_archived?: boolean
 }
 
 export interface Task {

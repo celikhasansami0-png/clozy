@@ -9,7 +9,8 @@ export default async function PermitsPage() {
     .from('permits')
     .select('*, job:jobs(*)')
     .eq('owner_id', user!.id)
-    .order('created_at')
+    .order('created_at', { ascending: false })
+    .limit(200)
 
   return <PermitsView permits={permits||[]} />
 }

@@ -6,9 +6,9 @@ export default async function JobsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const [{ data: jobs }, { data: tasks }, { data: crew }, { data: profile }] = await Promise.all([
-    supabase.from('jobs').select('*').eq('owner_id', user!.id).order('created_at'),
-    supabase.from('tasks').select('*, assignee:crew_members(*)').eq('owner_id', user!.id).order('created_at'),
-    supabase.from('crew_members').select('*').eq('owner_id', user!.id).order('name'),
+    supabase.from('jobs').select('*').eq('owner_id', user!.id).order('created_at').limit(100),
+    supabase.from('tasks').select('*, assignee:crew_members(*)').eq('owner_id', user!.id).order('created_at').limit(500),
+    supabase.from('crew_members').select('*').eq('owner_id', user!.id).order('name').limit(100),
     supabase.from('profiles').select('full_name').eq('id', user!.id).single(),
   ])
 

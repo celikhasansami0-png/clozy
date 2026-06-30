@@ -6,11 +6,13 @@ import { createClient } from '@/lib/supabase'
 import { suggestAssignee } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
 import { useNiche } from './NicheProvider'
+import { getProjectFields } from '@/config/modules'
 import { logActivity, notify } from '@/lib/log'
-import { useBus, evt, type ReplacePayload } from '@/lib/bus'
+import { useBus, emit, evt, type ReplacePayload } from '@/lib/bus'
 import DocumentsPanel from './DocumentsPanel'
 import ActivityFeed from './ActivityFeed'
 import EmptyState, { Icons } from './EmptyState'
+import DeleteProjectModal from './DeleteProjectModal'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#080808', bgCard:'#0F0F0F', bgElevated:'#161616', bgHover:'#1C1C1C', border:'#262626', borderSubtle:'#181818', text:'#F2F2F2', sub:'#A0A0A0', muted:'#606060', dim:'#303030' }
@@ -20,7 +22,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const router = useRouter()
   const supabase = createClient()
   const create = useCreate()
-  const { term, plural } = useNiche()
+  const { term, plural, niche } = useNiche()
 
   const [jobs, setJobs] = useState(initialJobs)
   const [tasks, setTasks] = useState(initialTasks)
@@ -31,6 +33,12 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiNote, setAiNote] = useState('')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [focusIdx, setFocusIdx] = useState(-1)
+  const [showArchived, setShowArchived] = useState(false)
+  const [menuJobId, setMenuJobId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Job | null>(null)
 
   // Realtime: keep tasks in sync across sessions (requires the `tasks` table in
   // the Supabase realtime publication).
@@ -48,6 +56,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Optimistic updates via the in-app event bus.
@@ -64,6 +73,20 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const filtered = jobTasks.filter(t => filter === 'all' || t.status === filter)
   const activeTask = activeTaskId ? jobTasks.find(t => t.id === activeTaskId) : null
 
+  // J/K to move through the task list, Enter to open detail (Linear-style).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (activeTab !== 'tasks') return
+      const el = e.target as HTMLElement
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
+      if (e.key === 'j' || e.key === 'J') { e.preventDefault(); setFocusIdx(i => Math.min(filtered.length - 1, i + 1)) }
+      else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); setFocusIdx(i => Math.max(0, (i < 0 ? 0 : i - 1))) }
+      else if (e.key === 'Enter') { const t = filtered[focusIdx]; if (t) setActiveTaskId(t.id) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [activeTab, filtered, focusIdx])
+
   async function updateTaskStatus(taskId: string, status: string) {
     const t = tasks.find(x => x.id === taskId)
     setTasks(prev => prev.map(x => x.id === taskId ? { ...x, status: status as Task['status'] } : x))
@@ -78,6 +101,52 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
         }
       }
     }
+  }
+
+  // ── Bulk actions ──
+  function toggleSel(id: string) { setSelected(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n }) }
+  function clearSel() { setSelected(new Set()); setBulkDeleteConfirm(false) }
+  async function bulkUpdate(patch: Partial<Task>) {
+    const ids = Array.from(selected)
+    setTasks(prev => prev.map(t => ids.includes(t.id) ? { ...t, ...patch } : t))
+    await supabase.from('tasks').update(patch).in('id', ids)
+    clearSel()
+  }
+  async function bulkDelete() {
+    const ids = Array.from(selected)
+    setTasks(prev => prev.filter(t => !ids.includes(t.id)))
+    await supabase.from('tasks').delete().in('id', ids)
+    clearSel()
+  }
+
+  // ── Project actions (duplicate / archive / delete) ──
+  async function duplicateProject(j: Job) {
+    setMenuJobId(null)
+    const { data: np } = await supabase.from('jobs').insert({ owner_id: ownerId, niche: j.niche || niche, name: `${j.name} copy`, color: j.color, status: 'In Progress', phase: j.phase, completion: 0, metadata: j.metadata || {} }).select('*').single()
+    if (!np) return
+    const newJob = np as Job
+    setJobs(prev => prev.some(x => x.id === newJob.id) ? prev : [...prev, newJob])
+    emit(evt.add('project'), newJob)
+    const src = tasks.filter(t => t.job_id === j.id)
+    if (src.length) {
+      const copies = src.map(t => ({ job_id: newJob.id, owner_id: ownerId, title: t.title, status: 'todo', priority: t.priority, assignee_id: null, due_date: t.due_date, tag: t.tag }))
+      const { data: nt } = await supabase.from('tasks').insert(copies).select('*, assignee:crew_members(*)')
+      if (nt) setTasks(prev => [...prev, ...(nt as Task[])])
+    }
+    setActiveJobId(newJob.id)
+  }
+  async function archiveProject(j: Job) {
+    setMenuJobId(null)
+    setJobs(prev => prev.map(x => x.id === j.id ? { ...x, is_archived: true } : x))
+    if (activeJobId === j.id) setActiveJobId(jobs.find(x => x.id !== j.id && !x.is_archived)?.id || '')
+    await supabase.from('jobs').update({ is_archived: true }).eq('id', j.id)
+  }
+  async function confirmDeleteProject(j: Job) {
+    setDeleteTarget(null)
+    setJobs(prev => prev.filter(x => x.id !== j.id))
+    emit(evt.remove('project'), j.id)
+    if (activeJobId === j.id) setActiveJobId(jobs.find(x => x.id !== j.id)?.id || '')
+    await supabase.from('jobs').delete().eq('id', j.id)
   }
 
   async function handleAI(e: React.FormEvent) {
@@ -125,19 +194,34 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
     <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
       {/* Project list */}
       <div style={{ width:255, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-        <div style={{ padding:'16px 14px', borderBottom:`1px solid ${C.borderSubtle}` }}>
-          <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>All {plural(term.project)}</div>
-          {jobs.map(j => (
+        <div style={{ padding:'16px 14px', flex:1, overflowY:'auto' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:C.dim, textTransform:'uppercase', letterSpacing:'0.08em' }}>{showArchived ? 'Archived' : 'All'} {plural(term.project)}</div>
+            <button onClick={()=>setShowArchived(v=>!v)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:5, padding:'2px 8px', fontSize:10, fontFamily:'inherit', cursor:'pointer' }}>{showArchived ? 'Active' : 'Archived'}</button>
+          </div>
+          {jobs.filter(j => showArchived ? j.is_archived : !j.is_archived).map(j => (
             <div key={j.id} onClick={()=>{ setActiveJobId(j.id); setActiveTaskId(null); router.replace(`/dashboard/jobs?job=${j.id}`) }}
-              style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:7, cursor:'pointer', marginBottom:2, background:activeJobId===j.id?C.bgElevated:'transparent', border:`1px solid ${activeJobId===j.id?C.border:'transparent'}`, transition:'all 0.1s' }}>
+              style={{ position:'relative', display:'flex', alignItems:'center', gap:6, padding:'8px 10px', borderRadius:7, cursor:'pointer', marginBottom:2, background:activeJobId===j.id?C.bgElevated:'transparent', border:`1px solid ${activeJobId===j.id?C.border:'transparent'}`, transition:'all 0.1s' }}>
               <div style={{ flex:1, overflow:'hidden' }}>
                 <div style={{ fontSize:13, fontWeight:500, color:C.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{j.name}</div>
                 <div style={{ fontSize:10, color:C.muted, marginTop:1 }}>{tasks.filter(t=>t.job_id===j.id&&t.status!=='done').length} open · {j.completion}%</div>
               </div>
+              <button onClick={e=>{ e.stopPropagation(); setMenuJobId(menuJobId===j.id?null:j.id) }} aria-label="Project actions" style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', padding:'2px 4px', fontSize:15, lineHeight:1, flexShrink:0 }}>⋯</button>
+              {menuJobId === j.id && (
+                <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', top:34, right:6, zIndex:10, width:170, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:8, boxShadow:'0 8px 24px rgba(0,0,0,0.5)', overflow:'hidden' }}>
+                  {[['Duplicate', ()=>duplicateProject(j)], ['Archive', ()=>archiveProject(j)], ['Delete', ()=>{ setMenuJobId(null); setDeleteTarget(j) }]].map(([label, fn]) => (
+                    <button key={label as string} onClick={fn as () => void} style={{ width:'100%', textAlign:'left', background:'none', border:'none', padding:'9px 14px', fontSize:13, color: label==='Delete'?'#f87171':C.text, fontFamily:'inherit', cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background=C.bgElevated} onMouseLeave={e=>e.currentTarget.style.background='none'}>{label as string} {label!=='Delete' ? term.project.toLowerCase() : ''}</button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
+          {jobs.filter(j => showArchived ? j.is_archived : !j.is_archived).length === 0 && (
+            <div style={{ fontSize:12, color:C.dim, padding:'8px 10px' }}>No {showArchived ? 'archived' : 'active'} {plural(term.project.toLowerCase())}.</div>
+          )}
         </div>
       </div>
+      {menuJobId && <div onClick={()=>setMenuJobId(null)} style={{ position:'fixed', inset:0, zIndex:5 }} />}
 
       {/* Task list */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
@@ -148,6 +232,23 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
           </div>
           <div style={{ fontSize:12, color:C.muted, marginBottom:10 }}>Phase: {job.phase} · {job.completion}% complete</div>
           <ProgressBar value={job.completion} />
+          {(() => {
+            const fields = getProjectFields(job.niche || niche).filter(f => job.metadata && job.metadata[f.key] !== undefined && job.metadata[f.key] !== '')
+            if (fields.length === 0) return null
+            return (
+              <div style={{ marginTop:12, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px' }}>
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.08em', color:C.dim, fontWeight:600, marginBottom:8 }}>{term.project} Details</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px 22px' }}>
+                  {fields.map(f => (
+                    <div key={f.key}>
+                      <div style={{ fontSize:11, color:C.muted }}>{f.label}</div>
+                      <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{String(job.metadata![f.key])}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Project-level tabs */}
@@ -170,15 +271,24 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
           ))}
         </div>
 
+        {filtered.length > 0 && (
+          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 20px', borderBottom:`1px solid ${C.borderSubtle}` }}>
+            <input type="checkbox" checked={selected.size > 0 && filtered.every(t => selected.has(t.id))} onChange={e => setSelected(e.target.checked ? new Set(filtered.map(t => t.id)) : new Set())} style={{ accentColor:'#F2F2F2', cursor:'pointer' }} />
+            <span style={{ fontSize:11, color:C.muted }}>{selected.size > 0 ? `${selected.size} selected` : 'Select all'}</span>
+          </div>
+        )}
         <div style={{ flex:1, overflowY:'auto', padding:'6px 0' }}>
-          {filtered.map(t => {
+          {filtered.map((t, idx) => {
             const assignee = crew.find(c => c.id === t.assignee_id)
+            const focused = idx === focusIdx
+            const checked = selected.has(t.id)
             return (
               <div key={t.id} onClick={()=>setActiveTaskId(activeTaskId===t.id?null:t.id)}
-                style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'10px 20px', cursor:'pointer', transition:'background 0.1s', background:activeTaskId===t.id?C.bgElevated:'transparent', borderBottom:`1px solid ${C.borderSubtle}` }}
-                onMouseEnter={e=>{ if(activeTaskId!==t.id)e.currentTarget.style.background=C.bgHover }}
-                onMouseLeave={e=>{ if(activeTaskId!==t.id)e.currentTarget.style.background='transparent' }}
+                style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'10px 20px', cursor:'pointer', transition:'background 0.1s', background: checked||activeTaskId===t.id?C.bgElevated: focused?C.bgHover:'transparent', borderBottom:`1px solid ${C.borderSubtle}`, boxShadow: focused?`inset 2px 0 0 ${C.sub}`:'none' }}
+                onMouseEnter={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background=C.bgHover }}
+                onMouseLeave={e=>{ if(activeTaskId!==t.id && !checked)e.currentTarget.style.background= focused?C.bgHover:'transparent' }}
               >
+                <input type="checkbox" checked={checked} onClick={e=>e.stopPropagation()} onChange={()=>toggleSel(t.id)} style={{ marginTop:3, accentColor:'#F2F2F2', cursor:'pointer', flexShrink:0 }} />
                 <div onClick={e=>{ e.stopPropagation(); const next = t.status==='todo'?'in_progress':t.status==='in_progress'?'done':'todo'; updateTaskStatus(t.id,next) }}>
                   <StatusDot status={t.status} />
                 </div>
@@ -202,6 +312,28 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
             </div>
           )}
         </div>
+
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderTop:`1px solid ${C.border}`, background:C.bgElevated, flexWrap:'wrap' }}>
+            <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{selected.size} selected</span>
+            <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ status:v as Task['status'] }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
+              <option value="__ph" disabled>Status…</option><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="done">Done</option>
+            </select>
+            <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ priority:v as Task['priority'] }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
+              <option value="__ph" disabled>Priority…</option><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option>
+            </select>
+            <select defaultValue="__ph" onChange={e=>{ const v=e.target.value; if(v==='__ph')return; bulkUpdate({ assignee_id: v==='__none'?null:v }); e.target.value='__ph' }} style={{ background:C.bgCard, color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 8px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>
+              <option value="__ph" disabled>Assign…</option><option value="__none">Unassigned</option>{crew.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            {bulkDeleteConfirm ? (
+              <button onClick={bulkDelete} style={{ background:'rgba(248,113,113,0.12)', border:'1px solid rgba(248,113,113,0.4)', color:'#f87171', borderRadius:6, padding:'5px 10px', fontSize:12, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Confirm delete</button>
+            ) : (
+              <button onClick={()=>setBulkDeleteConfirm(true)} style={{ background:'none', border:`1px solid ${C.border}`, color:C.muted, borderRadius:6, padding:'5px 10px', fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Delete</button>
+            )}
+            <button onClick={clearSel} style={{ marginLeft:'auto', background:'none', border:'none', color:C.muted, fontSize:12, fontFamily:'inherit', cursor:'pointer' }}>Clear</button>
+          </div>
+        )}
 
         {/* AI bar */}
         <form onSubmit={handleAI} style={{ padding:'12px 20px', borderTop:`1px solid ${C.borderSubtle}` }}>
@@ -250,6 +382,10 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
             </div>
           </div>
         </div>
+      )}
+
+      {deleteTarget && (
+        <DeleteProjectModal job={deleteTarget} label={term.project} onClose={()=>setDeleteTarget(null)} onConfirm={()=>confirmDeleteProject(deleteTarget)} />
       )}
     </div>
   )

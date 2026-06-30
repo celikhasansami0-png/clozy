@@ -5,6 +5,7 @@ import Modal from '../Modal'
 import { Field, TextInput, Select, SubmitButton } from '../form'
 import { emit, evt, type ReplacePayload } from '@/lib/bus'
 import { logActivity, notify } from '@/lib/log'
+import { sendEmail } from '@/lib/email'
 import { useNiche } from '../NicheProvider'
 import type { Job, Task, TaskStatus, TaskPriority, CrewMember } from '@/lib/types'
 
@@ -16,9 +17,9 @@ function dueSoon(due: string) {
 
 export default function TaskForm({ userId, onClose, jobId, task }: { userId: string; onClose: () => void; jobId?: string; task?: Task }) {
   const supabase = createClient()
-  const { module, term } = useNiche()
+  const { module: mod, term } = useNiche()
   // Tag suggestions from this niche's stages plus a couple of generic tags.
-  const TAGS = [...module.stages, 'Inspection', 'General']
+  const TAGS = [...mod.stages, 'Inspection', 'General']
   const editing = !!task
   const [jobs, setJobs] = useState<Pick<Job, 'id' | 'name'>[]>([])
   const [crew, setCrew] = useState<CrewMember[]>([])
@@ -47,13 +48,18 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
     setLoading(true)
     const payload = { job_id: project, owner_id: userId, title: title.trim(), status, priority, assignee_id: assignee || null, due_date: due || null, tag }
     const assigneeName = crew.find(c => c.id === assignee)?.name
+    const projectName = jobs.find(j => j.id === project)?.name || ''
+    const emailData = { taskTitle: title.trim(), projectName, dueDate: due || '—', link: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard/jobs?job=${project}` }
     if (editing) {
       const updated: Task = { ...task!, ...payload, assignee: crew.find(c => c.id === assignee) }
       emit(evt.update('task'), updated)
       onClose()
       await supabase.from('tasks').update(payload).eq('id', task!.id)
       logActivity(supabase, { projectId: project, ownerId: userId, action: 'task_updated', entityType: 'task', entityId: task!.id, metadata: { name: `"${payload.title}"`, actor: 'You' } })
-      if (assignee && assignee !== task!.assignee_id) notify(supabase, userId, { title: `${term.task} assigned`, body: `"${payload.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
+      if (assignee && assignee !== task!.assignee_id) {
+        notify(supabase, userId, { title: `${term.task} assigned`, body: `"${payload.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
+        sendEmail(supabase, userId, 'task_assigned', emailData)
+      }
     } else {
       const tempId = 'temp-' + crypto.randomUUID()
       const optimistic: Task = { id: tempId, ...payload, created_at: new Date().toISOString(), assignee: crew.find(c => c.id === assignee) }
@@ -64,7 +70,10 @@ export default function TaskForm({ userId, onClose, jobId, task }: { userId: str
       const row = data as Task
       emit<ReplacePayload<Task>>(evt.replace('task'), { tempId, row })
       logActivity(supabase, { projectId: project, ownerId: userId, action: 'task_created', entityType: 'task', entityId: row.id, metadata: { name: `"${row.title}"`, actor: 'You' } })
-      if (assignee) notify(supabase, userId, { title: `${term.task} assigned`, body: `"${row.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
+      if (assignee) {
+        notify(supabase, userId, { title: `${term.task} assigned`, body: `"${row.title}" → ${assigneeName}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
+        sendEmail(supabase, userId, 'task_assigned', emailData)
+      }
       if (due && dueSoon(due)) notify(supabase, userId, { title: `${term.task} due soon`, body: `"${row.title}" is due ${due}`, type: 'task', link: `/dashboard/jobs?job=${project}` })
     }
   }

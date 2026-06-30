@@ -33,7 +33,7 @@ export default function Sidebar({ userId, className = '', onNavigate }: { userId
   }
 
   useEffect(() => {
-    supabase.from('jobs').select('id,name,color').eq('owner_id', userId).order('created_at').then(({ data }) => { if (data) setJobs(data as Job[]) })
+    supabase.from('jobs').select('id,name,color').eq('owner_id', userId).eq('is_archived', false).order('created_at').limit(100).then(({ data }) => { if (data) setJobs(data as Job[]) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 

@@ -6,8 +6,8 @@ type NicheCtx = { niche: string; module: ModuleConfig; term: ModuleConfig['termi
 const Ctx = createContext<NicheCtx>({ niche: 'solar_epc', module: getModule('solar_epc'), term: getModule('solar_epc').terminology, plural })
 
 export function NicheProvider({ niche, children }: { niche: string; children: React.ReactNode }) {
-  const module = getModule(niche)
-  return <Ctx.Provider value={{ niche, module, term: module.terminology, plural }}>{children}</Ctx.Provider>
+  const mod = getModule(niche)
+  return <Ctx.Provider value={{ niche, module: mod, term: mod.terminology, plural }}>{children}</Ctx.Provider>
 }
 
 export function useNiche() { return useContext(Ctx) }

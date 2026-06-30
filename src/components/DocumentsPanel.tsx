@@ -24,15 +24,18 @@ export default function DocumentsPanel({ projectId, ownerId, uploaderName }: { p
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    supabase.from('documents').select('*').eq('project_id', projectId).order('created_at', { ascending: false })
+    supabase.from('documents').select('*').eq('project_id', projectId).order('created_at', { ascending: false }).limit(100)
       .then(({ data }) => { if (data) setDocs(data as DocumentRow[]) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
+
+  const MAX_BYTES = 25 * 1024 * 1024 // 25 MB
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
     setError(''); setUploading(true)
     for (const file of Array.from(files)) {
+      if (file.size > MAX_BYTES) { setError(`${file.name} is larger than 25 MB and was skipped.`); continue }
       const path = `${projectId}/${crypto.randomUUID()}-${file.name}`
       const { error: upErr } = await supabase.storage.from('project-documents').upload(path, file, { upsert: false })
       if (upErr) { setError(upErr.message); continue }

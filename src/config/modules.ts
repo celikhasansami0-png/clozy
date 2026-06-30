@@ -87,6 +87,22 @@ export const MODULES = {
 
 export type NicheKey = keyof typeof MODULES
 
+// Niche-specific metadata fields shown on project creation, saved into jobs.metadata.
+export interface ProjectField { key: string; label: string; type: 'number' | 'text' }
+export const NICHE_PROJECT_FIELDS: Record<NicheKey, ProjectField[]> = {
+  solar_epc: [{ key: 'mw_capacity', label: 'MW Capacity', type: 'number' }, { key: 'panel_count', label: 'Panel Count', type: 'number' }],
+  bess: [{ key: 'mwh_capacity', label: 'MWh Capacity', type: 'number' }, { key: 'cycle_target', label: 'Cycle Target', type: 'number' }],
+  ev_charging: [{ key: 'charger_count', label: 'Charger Count', type: 'number' }, { key: 'total_kw', label: 'Total kW', type: 'number' }],
+  wind: [{ key: 'mw_capacity', label: 'MW Capacity', type: 'number' }, { key: 'turbine_count', label: 'Turbine Count', type: 'number' }],
+  hydro: [{ key: 'mw_capacity', label: 'MW Capacity', type: 'number' }, { key: 'flow_rate', label: 'Flow Rate', type: 'number' }],
+  biogas: [{ key: 'mw_capacity', label: 'MW Capacity', type: 'number' }, { key: 'feedstock_volume', label: 'Feedstock Volume', type: 'number' }],
+  om: [{ key: 'asset_type', label: 'Asset Type', type: 'text' }],
+  consulting: [{ key: 'client_industry', label: 'Client Industry', type: 'text' }],
+}
+export function getProjectFields(niche: string): ProjectField[] {
+  return NICHE_PROJECT_FIELDS[niche as NicheKey] ?? []
+}
+
 export const NICHE_KEYS = Object.keys(MODULES) as NicheKey[]
 
 // Onboarding display order (Task 2).

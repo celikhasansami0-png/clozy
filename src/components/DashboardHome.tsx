@@ -66,13 +66,14 @@ export default function DashboardHome({ jobs, tasks, permits, crew }: { jobs:Job
     )
   }
 
-  function UrgentWidget({ openMode }: { openMode: boolean }) {
+  function UrgentWidget({ mode, title }: { mode: 'risk' | 'open'; title: string }) {
+    const openMode = mode === 'open'
     const items = openMode
       ? tasks.filter(t => t.status !== 'done').slice(0, 6).map(t => ({ task: t, daysLeft: undefined as number | undefined }))
       : risks
     return (
-      <div key="urgent">
-        <Title>{openMode ? `Open ${taskWord}` : `Urgent ${taskWord}`}</Title>
+      <div key={title}>
+        <Title>{title} <span style={{ color:C.muted }}>· {items.length}</span></Title>
         <Card>
           {items.length === 0 && <div style={{ padding:'20px 18px', fontSize:13, color:C.muted }}>All clear — nothing pressing.</div>}
           {items.map((r, i) => {
@@ -119,21 +120,43 @@ export default function DashboardHome({ jobs, tasks, permits, crew }: { jobs:Job
   }
 
   function TeamWidget() {
+    const loadOf = (id: string) => tasks.filter(t => t.assignee_id === id && t.status !== 'done').length
+    const available = crew.filter(c => loadOf(c.id) === 0).length
+    const busy = crew.filter(c => loadOf(c.id) > 3).length
     return (
       <div key="team">
         <Title>{term.team} availability</Title>
         <Card>
-          {crew.length === 0 && <div style={{ padding:'20px 18px', fontSize:13, color:C.muted }}>No {term.team.toLowerCase()} yet.</div>}
-          {crew.map((c, i) => {
-            const load = tasks.filter(t => t.assignee_id === c.id && t.status !== 'done').length
-            return (
-              <div key={c.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'11px 18px', borderBottom:i<crew.length-1?`1px solid ${C.borderSubtle}`:'none' }}>
-                <div style={{ width:26, height:26, borderRadius:'50%', background:C.bgElevated, border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, color:C.sub }}>{c.initials}</div>
-                <div style={{ flex:1 }}><div style={{ fontSize:13, fontWeight:500 }}>{c.name}</div><div style={{ fontSize:11, color:C.muted }}>{c.role}</div></div>
-                <Tag label={load === 0 ? 'Available' : `${load} open`} color={load === 0 ? C.sub : C.muted} />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
+            <div style={{ padding:'18px 20px', borderRight:`1px solid ${C.borderSubtle}` }}>
+              <div style={{ fontSize:28, fontWeight:700, letterSpacing:'-0.03em' }}>{available}</div>
+              <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>Available (no open {taskWord.toLowerCase()})</div>
+            </div>
+            <div style={{ padding:'18px 20px' }}>
+              <div style={{ fontSize:28, fontWeight:700, letterSpacing:'-0.03em', color:C.muted }}>{busy}</div>
+              <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>Busy (4+ open)</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  function ClientHealthWidget() {
+    return (
+      <div key="clientHealth">
+        <Title>Client health</Title>
+        <Card>
+          {jobs.length === 0 && <div style={{ padding:'20px 18px', fontSize:13, color:C.muted }}>No engagements yet.</div>}
+          {jobs.map((j, i) => (
+            <div key={j.id} style={{ padding:'12px 18px', borderBottom:i<jobs.length-1?`1px solid ${C.borderSubtle}`:'none' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6, fontSize:13 }}>
+                <span style={{ fontWeight:500 }}>{j.name}</span>
+                <span style={{ color:C.muted }}>{j.completion}%</span>
               </div>
-            )
-          })}
+              <ProgressBar value={j.completion} />
+            </div>
+          ))}
         </Card>
       </div>
     )
@@ -153,27 +176,28 @@ export default function DashboardHome({ jobs, tasks, permits, crew }: { jobs:Job
       case 'activeProjects': case 'activeSites': case 'activeAssets': case 'activeEngagements':
         return <ProjectsWidget key={key} />
       case 'urgentTasks':
-        return <UrgentWidget key={key} openMode={false} />
-      case 'openWorkOrders': case 'deliverables':
-        return <UrgentWidget key={key} openMode />
+        return <UrgentWidget key={key} mode="risk" title={`Urgent ${taskWord}`} />
+      case 'deliverables':
+        return <UrgentWidget key={key} mode="risk" title="Deliverables" />
+      case 'openWorkOrders':
+        return <UrgentWidget key={key} mode="open" title="Open work orders" />
       case 'permitStatus':
         return <PermitStatusWidget key={key} />
       case 'crewAvailability': case 'teamAvailability':
         return <TeamWidget key={key} />
       case 'uptime': {
-        const uptime = jobs.length ? Math.round(jobs.reduce((s, j) => s + j.completion, 0) / jobs.length) : 0
-        return <MetricWidget key={key} keyName={key} title="Avg. uptime" value={uptime} unit="%" />
+        const maint = tasks.filter(t => t.tag === 'Maintenance')
+        const uptime = maint.length ? Math.round((maint.filter(t => t.status === 'done').length / maint.length) * 100) : 100
+        return <MetricWidget key={key} keyName={key} title="Uptime" value={uptime} unit="%" />
       }
-      case 'clientHealth': {
-        const onTrack = jobs.filter(j => j.status === 'On Track' || j.status === 'Complete').length
-        return <MetricWidget key={key} keyName={key} title="Healthy clients" value={`${onTrack}/${jobs.length}`} />
-      }
+      case 'clientHealth':
+        return <ClientHealthWidget key={key} />
       default:
         return null
     }
   }
 
-  const { module } = useNiche()
+  const { module: mod } = useNiche()
 
   return (
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1 }}>
@@ -192,7 +216,7 @@ export default function DashboardHome({ jobs, tasks, permits, crew }: { jobs:Job
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
-        {module.dashboardWidgets.map(renderWidget)}
+        {mod.dashboardWidgets.map(renderWidget)}
       </div>
     </div>
   )

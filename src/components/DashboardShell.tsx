@@ -6,6 +6,7 @@ import CreateProvider, { useCreate } from './CreateProvider'
 import { NicheProvider, useNiche } from './NicheProvider'
 import NotificationBell from './NotificationBell'
 import SearchOverlay from './SearchOverlay'
+import ShortcutsHelp from './ShortcutsHelp'
 import { accent } from './ui'
 import type { ModuleConfig } from '@/config/modules'
 import { plural } from '@/config/modules'
@@ -73,14 +74,23 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
 function Chrome({ userId, children }: { userId: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const create = useCreate()
+  const pathname = usePathname() || ''
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(v => !v) }
+      const el = e.target as HTMLElement
+      const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(v => !v); return }
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === '?') { e.preventDefault(); setHelpOpen(v => !v); return }
+      if (e.key === 'n' || e.key === 'N') { if (pathname.startsWith('/dashboard/jobs')) { e.preventDefault(); create.newTask() } }
+      if (e.key === 'p' || e.key === 'P') { if (pathname === '/dashboard' || pathname.startsWith('/dashboard/jobs')) { e.preventDefault(); create.newProject() } }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [pathname, create])
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#080808' }}>
@@ -91,6 +101,7 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
         <main style={{ flex:1, display:'flex', overflow:'hidden' }}>{children}</main>
       </div>
       <SearchOverlay userId={userId} open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {helpOpen && <ShortcutsHelp onClose={() => setHelpOpen(false)} />}
     </div>
   )
 }
