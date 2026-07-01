@@ -13,16 +13,26 @@
   --color-accent-hover: #b86a4e;
   --color-accent-soft: #f2e2d8;
   --color-negative: #c2574a;
+  --color-negative-soft: #f5e4e1;
+  --color-positive: #6b8e63;
+  --color-positive-soft: #e7ede1;
 
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 12px;
 
   --shadow-card: 0 1px 3px rgba(31, 30, 28, 0.06);
+
+  --font-sans:
+    var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+  /* Explicit on every element so no browser default (e.g. serif on
+     headings, system-ui on form controls) can slip through. */
+  font-family: var(--font-sans);
 }
 
 html,
@@ -53,7 +63,9 @@ p {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font-family: inherit;
   font-size: inherit;
 }

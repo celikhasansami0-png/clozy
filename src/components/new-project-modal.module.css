@@ -1,0 +1,17 @@
+.colorRow {
+  display: flex;
+  gap: 10px;
+}
+
+.colorDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  padding: 0;
+}
+
+.colorDotSelected {
+  border-color: var(--color-text-primary);
+}

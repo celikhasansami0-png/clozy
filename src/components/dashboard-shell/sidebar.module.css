@@ -1,0 +1,199 @@
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: var(--color-card);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 16px;
+}
+
+.logoPlaceholder {
+  width: 28px;
+  height: 28px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.betaBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-elevated);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  padding: 4px 8px;
+  margin-top: 8px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.navItem:hover {
+  background: var(--color-hover);
+}
+
+.navItemActive {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.navItemActive:hover {
+  background: var(--color-accent-soft);
+}
+
+.projectList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.projectItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectItem:hover {
+  background: var(--color-hover);
+}
+
+.projectDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.emptyProjects {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  padding: 6px 8px;
+}
+
+.footer {
+  position: relative;
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gearButton {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.gearButton:hover {
+  background: var(--color-hover);
+  color: var(--color-text-primary);
+}
+
+.dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(31, 30, 28, 0.12);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+}
+
+.dropdownItem {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: var(--color-hover);
+}
+
+.dropdownItemDanger {
+  color: var(--color-negative);
+}
