@@ -5,16 +5,18 @@ import { Skeleton } from './Skeleton'
 import { riskAlerts, flaggedDocuments } from '@/lib/insights'
 import ExportButton from './ExportButton'
 import GmailSendModal from './GmailSendModal'
+import TimeReportPanel, { type TimeEntry } from './TimeReportPanel'
 import type { Job, Task, Doc } from '@/lib/types'
 
 const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', highBg:'rgba(204,120,92,0.07)', highBorder:'rgba(204,120,92,0.18)' }
 const DAY = 24 * 60 * 60 * 1000
 
-export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], tasks:Task[], documents:Doc[] }) {
+export default function ReportsView({ jobs, tasks, documents, crew = [], timeEntries = [] }: { jobs:Job[], tasks:Task[], documents:Doc[], crew?:{id:string;name:string}[], timeEntries?:TimeEntry[] }) {
   const [summary, setSummary] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [gmailOpen, setGmailOpen] = useState(false)
+  const [tab, setTab] = useState<'overview' | 'time'>('overview')
 
   const done = tasks.filter(t => t.status === 'done').length
   const open = tasks.length - done
@@ -84,6 +86,16 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
       </div>
       {gmailOpen && <GmailSendModal defaultSubject="Project report from Doppio" defaultBody={summary || 'Hi,\n\nPlease find the latest project report shared from Doppio.\n\nThanks'} onClose={()=>setGmailOpen(false)} />}
 
+      {/* Tabs */}
+      <div style={{ display:'flex', gap:2, marginBottom:20, borderBottom:`1px solid ${C.borderSubtle}` }}>
+        {([['overview','Overview'],['time','Time Report']] as const).map(([t,label]) => (
+          <button key={t} onClick={()=>setTab(t)} style={{ background:'none', border:'none', cursor:'pointer', padding:'10px 14px', fontSize:13, fontWeight:600, color:tab===t?C.text:C.muted, borderBottom:`2px solid ${tab===t?'#CC785C':'transparent'}`, marginBottom:-1, fontFamily:'inherit' }}>{label}</button>
+        ))}
+      </div>
+
+      {tab === 'time' && <TimeReportPanel jobs={jobs} crew={crew} timeEntries={timeEntries} />}
+
+      {tab === 'overview' && (<>
       {/* Summary cards */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:24 }}>
         {stats.map(s => (
@@ -148,6 +160,7 @@ export default function ReportsView({ jobs, tasks, documents }: { jobs:Job[], ta
         {summary && <pre style={{ fontSize:13, color:C.text, whiteSpace:'pre-wrap', fontFamily:'inherit', lineHeight:1.6, margin:0 }}>{summary}</pre>}
         {!summary && !loading && !error && <div style={{ fontSize:13, color:C.muted }}>Generate a grounded health summary across all projects, risks and documents.</div>}
       </div>
+      </>)}
     </div>
   )
 }

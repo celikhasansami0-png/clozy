@@ -59,6 +59,69 @@ portfolio of projects. Output 3 short sections in markdown-free plain text:
   return textOf(res)
 }
 
+// Model used for the structured Day-7 features (per spec).
+const SONNET = 'claude-sonnet-4-6'
+
+export type ActionItem = { title: string; assignee: string | null; due_date: string | null; priority: 'urgent' | 'high' | 'normal' }
+
+/** Extract action items from raw meeting notes → JSON array. */
+export async function extractActionItems(notes: string): Promise<ActionItem[]> {
+  if (!aiEnabled()) return mockActionItems(notes)
+  try {
+    const res = await getClient().messages.create({
+      model: SONNET,
+      max_tokens: 1500,
+      system: `You extract action items from meeting notes. Return ONLY a JSON array (no prose, no
+markdown fences). Each item: {"title": string, "assignee": string|null, "due_date": "YYYY-MM-DD"|null,
+"priority": "urgent"|"high"|"normal"}. Infer assignee names and dates only when clearly stated.`,
+      messages: [{ role: 'user', content: `Meeting notes:\n\n${notes}\n\nReturn the JSON array of action items.` }],
+    })
+    const raw = textOf(res)
+    const start = raw.indexOf('['); const end = raw.lastIndexOf(']')
+    if (start === -1 || end === -1) return []
+    const parsed = JSON.parse(raw.slice(start, end + 1)) as ActionItem[]
+    return parsed.filter(i => i && i.title).map(i => ({
+      title: String(i.title),
+      assignee: i.assignee ? String(i.assignee) : null,
+      due_date: i.due_date ? String(i.due_date) : null,
+      priority: (['urgent', 'high', 'normal'].includes(i.priority) ? i.priority : 'normal') as ActionItem['priority'],
+    }))
+  } catch { return [] }
+}
+
+/** Weekly project-health summary — 3–5 friendly bullet points. */
+export async function weeklySummary(context: string): Promise<string> {
+  if (!aiEnabled()) return mockWeekly()
+  const res = await getClient().messages.create({
+    model: SONNET,
+    max_tokens: 700,
+    system: `You write a concise, friendly weekly summary for an agency project manager. Output 3 to 5
+bullet points (each starting with "- ") covering: what went well last week, what is at risk this week,
+and exactly one recommendation. No preamble, just the bullets.`,
+    messages: [{ role: 'user', content: `This week's workspace data:\n\n${context}\n\nWrite the weekly summary bullets.` }],
+  })
+  return textOf(res)
+}
+
+function mockActionItems(notes: string): ActionItem[] {
+  const first = notes.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 3)
+  const base: ActionItem[] = [
+    { title: 'Follow up on client feedback', assignee: null, due_date: null, priority: 'high' },
+    { title: 'Prepare next status update', assignee: null, due_date: null, priority: 'normal' },
+  ]
+  return first.length ? first.map((t, i) => ({ title: t.slice(0, 80), assignee: null, due_date: null, priority: i === 0 ? 'high' : 'normal' as ActionItem['priority'] })) : base
+}
+
+function mockWeekly(): string {
+  return [
+    '- Last week the team closed several tasks and kept most projects on track.',
+    '- A couple of tasks are overdue or due very soon — worth prioritising early this week.',
+    '- One project is behind on completion versus its phase; check for blockers.',
+    '- Recommendation: rebalance workload toward whoever has the most capacity.',
+    '(Demo summary — set ANTHROPIC_API_KEY for a live, data-grounded summary.)',
+  ].join('\n')
+}
+
 export type Insight = { icon: 'risk' | 'document' | 'task' | 'team' | 'trend'; title: string; detail: string }
 
 /** AI Insights — 3–5 short, actionable insights grounded in the workspace. */

@@ -32,8 +32,9 @@ export default function OnboardingPage() {
       company_name: company.trim(), client_count: clientCount || null, team_size: teamSize || null, onboarded: true,
     }).eq('id', user.id)
     if (upErr) { setError(upErr.message); setSaving(false); return }
-    // Seed agency demo data (best-effort).
+    // Seed agency demo data + default project templates (best-effort).
     await supabase.rpc('seed_demo_data', { p_owner_id: user.id })
+    await supabase.rpc('seed_default_templates', { p_owner_id: user.id })
     router.replace('/dashboard')
   }
 

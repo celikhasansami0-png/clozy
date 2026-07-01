@@ -6,6 +6,7 @@ import CreateProvider, { useCreate } from './CreateProvider'
 import { NicheProvider, useNiche } from './NicheProvider'
 import NotificationBell from './NotificationBell'
 import SearchOverlay from './SearchOverlay'
+import TimerProvider, { TimerPill } from './TimeTracking'
 import { accent } from './ui'
 import type { ModuleConfig } from '@/config/modules'
 import { plural } from '@/config/modules'
@@ -51,6 +52,7 @@ function Topbar({ userId, onMenu, onOpenSearch }: { userId: string; onMenu: () =
         </div>
       </div>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <TimerPill />
         <button onClick={onOpenSearch} aria-label="Search" style={{ display:'inline-flex', alignItems:'center', gap:7, background:C.bgElevated, border:`1px solid ${C.border}`, color:C.muted, borderRadius:7, padding:'5px 10px', fontSize:12.5, fontFamily:'inherit', cursor:'pointer' }}>
           <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
           <span className="bn-label">Search</span>
@@ -105,9 +107,11 @@ function Chrome({ userId, children }: { userId: string; children: React.ReactNod
 export default function DashboardShell({ userId, children }: { userId: string; children: React.ReactNode }) {
   return (
     <NicheProvider>
-      <CreateProvider userId={userId}>
-        <Chrome userId={userId}>{children}</Chrome>
-      </CreateProvider>
+      <TimerProvider userId={userId}>
+        <CreateProvider userId={userId}>
+          <Chrome userId={userId}>{children}</Chrome>
+        </CreateProvider>
+      </TimerProvider>
     </NicheProvider>
   )
 }

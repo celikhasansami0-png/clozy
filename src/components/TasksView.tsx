@@ -6,18 +6,21 @@ import { useBus, evt, type ReplacePayload } from '@/lib/bus'
 import EmptyState, { Icons } from './EmptyState'
 import Pager, { PAGE_SIZE } from './Pager'
 import ExportButton from './ExportButton'
-import type { Task, Job } from '@/lib/types'
+import MeetingNotesModal from './MeetingNotesModal'
+import { TimerIcon } from './TimeTracking'
+import type { Task, Job, CrewMember } from '@/lib/types'
 
 const C = { bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
 
 type StatusFilter = 'all' | 'todo' | 'in_progress' | 'done'
 
-export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; jobs: Pick<Job, 'id' | 'name' | 'color'>[] }) {
+export default function TasksView({ tasks: initial, jobs, crew }: { tasks: Task[]; jobs: Pick<Job, 'id' | 'name' | 'color'>[]; crew: CrewMember[] }) {
   const create = useCreate()
   const [tasks, setTasks] = useState(initial)
   const [status, setStatus] = useState<StatusFilter>('all')
   const [project, setProject] = useState<string>('all')
   const [page, setPage] = useState(0)
+  const [notesOpen, setNotesOpen] = useState(false)
 
   useBus<Task>(evt.add('task'), t => setTasks(prev => prev.some(x => x.id === t.id) ? prev : [t, ...prev]))
   useBus<ReplacePayload<Task>>(evt.replace('task'), ({ tempId, row }) => setTasks(prev => prev.map(x => x.id === tempId ? row : x)))
@@ -53,10 +56,12 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
           <div style={{ fontSize:14, color:C.muted }}>{open} open across {jobs.length} project{jobs.length === 1 ? '' : 's'}.</div>
         </div>
         <div style={{ display:'flex', gap:8 }}>
+          <button onClick={()=>setNotesOpen(true)} style={{ background:'#FFFFFF', border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:600, fontFamily:'inherit', cursor:'pointer' }}>Meeting Notes</button>
           <ExportButton filename="doppio-tasks" headers={exportHeaders} rows={exportRows} />
           <button onClick={()=>create.newTask()} style={{ background:'#CC785C', border:'none', color:'#FFFFFF', borderRadius:8, padding:'8px 14px', fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer' }}>+ New task</button>
         </div>
       </div>
+      {notesOpen && <MeetingNotesModal jobs={jobs} crew={crew} defaultProjectId={project !== 'all' ? project : (jobs[0]?.id || '')} onClose={()=>setNotesOpen(false)} />}
 
       <div style={{ display:'flex', gap:14, marginBottom:16, flexWrap:'wrap', alignItems:'center' }}>
         <div style={{ display:'flex', gap:4 }}>
@@ -90,6 +95,7 @@ export default function TasksView({ tasks: initial, jobs }: { tasks: Task[]; job
                 <Tag label={pr.label} color={pr.color} />
                 {t.tag && <Tag label={t.tag} />}
                 {t.assignee && <Avatar initials={t.assignee.initials} size={24} />}
+                <TimerIcon taskId={t.id} title={t.title} />
               </div>
             )
           })}

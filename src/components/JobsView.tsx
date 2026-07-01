@@ -15,6 +15,9 @@ import EmptyState, { Icons } from './EmptyState'
 import DeleteProjectModal from './DeleteProjectModal'
 import Pager, { PAGE_SIZE } from './Pager'
 import ExportButton from './ExportButton'
+import TaskComments from './TaskComments'
+import ShareClientButton from './ShareClientButton'
+import { TimerIcon, TaskTotalTime } from './TimeTracking'
 import type { Job, Task, CrewMember } from '@/lib/types'
 
 const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', bgHover:'#E8E5DC', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5' }
@@ -42,6 +45,8 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
   const [deleteTarget, setDeleteTarget] = useState<Job | null>(null)
   const [taskPage, setTaskPage] = useState(0)
   const [projPage, setProjPage] = useState(0)
+  const [toast, setToastRaw] = useState('')
+  function setToast(msg: string) { setToastRaw(msg); setTimeout(() => setToastRaw(''), 2500) }
 
   // Keep tasks fresh by refetching when the window regains focus (realtime is
   // reserved for the notification bell only).
@@ -124,6 +129,22 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
     }
     setActiveJobId(newJob.id)
   }
+  async function saveAsTemplate(j: Job) {
+    setMenuJobId(null)
+    const { count } = await supabase.from('project_templates').select('id', { count: 'exact', head: true }).eq('owner_id', ownerId)
+    if ((count || 0) >= 20) { setToast('Template limit (20) reached.'); return }
+    const start = new Date(j.created_at).getTime()
+    const src = tasks.filter(t => t.job_id === j.id)
+    const templateTasks = src.map(t => ({
+      title: t.title, priority: t.priority, tag: t.tag,
+      due_offset_days: t.due_date ? Math.max(0, Math.round((new Date(t.due_date).getTime() - start) / 86400000)) : 0,
+    }))
+    await supabase.from('project_templates').insert({
+      owner_id: ownerId, name: `${j.name} template`, description: `Saved from ${j.name}`,
+      task_count: templateTasks.length, template_data: { tasks: templateTasks },
+    })
+    setToast('Saved as template.')
+  }
   async function archiveProject(j: Job) {
     setMenuJobId(null)
     setJobs(prev => prev.map(x => x.id === j.id ? { ...x, is_archived: true } : x))
@@ -200,9 +221,9 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
               </div>
               <button onClick={e=>{ e.stopPropagation(); setMenuJobId(menuJobId===j.id?null:j.id) }} aria-label="Project actions" style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', padding:'2px 4px', fontSize:15, lineHeight:1, flexShrink:0 }}>⋯</button>
               {menuJobId === j.id && (
-                <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', top:34, right:6, zIndex:10, width:170, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:8, boxShadow:'0 8px 24px rgba(60,50,40,0.15)', overflow:'hidden' }}>
-                  {[['Duplicate', ()=>duplicateProject(j)], ['Archive', ()=>archiveProject(j)], ['Delete', ()=>{ setMenuJobId(null); setDeleteTarget(j) }]].map(([label, fn]) => (
-                    <button key={label as string} onClick={fn as () => void} style={{ width:'100%', textAlign:'left', background:'none', border:'none', padding:'9px 14px', fontSize:13, color: label==='Delete'?'#C2574A':C.text, fontFamily:'inherit', cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background=C.bgElevated} onMouseLeave={e=>e.currentTarget.style.background='none'}>{label as string} {label!=='Delete' ? term.project.toLowerCase() : ''}</button>
+                <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', top:34, right:6, zIndex:10, width:180, background:C.bgCard, border:`1px solid ${C.border}`, borderRadius:8, boxShadow:'0 8px 24px rgba(60,50,40,0.15)', overflow:'hidden' }}>
+                  {([['Duplicate project', ()=>duplicateProject(j)], ['Save as template', ()=>saveAsTemplate(j)], ['Archive project', ()=>archiveProject(j)], ['Delete', ()=>{ setMenuJobId(null); setDeleteTarget(j) }]] as [string, ()=>void][]).map(([label, fn]) => (
+                    <button key={label} onClick={fn} style={{ width:'100%', textAlign:'left', background:'none', border:'none', padding:'9px 14px', fontSize:13, color: label==='Delete'?'#C2574A':C.text, fontFamily:'inherit', cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background=C.bgElevated} onMouseLeave={e=>e.currentTarget.style.background='none'}>{label}</button>
                   ))}
                 </div>
               )}
@@ -222,6 +243,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
             <span style={{ fontSize:16, fontWeight:700, letterSpacing:'-0.02em' }}>{job.name}</span>
             <Tag label={job.status} color={jobStatusColor[job.status]} />
+            <div style={{ marginLeft:'auto' }}><ShareClientButton jobId={job.id} /></div>
           </div>
           <div style={{ fontSize:12, color:C.muted, marginBottom:10 }}>Phase: {job.phase} · {job.completion}% complete</div>
           <ProgressBar value={job.completion} />
@@ -277,6 +299,7 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
                 <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
                   <div style={{ width:5, height:5, borderRadius:'50%', background:priorityCfg[t.priority]?.color || C.muted, opacity:t.priority==='normal'?0.3:1 }} />
                   {assignee && <Avatar initials={assignee.initials} size={22} />}
+                  <TimerIcon taskId={t.id} title={t.title} />
                 </div>
               </div>
             )
@@ -331,7 +354,8 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
           </div>
           <div style={{ padding:'16px 18px', overflowY:'auto', flex:1 }}>
             <div style={{ fontSize:14, fontWeight:600, marginBottom:4 }}>{activeTask.title}</div>
-            {activeTask.due_date && <div style={{ fontSize:11, color:C.muted, marginBottom:18 }}>Due {activeTask.due_date}</div>}
+            {activeTask.due_date && <div style={{ fontSize:11, color:C.muted, marginBottom:6 }}>Due {activeTask.due_date}</div>}
+            <div style={{ marginBottom:18 }}><TaskTotalTime taskId={activeTask.id} /></div>
             {[
               { label:'Status',   value:<Tag label={statusCfg[activeTask.status]?.label} color={statusCfg[activeTask.status]?.color} bg={statusCfg[activeTask.status]?.bg} border={statusCfg[activeTask.status]?.border} /> },
               { label:'Priority', value:<Tag label={priorityCfg[activeTask.priority]?.label} color={priorityCfg[activeTask.priority]?.color} /> },
@@ -350,12 +374,16 @@ export default function JobsView({ jobs: initialJobs, tasks: initialTasks, crew,
                 </div>
               ))}
             </div>
+            <TaskComments taskId={activeTask.id} ownerId={ownerId} taskTitle={activeTask.title} crew={crew} />
           </div>
         </div>
       )}
 
       {deleteTarget && (
         <DeleteProjectModal job={deleteTarget} label={term.project} onClose={()=>setDeleteTarget(null)} onConfirm={()=>confirmDeleteProject(deleteTarget)} />
+      )}
+      {toast && (
+        <div style={{ position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)', zIndex:80, background:'#1F1E1C', color:'#FAF9F5', borderRadius:8, padding:'10px 16px', fontSize:13, boxShadow:'0 8px 24px rgba(60,50,40,0.2)' }}>{toast}</div>
       )}
     </div>
   )

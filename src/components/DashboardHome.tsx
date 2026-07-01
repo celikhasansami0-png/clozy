@@ -4,6 +4,9 @@ import type { Job, Task, Doc, CrewMember } from '@/lib/types'
 import { riskAlerts } from '@/lib/insights'
 import { useCreate } from './CreateProvider'
 import EmptyState, { Icons } from './EmptyState'
+import RadarSection from './RadarSection'
+import WeeklySummaryCard from './WeeklySummaryCard'
+import TemplatesButton from './TemplatesButton'
 import { useRouter } from 'next/navigation'
 
 const C = { bg:'#FAF9F5', bgCard:'#FFFFFF', bgElevated:'#F0EEE6', border:'#DEDBD2', borderSubtle:'#ECE9E0', text:'#1F1E1C', sub:'#5C5A52', muted:'#8C8980', dim:'#C2BFB5', accent:'#CC785C', highBg:'rgba(204,120,92,0.10)', highBorder:'rgba(204,120,92,0.25)' }
@@ -18,7 +21,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 // Fixed standard dashboard widgets — same for every user (industry-agnostic).
-export default function DashboardHome({ jobs, tasks, documents, crew }: { jobs:Job[], tasks:Task[], documents:Doc[], crew:CrewMember[] }) {
+export default function DashboardHome({ jobs, tasks, documents, crew, weeklySummary, weeklySummaryAt }: { jobs:Job[], tasks:Task[], documents:Doc[], crew:CrewMember[], weeklySummary:string, weeklySummaryAt:string|null }) {
   const create = useCreate()
   const router = useRouter()
   const risks = riskAlerts(tasks)
@@ -38,10 +41,19 @@ export default function DashboardHome({ jobs, tasks, documents, crew }: { jobs:J
 
   return (
     <div style={{ padding:'28px 32px', overflowY:'auto', flex:1, background:C.bg }}>
-      <div style={{ marginBottom:24 }}>
-        <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Welcome back</div>
-        <div style={{ fontSize:14, color:C.muted }}>Here&apos;s where things stand across all active projects.</div>
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:24, flexWrap:'wrap' }}>
+        <div>
+          <div style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.03em', marginBottom:4 }}>Welcome back</div>
+          <div style={{ fontSize:14, color:C.muted }}>Here&apos;s where things stand across all active projects.</div>
+        </div>
+        <TemplatesButton />
       </div>
+
+      {/* Doppio Radar — risk alerts */}
+      <RadarSection />
+
+      {/* This Week's AI Summary */}
+      <WeeklySummaryCard initialSummary={weeklySummary} initialAt={weeklySummaryAt} />
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:16, alignItems:'start' }}>
         {/* Widget 1 — Active Projects */}
