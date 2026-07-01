@@ -1,0 +1,64 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--color-bg);
+}
+
+.card {
+  width: 100%;
+  max-width: 460px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.option:hover {
+  background: var(--color-hover);
+}
+
+.optionSelected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}

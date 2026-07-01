@@ -1,59 +1,73 @@
-# Scouting
+# Doppio
 
-**AI-powered LinkedIn B2B outreach for SaaS teams.**
+**AI-powered project management for agencies — Linear-quality workflow, plus a client portal.**
 
-> Define your ideal customer. Scouting finds them, researches each one in real time,
-> writes in your voice, follows up — and stops only when they reply.
+Built with Next.js (App Router), TypeScript, Supabase (auth + Postgres), and plain
+CSS Modules / CSS custom properties for the design system (no Tailwind).
 
-Built on Next.js 16, Supabase, Tailwind, and the Anthropic API.
+> This project pins Next.js 16, which renamed the `middleware` file convention to
+> `proxy` and made `cookies()`/`params` fully async. See `src/proxy.ts` and
+> `src/lib/supabase/` for how that's handled here.
 
-## The five modules
+## Project structure
 
-Scouting maps to the stages of an outbound pipeline:
+```
+src/
+  app/            routes (App Router)
+  components/     shared UI components
+  lib/            utilities, Supabase clients
+  config/         app configuration
+  proxy.ts        auth/onboarding request handling (the middleware equivalent)
+supabase/
+  migrations/     SQL migrations
+```
 
-| Module | Route | What it does |
-| --- | --- | --- |
-| **Scout** | `/scout` | ICP builder (plain-English → structured), scored lead generation, intent-signal detection |
-| **Craft** | `/craft` | Voice learning + deep research → a 5-step sequence written in your voice, with a quality gate |
-| **Sequence** | `/sequence` | Campaign management, visual sequence timeline, account-safety controls |
-| **Inbox** | `/inbox` | Reply classification (hot/warm/nurture/…) + one-click AI response suggestions |
-| **Pipeline** | `/pipeline` | Kanban board across 10 stages |
-| **Analytics** | `/analytics` | Acceptance / reply / meeting funnel, reply-rate trend, best-performing hooks |
+## Setup for a new developer
 
-## AI layer
-
-The AI service (`services/ai.ts`) supports Anthropic, OpenAI, and a high-fidelity
-**mock provider** that powers the whole product end-to-end with no API key — ideal for
-demos. Set `ANTHROPIC_API_KEY` (and optionally `ANTHROPIC_MODEL`) to use a live model.
-
-Endpoints live under `app/api/scouting/`:
-`parse-icp`, `generate-leads`, `research`, `generate-sequence`, `classify-reply`, `learn-voice`.
-
-## Getting started
+### 1. Install dependencies
 
 ```bash
 npm install
+```
+
+### 2. Create a Supabase project
+
+1. Go to [supabase.com](https://supabase.com) and create a new project.
+2. In **Project Settings → API**, copy the **Project URL** and **anon public key**.
+3. In the **SQL Editor**, paste and run the contents of
+   `supabase/migrations/0001_initial_schema.sql`. This creates the `profiles`,
+   `crew_members`, `projects`, `tasks`, and `documents` tables, enables row
+   level security with owner-scoped policies, adds indexes, and sets up a
+   trigger that creates a `profiles` row for every new `auth.users` signup.
+4. In **Authentication → URL Configuration**, add
+   `http://localhost:3000/auth/callback` as a redirect URL (and your
+   production URL once deployed) so email confirmation links work.
+
+### 3. Configure environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in:
+
+| Variable | Where to find it |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
+
+### 4. Run the dev server
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The dashboard and all modules
-run on realistic demo data out of the box.
+Open [http://localhost:3000](http://localhost:3000). You'll land on `/auth`
+until you sign up and confirm your email, at which point you're routed
+through `/onboarding` and into `/dashboard`.
 
-## Database
+## Design system
 
-Run `supabase/schema.sql` (shared `profiles`/auth) then `supabase/scouting-schema.sql`
-(leads, campaigns, messages, conversations, ICPs, voice profiles — all RLS-protected).
-
-## Environment
-
-See **[docs/SETUP.md](docs/SETUP.md)** for the full step-by-step go-live guide
-(Supabase, Anthropic, Stripe, Vercel) and **`.env.example`** for every variable.
-The app runs fully in demo mode with none of these set.
-
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase |
-| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | Live AI (optional — mock used otherwise) |
-| `STRIPE_SECRET_KEY` + `NEXT_PUBLIC_STRIPE_*_PRICE_ID` | Billing (optional) |
-
-*Scouting — Find them. Write for them. Win them.*
+All design tokens (colors, radii, shadows) live as CSS custom properties in
+`src/app/globals.css`. It's a single light theme — no dark mode.

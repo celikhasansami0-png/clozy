@@ -1,0 +1,137 @@
+:root {
+  --color-bg: #faf9f5;
+  --color-card: #ffffff;
+  --color-elevated: #f0eee6;
+  --color-hover: #e8e5dc;
+  --color-border: #dedbd2;
+  --color-border-subtle: #ece9e0;
+  --color-text-primary: #1f1e1c;
+  --color-text-secondary: #5c5a52;
+  --color-text-muted: #8c8980;
+  --color-text-dim: #c2bfb5;
+  --color-accent: #cc785c;
+  --color-accent-hover: #b86a4e;
+  --color-accent-soft: #f2e2d8;
+  --color-negative: #c2574a;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  --shadow-card: 0 1px 3px rgba(31, 30, 28, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Cards */
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* Inputs */
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input::placeholder {
+  color: var(--color-text-dim);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.btn-secondary {
+  background: var(--color-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.text-error {
+  color: var(--color-negative);
+  font-size: 13px;
+}
