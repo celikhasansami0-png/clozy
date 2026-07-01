@@ -1,0 +1,97 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:            #FAF9F5;
+  --bg-card:       #FFFFFF;
+  --bg-elevated:   #F0EEE6;
+  --bg-hover:      #E8E5DC;
+  --border:        #DEDBD2;
+  --border-subtle: #ECE9E0;
+  --text:          #1F1E1C;
+  --text-sub:      #5C5A52;
+  --text-muted:    #8C8980;
+  --text-dim:      #C2BFB5;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* Loading skeleton shimmer — pulses #F0EEE6 ↔ #E8E5DC */
+.bn-skeleton {
+  background-color: #F0EEE6;
+  animation: bn-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes bn-shimmer {
+  0%, 100% { background-color: #F0EEE6; }
+  50%      { background-color: #E8E5DC; }
+}
+
+/* ── Responsive sidebar (3 states) ──────────────────────────────────────────
+   >1024px : full 220px (default, inline styles)
+   768–1024: collapsed 56px, icons only + native tooltips
+   <768px  : hidden, hamburger opens full-height overlay
+*/
+.bn-menu-btn { display: none; }
+.bn-sidebar-backdrop { display: none; }
+
+/* Tablet — collapse to icon rail */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .bn-sidebar { width: 56px !important; }
+  .bn-sidebar .bn-label { display: none !important; }
+  .bn-sidebar .bn-nav-item { justify-content: center; }
+  .bn-sidebar .bn-active-dot { display: none !important; }
+  .bn-sidebar .bn-logo-row { justify-content: center; padding-left: 0 !important; padding-right: 0 !important; }
+  .bn-sidebar .bn-user-row { justify-content: center; }
+}
+
+/* Mobile — off-canvas overlay + hamburger */
+@media (max-width: 767px) {
+  .bn-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bn-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 8px 0 24px rgba(60, 50, 40, 0.14);
+  }
+  .bn-sidebar.bn-open { transform: translateX(0); }
+  .bn-sidebar-backdrop.bn-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(31, 30, 28, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
